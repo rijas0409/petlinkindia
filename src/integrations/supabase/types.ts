@@ -1,0 +1,824 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5"
+  }
+  public: {
+    Tables: {
+      addresses: {
+        Row: {
+          address_line: string
+          city: string
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          pincode: string
+          state: string
+          user_id: string | null
+        }
+        Insert: {
+          address_line: string
+          city: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          pincode: string
+          state: string
+          user_id?: string | null
+        }
+        Update: {
+          address_line?: string
+          city?: string
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          pincode?: string
+          state?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          buyer_id: string | null
+          created_at: string | null
+          id: string
+          last_message: string | null
+          last_message_at: string | null
+          pet_id: string | null
+          seller_id: string | null
+        }
+        Insert: {
+          buyer_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_message?: string | null
+          last_message_at?: string | null
+          pet_id?: string | null
+          seller_id?: string | null
+        }
+        Update: {
+          buyer_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_message?: string | null
+          last_message_at?: string | null
+          pet_id?: string | null
+          seller_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chats_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chats_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chats_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          created_at: string | null
+          id: string
+          pet_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          pet_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          pet_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          chat_id: string | null
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          sender_id: string | null
+        }
+        Insert: {
+          chat_id?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          sender_id?: string | null
+        }
+        Update: {
+          chat_id?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          advance_paid: number | null
+          amount: number
+          buyer_address_id: string | null
+          buyer_id: string | null
+          created_at: string | null
+          id: string
+          payment_id: string | null
+          pet_id: string | null
+          seller_id: string | null
+          status: Database["public"]["Enums"]["order_status"] | null
+          transport_required: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          advance_paid?: number | null
+          amount: number
+          buyer_address_id?: string | null
+          buyer_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_id?: string | null
+          pet_id?: string | null
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"] | null
+          transport_required?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          advance_paid?: number | null
+          amount?: number
+          buyer_address_id?: string | null
+          buyer_id?: string | null
+          created_at?: string | null
+          id?: string
+          payment_id?: string | null
+          pet_id?: string | null
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"] | null
+          transport_required?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_buyer_address_id_fkey"
+            columns: ["buyer_address_id"]
+            isOneToOne: false
+            referencedRelation: "addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pet_documents: {
+        Row: {
+          document_type: string
+          file_url: string
+          id: string
+          ocr_data: Json | null
+          pet_id: string | null
+          uploaded_at: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          document_type: string
+          file_url: string
+          id?: string
+          ocr_data?: Json | null
+          pet_id?: string | null
+          uploaded_at?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          document_type?: string
+          file_url?: string
+          id?: string
+          ocr_data?: Json | null
+          pet_id?: string | null
+          uploaded_at?: string | null
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_documents_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pets: {
+        Row: {
+          age_months: number
+          breed: string
+          category: Database["public"]["Enums"]["pet_category"]
+          city: string
+          color: string | null
+          created_at: string | null
+          description: string | null
+          gender: Database["public"]["Enums"]["pet_gender"]
+          id: string
+          images: string[] | null
+          is_available: boolean | null
+          is_featured: boolean | null
+          location: string
+          medical_history: string | null
+          microchip: string | null
+          name: string
+          owner_id: string | null
+          price: number
+          state: string
+          updated_at: string | null
+          vaccinated: boolean | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          videos: string[] | null
+          views: number | null
+        }
+        Insert: {
+          age_months: number
+          breed: string
+          category: Database["public"]["Enums"]["pet_category"]
+          city: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          gender: Database["public"]["Enums"]["pet_gender"]
+          id?: string
+          images?: string[] | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
+          location: string
+          medical_history?: string | null
+          microchip?: string | null
+          name: string
+          owner_id?: string | null
+          price: number
+          state: string
+          updated_at?: string | null
+          vaccinated?: boolean | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          videos?: string[] | null
+          views?: number | null
+        }
+        Update: {
+          age_months?: number
+          breed?: string
+          category?: Database["public"]["Enums"]["pet_category"]
+          city?: string
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          gender?: Database["public"]["Enums"]["pet_gender"]
+          id?: string
+          images?: string[] | null
+          is_available?: boolean | null
+          is_featured?: boolean | null
+          location?: string
+          medical_history?: string | null
+          microchip?: string | null
+          name?: string
+          owner_id?: string | null
+          price?: number
+          state?: string
+          updated_at?: string | null
+          vaccinated?: boolean | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          videos?: string[] | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pets_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          aadhaar_file: string | null
+          breeder_license: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_breeder_verified: boolean | null
+          name: string
+          phone: string | null
+          profile_photo: string | null
+          rating: number | null
+          role: Database["public"]["Enums"]["user_role"]
+          selfie_file: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          aadhaar_file?: string | null
+          breeder_license?: string | null
+          created_at?: string | null
+          email?: string | null
+          id: string
+          is_breeder_verified?: boolean | null
+          name: string
+          phone?: string | null
+          profile_photo?: string | null
+          rating?: number | null
+          role?: Database["public"]["Enums"]["user_role"]
+          selfie_file?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          aadhaar_file?: string | null
+          breeder_license?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_breeder_verified?: boolean | null
+          name?: string
+          phone?: string | null
+          profile_photo?: string | null
+          rating?: number | null
+          role?: Database["public"]["Enums"]["user_role"]
+          selfie_file?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string | null
+          id: string
+          pet_id: string | null
+          reason: string
+          reporter_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          pet_id?: string | null
+          reason: string
+          reporter_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          pet_id?: string | null
+          reason?: string
+          reporter_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seller_earnings: {
+        Row: {
+          amount: number
+          commission: number
+          created_at: string | null
+          id: string
+          net_amount: number
+          order_id: string | null
+          payout_date: string | null
+          payout_status: string | null
+          seller_id: string | null
+        }
+        Insert: {
+          amount: number
+          commission: number
+          created_at?: string | null
+          id?: string
+          net_amount: number
+          order_id?: string | null
+          payout_date?: string | null
+          payout_status?: string | null
+          seller_id?: string | null
+        }
+        Update: {
+          amount?: number
+          commission?: number
+          created_at?: string | null
+          id?: string
+          net_amount?: number
+          order_id?: string | null
+          payout_date?: string | null
+          payout_status?: string | null
+          seller_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_earnings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_earnings_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          is_active: boolean | null
+          seller_id: string | null
+          start_date: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          is_active?: boolean | null
+          seller_id?: string | null
+          start_date: string
+          tier: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          is_active?: boolean | null
+          seller_id?: string | null
+          start_date?: string
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_requests: {
+        Row: {
+          assigned_partner_id: string | null
+          buyer_id: string | null
+          created_at: string | null
+          delivery_address: string
+          distance_km: number | null
+          fee: number
+          id: string
+          order_id: string | null
+          pet_id: string | null
+          pickup_address: string
+          seller_id: string | null
+          status: Database["public"]["Enums"]["transport_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_partner_id?: string | null
+          buyer_id?: string | null
+          created_at?: string | null
+          delivery_address: string
+          distance_km?: number | null
+          fee: number
+          id?: string
+          order_id?: string | null
+          pet_id?: string | null
+          pickup_address: string
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["transport_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_partner_id?: string | null
+          buyer_id?: string | null
+          created_at?: string | null
+          delivery_address?: string
+          distance_km?: number | null
+          fee?: number
+          id?: string
+          order_id?: string | null
+          pet_id?: string | null
+          pickup_address?: string
+          seller_id?: string | null
+          status?: Database["public"]["Enums"]["transport_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_requests_assigned_partner_id_fkey"
+            columns: ["assigned_partner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_requests_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_requests_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_requests_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      order_status:
+        | "pending"
+        | "accepted"
+        | "preparing"
+        | "ready"
+        | "picked"
+        | "delivered"
+        | "cancelled"
+      pet_category: "dog" | "cat" | "bird" | "rabbit" | "other"
+      pet_gender: "male" | "female"
+      subscription_tier: "basic" | "gold" | "platinum"
+      transport_status: "requested" | "assigned" | "picked" | "delivered"
+      user_role: "buyer" | "seller" | "admin"
+      verification_status: "pending" | "verified" | "failed"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      order_status: [
+        "pending",
+        "accepted",
+        "preparing",
+        "ready",
+        "picked",
+        "delivered",
+        "cancelled",
+      ],
+      pet_category: ["dog", "cat", "bird", "rabbit", "other"],
+      pet_gender: ["male", "female"],
+      subscription_tier: ["basic", "gold", "platinum"],
+      transport_status: ["requested", "assigned", "picked", "delivered"],
+      user_role: ["buyer", "seller", "admin"],
+      verification_status: ["pending", "verified", "failed"],
+    },
+  },
+} as const
