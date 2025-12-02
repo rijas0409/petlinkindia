@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, User, LogOut, Heart } from "lucide-react";
+import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, User, LogOut, PawPrint } from "lucide-react";
 import { toast } from "sonner";
+import ChatList from "@/components/ChatList";
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
@@ -88,16 +89,14 @@ const SellerDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-gradient-primary rounded-xl flex items-center justify-center shadow-float">
+              <PawPrint className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                PetLink
-              </span>
+              <span className="font-display text-xl">PetLink</span>
               <p className="text-xs text-muted-foreground">Partner Panel</p>
             </div>
           </div>
@@ -106,7 +105,7 @@ const SellerDashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full"
+              className="rounded-xl hover:bg-muted"
               onClick={() => navigate("/profile")}
             >
               <User className="w-5 h-5" />
@@ -114,7 +113,7 @@ const SellerDashboard = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full"
+              className="rounded-xl hover:bg-muted"
               onClick={handleLogout}
             >
               <LogOut className="w-5 h-5" />
@@ -126,56 +125,52 @@ const SellerDashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="border-0 shadow-card">
-            <CardHeader className="pb-3">
-              <CardDescription>Total Listings</CardDescription>
-              <CardTitle className="text-3xl">{stats.totalListings}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-success">
-                <Package className="w-4 h-4" />
-                <span>Active pets</span>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Card className="border border-border shadow-soft hover-lift">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <Package className="w-5 h-5 text-primary" />
+                </div>
               </div>
+              <p className="text-2xl font-bold">{stats.totalListings}</p>
+              <p className="text-sm text-muted-foreground">Active Listings</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-card">
-            <CardHeader className="pb-3">
-              <CardDescription>Active Orders</CardDescription>
-              <CardTitle className="text-3xl">{stats.activeOrders}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-primary">
-                <ShoppingBag className="w-4 h-4" />
-                <span>In progress</span>
+          <Card className="border border-border shadow-soft hover-lift">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                  <ShoppingBag className="w-5 h-5 text-accent" />
+                </div>
               </div>
+              <p className="text-2xl font-bold">{stats.activeOrders}</p>
+              <p className="text-sm text-muted-foreground">Active Orders</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-card">
-            <CardHeader className="pb-3">
-              <CardDescription>Total Earnings</CardDescription>
-              <CardTitle className="text-3xl">₹{stats.totalEarnings.toFixed(0)}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-success">
-                <DollarSign className="w-4 h-4" />
-                <span>All time</span>
+          <Card className="border border-border shadow-soft hover-lift">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-success/10 rounded-xl flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-success" />
+                </div>
               </div>
+              <p className="text-2xl font-bold">₹{stats.totalEarnings.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Total Earnings</p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-card">
-            <CardHeader className="pb-3">
-              <CardDescription>Pending Payouts</CardDescription>
-              <CardTitle className="text-3xl">₹{stats.pendingPayouts.toFixed(0)}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Truck className="w-4 h-4" />
-                <span>Processing</span>
+          <Card className="border border-border shadow-soft hover-lift">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center">
+                  <Truck className="w-5 h-5 text-warning" />
+                </div>
               </div>
+              <p className="text-2xl font-bold">₹{stats.pendingPayouts.toLocaleString()}</p>
+              <p className="text-sm text-muted-foreground">Pending Payouts</p>
             </CardContent>
           </Card>
         </div>
@@ -184,7 +179,7 @@ const SellerDashboard = () => {
         <div className="mb-8">
           <Button
             size="lg"
-            className="w-full md:w-auto bg-gradient-primary hover:opacity-90 rounded-2xl shadow-float"
+            className="w-full md:w-auto bg-gradient-primary hover:opacity-90 rounded-xl shadow-float font-semibold"
             onClick={() => navigate("/add-pet")}
           >
             <Plus className="w-5 h-5 mr-2" />
@@ -194,24 +189,24 @@ const SellerDashboard = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="listings" className="space-y-6">
-          <TabsList className="bg-muted/50 p-1 rounded-2xl">
-            <TabsTrigger value="listings" className="rounded-xl">
+          <TabsList className="w-full md:w-auto bg-muted p-1 rounded-xl h-auto flex-wrap">
+            <TabsTrigger value="listings" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-soft">
               <Package className="w-4 h-4 mr-2" />
-              My Listings
+              Listings
             </TabsTrigger>
-            <TabsTrigger value="orders" className="rounded-xl">
+            <TabsTrigger value="orders" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-soft">
               <ShoppingBag className="w-4 h-4 mr-2" />
               Orders
             </TabsTrigger>
-            <TabsTrigger value="chats" className="rounded-xl">
+            <TabsTrigger value="chats" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-soft">
               <MessageCircle className="w-4 h-4 mr-2" />
               Chats
             </TabsTrigger>
-            <TabsTrigger value="transport" className="rounded-xl">
+            <TabsTrigger value="transport" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-soft">
               <Truck className="w-4 h-4 mr-2" />
               Transport
             </TabsTrigger>
-            <TabsTrigger value="earnings" className="rounded-xl">
+            <TabsTrigger value="earnings" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-soft">
               <DollarSign className="w-4 h-4 mr-2" />
               Earnings
             </TabsTrigger>
@@ -246,15 +241,13 @@ const SellerDashboard = () => {
           </TabsContent>
 
           <TabsContent value="chats">
-            <Card className="border-0 shadow-card">
-              <CardHeader>
+            <Card className="border border-border shadow-soft overflow-hidden">
+              <CardHeader className="border-b border-border">
                 <CardTitle>Customer Chats</CardTitle>
                 <CardDescription>Respond to buyer inquiries</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  No active chats. Messages from buyers will appear here.
-                </div>
+              <CardContent className="p-0">
+                <ChatList />
               </CardContent>
             </Card>
           </TabsContent>
