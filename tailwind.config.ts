@@ -7,7 +7,7 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "1.5rem",
+      padding: "2rem",
       screens: {
         "2xl": "1400px",
       },
@@ -43,10 +43,6 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -59,21 +55,17 @@ export default {
       backgroundImage: {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-secondary': 'var(--gradient-secondary)',
-        'gradient-warm': 'var(--gradient-warm)',
-        'gradient-sunset': 'var(--gradient-sunset)',
+        'gradient-soft': 'var(--gradient-soft)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'card': 'var(--shadow-card)',
         'float': 'var(--shadow-float)',
-        'glow': 'var(--shadow-glow)',
       },
       borderRadius: {
-        '2xl': '1.25rem',
-        '3xl': '1.5rem',
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 4px)",
-        sm: "calc(var(--radius) - 8px)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": {
@@ -85,7 +77,7 @@ export default {
           to: { height: "0", opacity: "0" },
         },
         "fade-in": {
-          from: { opacity: "0", transform: "translateY(12px)" },
+          from: { opacity: "0", transform: "translateY(10px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
         "fade-out": {
@@ -93,49 +85,34 @@ export default {
           to: { opacity: "0" },
         },
         "scale-in": {
-          from: { opacity: "0", transform: "scale(0.96)" },
+          from: { opacity: "0", transform: "scale(0.95)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
         "slide-up": {
-          from: { transform: "translateY(100%)", opacity: "0" },
-          to: { transform: "translateY(0)", opacity: "1" },
+          from: { transform: "translateY(100%)" },
+          to: { transform: "translateY(0)" },
         },
-        "slide-in-right": {
-          from: { transform: "translateX(100%)", opacity: "0" },
-          to: { transform: "translateX(0)", opacity: "1" },
+        "shimmer": {
+          "0%": { backgroundPosition: "-1000px 0" },
+          "100%": { backgroundPosition: "1000px 0" },
         },
-        "bounce-gentle": {
+        "bounce-subtle": {
           "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-4px)" },
-        },
-        "pulse-soft": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.7" },
-        },
-        "typing": {
-          "0%": { width: "0" },
-          "100%": { width: "100%" },
+          "50%": { transform: "translateY(-5px)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.3s ease-out",
         "accordion-up": "accordion-up 0.3s ease-out",
-        "fade-in": "fade-in 0.5s ease-out forwards",
+        "fade-in": "fade-in 0.4s ease-out",
         "fade-out": "fade-out 0.3s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
-        "slide-up": "slide-up 0.5s ease-out",
-        "slide-in-right": "slide-in-right 0.4s ease-out",
-        "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
-        "pulse-soft": "pulse-soft 2s ease-in-out infinite",
-        "typing": "typing 1s steps(20) infinite",
+        "slide-up": "slide-up 0.4s ease-out",
+        "shimmer": "shimmer 2s infinite",
+        "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
       },
       fontFamily: {
-        sans: ['Nunito', 'system-ui', 'sans-serif'],
-        display: ['"DM Serif Display"', 'Georgia', 'serif'],
-      },
-      spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
     },
   },
