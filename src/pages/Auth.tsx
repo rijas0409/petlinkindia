@@ -64,7 +64,7 @@ const Auth = () => {
         toast.success("Account created! Welcome to PetLink");
         
         if (formData.role === "seller") {
-          navigate("/seller-dashboard");
+          navigate("/seller-onboarding");
         } else {
           navigate("/buyer-dashboard");
         }

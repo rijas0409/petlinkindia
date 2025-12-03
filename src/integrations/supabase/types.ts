@@ -400,6 +400,7 @@ export type Database = {
           email: string | null
           id: string
           is_breeder_verified: boolean | null
+          is_onboarding_complete: boolean | null
           name: string
           phone: string | null
           profile_photo: string | null
@@ -415,6 +416,7 @@ export type Database = {
           email?: string | null
           id: string
           is_breeder_verified?: boolean | null
+          is_onboarding_complete?: boolean | null
           name: string
           phone?: string | null
           profile_photo?: string | null
@@ -430,6 +432,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_breeder_verified?: boolean | null
+          is_onboarding_complete?: boolean | null
           name?: string
           phone?: string | null
           profile_photo?: string | null
