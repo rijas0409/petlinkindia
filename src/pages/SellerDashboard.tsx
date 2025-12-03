@@ -4,12 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, User, LogOut, Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, User, LogOut, Heart, Eye, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
+
+type Pet = Database["public"]["Tables"]["pets"]["Row"];
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [pets, setPets] = useState<Pet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalListings: 0,
     activeOrders: 0,
@@ -19,7 +25,6 @@ const SellerDashboard = () => {
 
   useEffect(() => {
     checkUser();
-    fetchStats();
   }, []);
 
   const checkUser = async () => {
@@ -47,27 +52,33 @@ const SellerDashboard = () => {
     }
 
     setUser(session.user);
+    fetchData(session.user.id);
   };
 
-  const fetchStats = async () => {
+  const fetchData = async (userId: string) => {
+    setIsLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      // Fetch pets
+      const { data: petsData, error: petsError } = await supabase
+        .from("pets")
+        .select("*")
+        .eq("owner_id", userId)
+        .order("created_at", { ascending: false });
 
-      const [petsResult, ordersResult, earningsResult] = await Promise.all([
-        supabase
-          .from("pets")
-          .select("id", { count: "exact" })
-          .eq("owner_id", session.user.id),
+      if (petsError) throw petsError;
+      setPets(petsData || []);
+
+      // Fetch stats
+      const [ordersResult, earningsResult] = await Promise.all([
         supabase
           .from("orders")
           .select("id", { count: "exact" })
-          .eq("seller_id", session.user.id)
+          .eq("seller_id", userId)
           .in("status", ["pending", "accepted", "preparing", "ready", "picked"]),
         supabase
           .from("seller_earnings")
           .select("amount, net_amount, payout_status")
-          .eq("seller_id", session.user.id),
+          .eq("seller_id", userId),
       ]);
 
       const totalEarnings = earningsResult.data?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
@@ -76,19 +87,58 @@ const SellerDashboard = () => {
         .reduce((sum, e) => sum + Number(e.net_amount), 0) || 0;
 
       setStats({
-        totalListings: petsResult.count || 0,
+        totalListings: petsData?.length || 0,
         activeOrders: ordersResult.count || 0,
         totalEarnings,
         pendingPayouts,
       });
     } catch (error: any) {
-      toast.error("Failed to load statistics");
+      toast.error("Failed to load data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeletePet = async (petId: string) => {
+    if (!confirm("Are you sure you want to delete this listing?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("pets")
+        .delete()
+        .eq("id", petId);
+
+      if (error) throw error;
+
+      setPets(prev => prev.filter(p => p.id !== petId));
+      toast.success("Listing deleted");
+    } catch (error: any) {
+      toast.error("Failed to delete listing");
     }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
+  };
+
+  const getVerificationBadge = (status: string | null) => {
+    switch (status) {
+      case "verified":
+        return <Badge className="bg-success/20 text-success">Verified</Badge>;
+      case "failed":
+        return <Badge variant="destructive">Failed</Badge>;
+      default:
+        return <Badge variant="secondary">Pending</Badge>;
+    }
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(price);
   };
 
   return (
@@ -230,9 +280,79 @@ const SellerDashboard = () => {
                 <CardDescription>Manage your active and pending listings</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  No listings yet. Click "Add New Pet" to get started.
-                </div>
+                {isLoading ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    Loading listings...
+                  </div>
+                ) : pets.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No listings yet. Click "Add New Pet" to get started.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {pets.map((pet) => (
+                      <div
+                        key={pet.id}
+                        className="bg-card border border-border rounded-2xl overflow-hidden hover:shadow-card transition-shadow"
+                      >
+                        <div className="aspect-video relative">
+                          {pet.images && pet.images[0] ? (
+                            <img
+                              src={pet.images[0]}
+                              alt={pet.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <Package className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2">
+                            {getVerificationBadge(pet.verification_status)}
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h3 className="font-semibold">{pet.name}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {pet.breed} • {pet.age_months} months
+                              </p>
+                            </div>
+                            <p className="font-bold text-primary">
+                              {formatPrice(Number(pet.price))}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                            <Eye className="w-3 h-3" />
+                            <span>{pet.views || 0} views</span>
+                            <span>•</span>
+                            <span>{pet.city}, {pet.state}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 rounded-xl"
+                              onClick={() => navigate(`/edit-pet/${pet.id}`)}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-xl text-destructive hover:text-destructive"
+                              onClick={() => handleDeletePet(pet.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -35,13 +35,21 @@ const SellerOnboarding = () => {
     }
   };
 
-  const uploadFile = async (file: File, path: string) => {
+  const uploadFile = async (file: File, userId: string, type: string) => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${path}/${Date.now()}.${fileExt}`;
+    const fileName = `${userId}/${type}_${Date.now()}.${fileExt}`;
     
-    // For now, we'll store the file name as a placeholder
-    // In production, you'd upload to Supabase Storage
-    return fileName;
+    const { data, error } = await supabase.storage
+      .from('seller-documents')
+      .upload(fileName, file);
+
+    if (error) throw error;
+    
+    const { data: urlData } = supabase.storage
+      .from('seller-documents')
+      .getPublicUrl(fileName);
+    
+    return urlData.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,13 +74,15 @@ const SellerOnboarding = () => {
         return;
       }
 
-      // Upload files (placeholder paths for now)
-      const aadhaarPath = await uploadFile(formData.aadhaarFile, `aadhaar/${session.user.id}`);
-      const selfiePath = await uploadFile(formData.selfieFile, `selfie/${session.user.id}`);
-      let breederPath = null;
+      const userId = session.user.id;
+
+      // Upload files to storage
+      const aadhaarUrl = await uploadFile(formData.aadhaarFile, userId, 'aadhaar');
+      const selfieUrl = await uploadFile(formData.selfieFile, userId, 'selfie');
+      let breederUrl = null;
       
       if (formData.isBreeder && formData.breederLicense) {
-        breederPath = await uploadFile(formData.breederLicense, `breeder/${session.user.id}`);
+        breederUrl = await uploadFile(formData.breederLicense, userId, 'breeder_license');
       }
 
       // Update profile
@@ -80,18 +90,19 @@ const SellerOnboarding = () => {
         .from("profiles")
         .update({
           phone: formData.phone,
-          aadhaar_file: aadhaarPath,
-          selfie_file: selfiePath,
-          breeder_license: breederPath,
+          aadhaar_file: aadhaarUrl,
+          selfie_file: selfieUrl,
+          breeder_license: breederUrl,
           is_onboarding_complete: true,
         })
-        .eq("id", session.user.id);
+        .eq("id", userId);
 
       if (error) throw error;
 
       toast.success("Verification submitted! Your account is now active.");
       navigate("/seller-dashboard");
     } catch (error: any) {
+      console.error("Onboarding error:", error);
       toast.error(error.message || "Failed to submit verification");
     } finally {
       setIsLoading(false);
