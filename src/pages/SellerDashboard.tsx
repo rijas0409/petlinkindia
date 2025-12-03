@@ -40,6 +40,12 @@ const SellerDashboard = () => {
       return;
     }
 
+    // Check if seller has completed onboarding
+    if (!profile?.is_onboarding_complete) {
+      navigate("/seller-onboarding");
+      return;
+    }
+
     setUser(session.user);
   };
 
