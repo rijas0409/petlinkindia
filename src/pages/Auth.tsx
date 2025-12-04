@@ -7,11 +7,25 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Heart, Loader2 } from "lucide-react";
+import { z } from "zod";
+
+// Validation schemas
+const loginSchema = z.object({
+  email: z.string().trim().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const signupSchema = z.object({
+  email: z.string().trim().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+});
 
 const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -21,12 +35,29 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
     setIsLoading(true);
 
     try {
+      // Validate form data
+      const schema = isLogin ? loginSchema : signupSchema;
+      const validationResult = schema.safeParse(formData);
+      
+      if (!validationResult.success) {
+        const fieldErrors: Record<string, string> = {};
+        validationResult.error.errors.forEach((err) => {
+          if (err.path[0]) {
+            fieldErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(fieldErrors);
+        setIsLoading(false);
+        return;
+      }
+
       if (isLogin) {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
+          email: formData.email.trim(),
           password: formData.password,
         });
 
@@ -48,12 +79,12 @@ const Auth = () => {
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
+          email: formData.email.trim(),
           password: formData.password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
             data: {
-              name: formData.name,
+              name: formData.name.trim(),
               role: formData.role,
             },
           },
@@ -111,8 +142,9 @@ const Auth = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required={!isLogin}
-                      className="rounded-2xl"
+                      className={`rounded-2xl ${errors.name ? 'border-destructive' : ''}`}
                     />
+                    {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -148,8 +180,9 @@ const Auth = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="rounded-2xl"
+                  className={`rounded-2xl ${errors.email ? 'border-destructive' : ''}`}
                 />
+                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
 
               <div className="space-y-2">
@@ -161,8 +194,9 @@ const Auth = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
-                  className="rounded-2xl"
+                  className={`rounded-2xl ${errors.password ? 'border-destructive' : ''}`}
                 />
+                {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
               </div>
 
               <Button

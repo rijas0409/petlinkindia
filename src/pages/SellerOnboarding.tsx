@@ -39,17 +39,15 @@ const SellerOnboarding = () => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}/${type}_${Date.now()}.${fileExt}`;
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('seller-documents')
       .upload(fileName, file);
 
     if (error) throw error;
     
-    const { data: urlData } = supabase.storage
-      .from('seller-documents')
-      .getPublicUrl(fileName);
-    
-    return urlData.publicUrl;
+    // Store only the file path - signed URLs should be generated on-demand when viewing
+    // This is secure because the bucket is private and paths alone don't grant access
+    return fileName;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
