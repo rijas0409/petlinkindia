@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Heart, Loader2, Upload, FileText, Camera, Award, Shield, CheckCircle } from "lucide-react";
+import { Heart, Loader2, Upload, FileText, Camera, Award, Shield, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
 
 const SellerOnboarding = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [aiVerified, setAiVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     phone: "",
@@ -23,6 +26,8 @@ const SellerOnboarding = () => {
     breederLicense: null as File | null,
     termsAccepted: false,
   });
+  const [aadhaarPreview, setAadhaarPreview] = useState<string | null>(null);
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
 
   const handleFileChange = (field: "aadhaarFile" | "selfieFile" | "breederLicense") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,6 +37,78 @@ const SellerOnboarding = () => {
         return;
       }
       setFormData({ ...formData, [field]: file });
+      
+      // Create preview for AI verification
+      if (field === "aadhaarFile" || field === "selfieFile") {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64 = e.target?.result as string;
+          if (field === "aadhaarFile") {
+            setAadhaarPreview(base64);
+          } else {
+            setSelfiePreview(base64);
+          }
+        };
+        reader.readAsDataURL(file);
+        
+        // Reset AI verification when files change
+        setAiVerified(false);
+        setVerificationError(null);
+      }
+    }
+  };
+
+  const verifyDocumentsWithAI = async () => {
+    if (!aadhaarPreview || !selfiePreview) {
+      toast.error("Please upload both Aadhaar and selfie first");
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerificationError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-documents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          aadhaarImage: aadhaarPreview,
+          selfieImage: selfiePreview,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        setVerificationError(result.error || 'Verification failed');
+        toast.error(result.error || 'Verification failed');
+        return;
+      }
+
+      if (result.verified) {
+        setAiVerified(true);
+        toast.success("Documents verified successfully!");
+      } else {
+        let errorMsg = result.message || 'Documents could not be verified';
+        if (result.details) {
+          if (result.details.aadhaarIssue) {
+            errorMsg = `Aadhaar Issue: ${result.details.aadhaarIssue}`;
+          }
+          if (result.details.selfieIssue) {
+            errorMsg = `Selfie Issue: ${result.details.selfieIssue}`;
+          }
+        }
+        setVerificationError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      setVerificationError("Failed to verify documents. Please try again.");
+      toast.error("Failed to verify documents");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -44,9 +121,6 @@ const SellerOnboarding = () => {
       .upload(fileName, file);
 
     if (error) throw error;
-    
-    // Store only the file path - signed URLs should be generated on-demand when viewing
-    // This is secure because the bucket is private and paths alone don't grant access
     return fileName;
   };
 
@@ -60,6 +134,17 @@ const SellerOnboarding = () => {
 
     if (!formData.aadhaarFile || !formData.selfieFile) {
       toast.error("Please upload all required documents");
+      return;
+    }
+
+    if (!aiVerified) {
+      toast.error("Please verify your documents with AI first");
+      return;
+    }
+
+    // If breeder is selected, license is mandatory
+    if (formData.isBreeder && !formData.breederLicense) {
+      toast.error("Please upload your breeder license certificate");
       return;
     }
 
@@ -106,6 +191,9 @@ const SellerOnboarding = () => {
       setIsLoading(false);
     }
   };
+
+  const canProceedToStep3 = formData.aadhaarFile && formData.selfieFile && aiVerified && 
+    (!formData.isBreeder || formData.breederLicense);
 
   const steps = [
     { number: 1, title: "Personal Info", icon: FileText },
@@ -161,7 +249,7 @@ const SellerOnboarding = () => {
             <CardTitle className="text-2xl">Complete Your Seller Profile</CardTitle>
             <CardDescription>
               {currentStep === 1 && "Let's start with your basic information"}
-              {currentStep === 2 && "Upload your documents for verification"}
+              {currentStep === 2 && "Upload your documents for AI verification"}
               {currentStep === 3 && "Review and confirm your details"}
             </CardDescription>
           </CardHeader>
@@ -220,7 +308,7 @@ const SellerOnboarding = () => {
                         I am a registered breeder
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Get a verified badge and priority listing
+                        Get a verified badge and priority listing (requires license upload)
                       </p>
                     </div>
                     <Award className="w-5 h-5 text-primary ml-auto" />
@@ -239,6 +327,17 @@ const SellerOnboarding = () => {
 
               {currentStep === 2 && (
                 <div className="space-y-4 animate-fade-in">
+                  {/* AI Verification Notice */}
+                  <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-2xl border border-primary/20">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium">AI-Powered Verification</p>
+                      <p className="text-xs text-muted-foreground">
+                        Your documents will be verified automatically using AI
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Aadhaar Upload */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
@@ -248,25 +347,28 @@ const SellerOnboarding = () => {
                     <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-primary/50 transition-colors">
                       <input
                         type="file"
-                        accept="image/*,.pdf"
+                        accept="image/*"
                         onChange={handleFileChange("aadhaarFile")}
                         className="hidden"
                         id="aadhaar-upload"
                       />
                       <label htmlFor="aadhaar-upload" className="cursor-pointer">
-                        {formData.aadhaarFile ? (
-                          <div className="flex items-center justify-center gap-2 text-success">
-                            <CheckCircle className="w-5 h-5" />
-                            <span>{formData.aadhaarFile.name}</span>
+                        {aadhaarPreview ? (
+                          <div className="space-y-2">
+                            <img src={aadhaarPreview} alt="Aadhaar Preview" className="w-32 h-20 object-cover mx-auto rounded-lg" />
+                            <div className="flex items-center justify-center gap-2 text-success">
+                              <CheckCircle className="w-5 h-5" />
+                              <span>{formData.aadhaarFile?.name}</span>
+                            </div>
                           </div>
                         ) : (
                           <>
                             <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                             <p className="text-sm text-muted-foreground">
-                              Click to upload Aadhaar card (front & back)
+                              Click to upload Aadhaar card (front side)
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              PNG, JPG or PDF (max 5MB)
+                              PNG or JPG only (max 5MB)
                             </p>
                           </>
                         )}
@@ -289,10 +391,13 @@ const SellerOnboarding = () => {
                         id="selfie-upload"
                       />
                       <label htmlFor="selfie-upload" className="cursor-pointer">
-                        {formData.selfieFile ? (
-                          <div className="flex items-center justify-center gap-2 text-success">
-                            <CheckCircle className="w-5 h-5" />
-                            <span>{formData.selfieFile.name}</span>
+                        {selfiePreview ? (
+                          <div className="space-y-2">
+                            <img src={selfiePreview} alt="Selfie Preview" className="w-32 h-32 object-cover mx-auto rounded-lg" />
+                            <div className="flex items-center justify-center gap-2 text-success">
+                              <CheckCircle className="w-5 h-5" />
+                              <span>{formData.selfieFile?.name}</span>
+                            </div>
                           </div>
                         ) : (
                           <>
@@ -301,7 +406,7 @@ const SellerOnboarding = () => {
                               Take a selfie holding your Aadhaar card
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              PNG or JPG (max 5MB)
+                              PNG or JPG only (max 5MB)
                             </p>
                           </>
                         )}
@@ -309,12 +414,53 @@ const SellerOnboarding = () => {
                     </div>
                   </div>
 
-                  {/* Breeder License Upload */}
+                  {/* AI Verify Button */}
+                  {aadhaarPreview && selfiePreview && !aiVerified && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-2xl border-primary text-primary hover:bg-primary/10"
+                      onClick={verifyDocumentsWithAI}
+                      disabled={isVerifying}
+                    >
+                      {isVerifying ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Verifying with AI...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Verify Documents with AI
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {/* Verification Status */}
+                  {aiVerified && (
+                    <div className="flex items-center gap-2 p-3 bg-success/10 text-success rounded-2xl">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-medium">Documents verified successfully!</span>
+                    </div>
+                  )}
+
+                  {verificationError && (
+                    <div className="flex items-start gap-2 p-3 bg-destructive/10 text-destructive rounded-2xl">
+                      <AlertCircle className="w-5 h-5 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Verification Failed</p>
+                        <p className="text-sm">{verificationError}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Breeder License Upload - Only if isBreeder is true */}
                   {formData.isBreeder && (
                     <div className="space-y-2 animate-fade-in">
                       <Label className="flex items-center gap-2">
                         <Award className="w-4 h-4 text-primary" />
-                        Breeder License
+                        Breeder License *
                       </Label>
                       <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-primary/50 transition-colors">
                         <input
@@ -343,6 +489,9 @@ const SellerOnboarding = () => {
                           )}
                         </label>
                       </div>
+                      <p className="text-xs text-destructive">
+                        * Required for registered breeders
+                      </p>
                     </div>
                   )}
 
@@ -359,7 +508,7 @@ const SellerOnboarding = () => {
                       type="button"
                       className="flex-1 rounded-2xl bg-gradient-primary hover:opacity-90"
                       onClick={() => setCurrentStep(3)}
-                      disabled={!formData.aadhaarFile || !formData.selfieFile}
+                      disabled={!canProceedToStep3}
                     >
                       Continue
                     </Button>
@@ -388,14 +537,14 @@ const SellerOnboarding = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Aadhaar</span>
                       <span className="font-medium text-success flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4" /> Uploaded
+                        <CheckCircle className="w-4 h-4" /> Verified
                       </span>
                     </div>
                     
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Selfie</span>
+                      <span className="text-muted-foreground">Selfie with Aadhaar</span>
                       <span className="font-medium text-success flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4" /> Uploaded
+                        <CheckCircle className="w-4 h-4" /> Verified
                       </span>
                     </div>
                     
@@ -403,24 +552,27 @@ const SellerOnboarding = () => {
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Breeder License</span>
                         <span className="font-medium text-success flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4" /> {formData.breederLicense ? "Uploaded" : "Not Provided"}
+                          <CheckCircle className="w-4 h-4" /> Uploaded
                         </span>
                       </div>
                     )}
                   </div>
 
                   {/* Terms */}
-                  <div className="flex items-start space-x-3 p-4 bg-primary/5 rounded-2xl border border-primary/20">
+                  <div className="flex items-start space-x-3 p-4 bg-muted/50 rounded-2xl">
                     <Checkbox
                       id="terms"
                       checked={formData.termsAccepted}
                       onCheckedChange={(checked) => setFormData({ ...formData, termsAccepted: checked as boolean })}
+                      className="mt-1"
                     />
                     <div>
                       <Label htmlFor="terms" className="cursor-pointer text-sm">
-                        I agree to the Terms of Service and Privacy Policy. I confirm that
-                        all information provided is accurate and I am authorized to sell pets.
+                        I agree to the Terms of Service and Privacy Policy
                       </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        By proceeding, you confirm that all information provided is accurate
+                      </p>
                     </div>
                   </div>
 
@@ -453,20 +605,6 @@ const SellerOnboarding = () => {
             </form>
           </CardContent>
         </Card>
-
-        {/* Info Box */}
-        <div className="mt-6 p-4 bg-card rounded-2xl shadow-card">
-          <div className="flex items-start gap-3">
-            <Shield className="w-5 h-5 text-primary mt-0.5" />
-            <div>
-              <h4 className="font-semibold text-sm">Your data is secure</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                We use industry-standard encryption to protect your documents. 
-                Your information is only used for verification purposes.
-              </p>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
