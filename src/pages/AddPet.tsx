@@ -142,7 +142,7 @@ const AddPet = () => {
   };
 
   const uploadFiles = async (files: File[], userId: string, type: string) => {
-    const urls: string[] = [];
+    const paths: string[] = [];
     
     for (const file of files) {
       const fileExt = file.name.split('.').pop();
@@ -159,14 +159,21 @@ const AddPet = () => {
         throw error;
       }
 
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(fileName);
-      
-      urls.push(urlData.publicUrl);
+      // For private buckets (pet-documents), store only file path
+      // For public buckets (pet-media), we can use getPublicUrl
+      if (bucket === 'pet-documents') {
+        // Store only the file path - signed URLs should be generated on-demand
+        paths.push(fileName);
+      } else {
+        // pet-media is public, so getPublicUrl works correctly
+        const { data: urlData } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(fileName);
+        paths.push(urlData.publicUrl);
+      }
     }
     
-    return urls;
+    return paths;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
