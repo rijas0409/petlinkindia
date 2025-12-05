@@ -586,6 +586,7 @@ export type Database = {
           order_id: string | null
           pet_id: string | null
           pickup_address: string
+          platform_margin_percent: number | null
           seller_id: string | null
           status: Database["public"]["Enums"]["transport_status"] | null
           updated_at: string | null
@@ -601,6 +602,7 @@ export type Database = {
           order_id?: string | null
           pet_id?: string | null
           pickup_address: string
+          platform_margin_percent?: number | null
           seller_id?: string | null
           status?: Database["public"]["Enums"]["transport_status"] | null
           updated_at?: string | null
@@ -616,6 +618,7 @@ export type Database = {
           order_id?: string | null
           pet_id?: string | null
           pickup_address?: string
+          platform_margin_percent?: number | null
           seller_id?: string | null
           status?: Database["public"]["Enums"]["transport_status"] | null
           updated_at?: string | null
@@ -718,8 +721,14 @@ export type Database = {
       pet_category: "dog" | "cat" | "bird" | "rabbit" | "other"
       pet_gender: "male" | "female"
       subscription_tier: "basic" | "gold" | "platinum"
-      transport_status: "requested" | "assigned" | "picked" | "delivered"
-      user_role: "buyer" | "seller" | "admin"
+      transport_status:
+        | "requested"
+        | "assigned"
+        | "picked"
+        | "delivered"
+        | "completed"
+        | "cancelled"
+      user_role: "buyer" | "seller" | "admin" | "delivery_partner"
       verification_status: "pending" | "verified" | "failed"
     }
     CompositeTypes: {
@@ -860,8 +869,15 @@ export const Constants = {
       pet_category: ["dog", "cat", "bird", "rabbit", "other"],
       pet_gender: ["male", "female"],
       subscription_tier: ["basic", "gold", "platinum"],
-      transport_status: ["requested", "assigned", "picked", "delivered"],
-      user_role: ["buyer", "seller", "admin"],
+      transport_status: [
+        "requested",
+        "assigned",
+        "picked",
+        "delivered",
+        "completed",
+        "cancelled",
+      ],
+      user_role: ["buyer", "seller", "admin", "delivery_partner"],
       verification_status: ["pending", "verified", "failed"],
     },
   },
