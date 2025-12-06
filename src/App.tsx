@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import DeliveryAuth from "./pages/DeliveryAuth";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import SellerDashboard from "./pages/SellerDashboard";
 import SellerOnboarding from "./pages/SellerOnboarding";
@@ -24,6 +25,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/delivery-auth" element={<DeliveryAuth />} />
           <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
           <Route path="/seller-dashboard" element={<SellerDashboard />} />
           <Route path="/seller-onboarding" element={<SellerOnboarding />} />
