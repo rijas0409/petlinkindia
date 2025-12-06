@@ -21,15 +21,17 @@ const SellerOnboarding = () => {
     isBreeder: false,
     businessName: "",
     businessAddress: "",
-    aadhaarFile: null as File | null,
+    aadhaarFrontFile: null as File | null,
+    aadhaarBackFile: null as File | null,
     selfieFile: null as File | null,
     breederLicense: null as File | null,
     termsAccepted: false,
   });
-  const [aadhaarPreview, setAadhaarPreview] = useState<string | null>(null);
+  const [aadhaarFrontPreview, setAadhaarFrontPreview] = useState<string | null>(null);
+  const [aadhaarBackPreview, setAadhaarBackPreview] = useState<string | null>(null);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
 
-  const handleFileChange = (field: "aadhaarFile" | "selfieFile" | "breederLicense") => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (field: "aadhaarFrontFile" | "aadhaarBackFile" | "selfieFile" | "breederLicense") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -39,12 +41,14 @@ const SellerOnboarding = () => {
       setFormData({ ...formData, [field]: file });
       
       // Create preview for AI verification
-      if (field === "aadhaarFile" || field === "selfieFile") {
+      if (field === "aadhaarFrontFile" || field === "aadhaarBackFile" || field === "selfieFile") {
         const reader = new FileReader();
         reader.onload = (e) => {
           const base64 = e.target?.result as string;
-          if (field === "aadhaarFile") {
-            setAadhaarPreview(base64);
+          if (field === "aadhaarFrontFile") {
+            setAadhaarFrontPreview(base64);
+          } else if (field === "aadhaarBackFile") {
+            setAadhaarBackPreview(base64);
           } else {
             setSelfiePreview(base64);
           }
@@ -59,8 +63,8 @@ const SellerOnboarding = () => {
   };
 
   const verifyDocumentsWithAI = async () => {
-    if (!aadhaarPreview || !selfiePreview) {
-      toast.error("Please upload both Aadhaar and selfie first");
+    if (!aadhaarFrontPreview || !aadhaarBackPreview || !selfiePreview) {
+      toast.error("Please upload both Aadhaar sides and selfie first");
       return;
     }
 
@@ -74,7 +78,8 @@ const SellerOnboarding = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          aadhaarImage: aadhaarPreview,
+          aadhaarFrontImage: aadhaarFrontPreview,
+          aadhaarBackImage: aadhaarBackPreview,
           selfieImage: selfiePreview,
         }),
       });
@@ -132,7 +137,7 @@ const SellerOnboarding = () => {
       return;
     }
 
-    if (!formData.aadhaarFile || !formData.selfieFile) {
+    if (!formData.aadhaarFrontFile || !formData.aadhaarBackFile || !formData.selfieFile) {
       toast.error("Please upload all required documents");
       return;
     }
@@ -160,7 +165,8 @@ const SellerOnboarding = () => {
       const userId = session.user.id;
 
       // Upload files to storage
-      const aadhaarUrl = await uploadFile(formData.aadhaarFile, userId, 'aadhaar');
+      const aadhaarFrontUrl = await uploadFile(formData.aadhaarFrontFile, userId, 'aadhaar_front');
+      const aadhaarBackUrl = await uploadFile(formData.aadhaarBackFile, userId, 'aadhaar_back');
       const selfieUrl = await uploadFile(formData.selfieFile, userId, 'selfie');
       let breederUrl = null;
       
@@ -173,7 +179,7 @@ const SellerOnboarding = () => {
         .from("profiles")
         .update({
           phone: formData.phone,
-          aadhaar_file: aadhaarUrl,
+          aadhaar_file: `${aadhaarFrontUrl}|${aadhaarBackUrl}`,
           selfie_file: selfieUrl,
           breeder_license: breederUrl,
           is_onboarding_complete: true,
@@ -192,7 +198,7 @@ const SellerOnboarding = () => {
     }
   };
 
-  const canProceedToStep3 = formData.aadhaarFile && formData.selfieFile && aiVerified && 
+  const canProceedToStep3 = formData.aadhaarFrontFile && formData.aadhaarBackFile && formData.selfieFile && aiVerified && 
     (!formData.isBreeder || formData.breederLicense);
 
   const steps = [
@@ -338,42 +344,80 @@ const SellerOnboarding = () => {
                     </div>
                   </div>
 
-                  {/* Aadhaar Upload */}
-                  <div className="space-y-2">
+                  {/* Aadhaar Upload - Front and Back Side */}
+                  <div className="space-y-3">
                     <Label className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-primary" />
                       Aadhaar Card *
                     </Label>
-                    <div className="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-primary/50 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange("aadhaarFile")}
-                        className="hidden"
-                        id="aadhaar-upload"
-                      />
-                      <label htmlFor="aadhaar-upload" className="cursor-pointer">
-                        {aadhaarPreview ? (
-                          <div className="space-y-2">
-                            <img src={aadhaarPreview} alt="Aadhaar Preview" className="w-32 h-20 object-cover mx-auto rounded-lg" />
-                            <div className="flex items-center justify-center gap-2 text-success">
-                              <CheckCircle className="w-5 h-5" />
-                              <span>{formData.aadhaarFile?.name}</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
-                              Click to upload Aadhaar card (front side)
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              PNG or JPG only (max 5MB)
-                            </p>
-                          </>
-                        )}
-                      </label>
+                    
+                    {/* Labels for front and back */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <p className="text-sm text-muted-foreground text-center font-medium">Aadhaar Front Side</p>
+                      <p className="text-sm text-muted-foreground text-center font-medium">Aadhaar Back Side</p>
                     </div>
+                    
+                    {/* Upload boxes side by side */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Front Side Upload */}
+                      <div className="border-2 border-dashed border-border rounded-2xl p-4 text-center hover:border-primary/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange("aadhaarFrontFile")}
+                          className="hidden"
+                          id="aadhaar-front-upload"
+                        />
+                        <label htmlFor="aadhaar-front-upload" className="cursor-pointer">
+                          {aadhaarFrontPreview ? (
+                            <div className="space-y-2">
+                              <img src={aadhaarFrontPreview} alt="Aadhaar Front" className="w-full h-20 object-cover mx-auto rounded-lg" />
+                              <div className="flex items-center justify-center gap-1 text-success">
+                                <CheckCircle className="w-4 h-4" />
+                                <span className="text-xs truncate">{formData.aadhaarFrontFile?.name}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+                              <p className="text-xs text-muted-foreground">
+                                Upload Front
+                              </p>
+                            </>
+                          )}
+                        </label>
+                      </div>
+
+                      {/* Back Side Upload */}
+                      <div className="border-2 border-dashed border-border rounded-2xl p-4 text-center hover:border-primary/50 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange("aadhaarBackFile")}
+                          className="hidden"
+                          id="aadhaar-back-upload"
+                        />
+                        <label htmlFor="aadhaar-back-upload" className="cursor-pointer">
+                          {aadhaarBackPreview ? (
+                            <div className="space-y-2">
+                              <img src={aadhaarBackPreview} alt="Aadhaar Back" className="w-full h-20 object-cover mx-auto rounded-lg" />
+                              <div className="flex items-center justify-center gap-1 text-success">
+                                <CheckCircle className="w-4 h-4" />
+                                <span className="text-xs truncate">{formData.aadhaarBackFile?.name}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
+                              <p className="text-xs text-muted-foreground">
+                                Upload Back
+                              </p>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center">PNG or JPG only (max 5MB each)</p>
                   </div>
 
                   {/* Selfie Upload */}
@@ -415,7 +459,7 @@ const SellerOnboarding = () => {
                   </div>
 
                   {/* AI Verify Button */}
-                  {aadhaarPreview && selfiePreview && !aiVerified && (
+                  {aadhaarFrontPreview && aadhaarBackPreview && selfiePreview && !aiVerified && (
                     <Button
                       type="button"
                       variant="outline"

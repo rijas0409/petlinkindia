@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { 
   Heart, Loader2, Upload, ArrowLeft, ArrowRight, X, 
   Image as ImageIcon, FileText, Syringe, MapPin, IndianRupee,
-  CheckCircle, Eye, Video
+  CheckCircle, Eye, Video, Camera
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -40,6 +40,7 @@ const AddPet = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [media, setMedia] = useState<MediaFile[]>([]);
+  const [livePetPhoto, setLivePetPhoto] = useState<{ file: File; preview: string } | null>(null);
   const [documents, setDocuments] = useState<File[]>([]);
   const [vaccinationDocs, setVaccinationDocs] = useState<File[]>([]);
 
@@ -207,6 +208,10 @@ const AddPet = () => {
       case 1:
         if (media.filter(m => m.type === 'image').length === 0) {
           toast.error("Please upload at least one image");
+          return false;
+        }
+        if (!livePetPhoto) {
+          toast.error("Please capture a live pet photo using your camera");
           return false;
         }
         return true;
@@ -439,7 +444,89 @@ const AddPet = () => {
           <CardContent>
             {/* Step 1: Media Upload */}
             {currentStep === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-6">
+                {/* Live Pet Photo - MANDATORY */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2 text-base font-semibold">
+                    <Camera className="w-5 h-5 text-primary" />
+                    Live Pet Photo * <span className="text-xs font-normal text-destructive">(Required)</span>
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Take a live photo of your pet using your camera. This helps verify that the pet is real.
+                  </p>
+                  <div className="border-2 border-dashed border-primary/50 rounded-2xl p-6 text-center bg-primary/5">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (!file.type.startsWith('image/')) {
+                            toast.error("Please capture an image");
+                            return;
+                          }
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error("Image too large. Max 10MB");
+                            return;
+                          }
+                          const preview = URL.createObjectURL(file);
+                          setLivePetPhoto({ file, preview });
+                        }
+                      }}
+                      className="hidden"
+                      id="live-pet-photo"
+                    />
+                    <label htmlFor="live-pet-photo" className="cursor-pointer">
+                      {livePetPhoto ? (
+                        <div className="space-y-3">
+                          <img 
+                            src={livePetPhoto.preview} 
+                            alt="Live Pet" 
+                            className="w-40 h-40 object-cover mx-auto rounded-2xl border-4 border-success shadow-lg" 
+                          />
+                          <div className="flex items-center justify-center gap-2 text-success">
+                            <CheckCircle className="w-5 h-5" />
+                            <span className="font-medium">Live photo captured!</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setLivePetPhoto(null);
+                            }}
+                            className="rounded-xl"
+                          >
+                            Retake Photo
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="py-4">
+                          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <Camera className="w-8 h-8 text-primary" />
+                          </div>
+                          <p className="text-sm font-medium text-primary mb-1">
+                            Tap to Open Camera
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Click a live photo of your pet
+                          </p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-border"></div>
+                  <span className="text-xs text-muted-foreground">Additional Photos & Videos</span>
+                  <div className="flex-1 h-px bg-border"></div>
+                </div>
+
+                {/* Other Media Upload */}
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                   {media.map((item, index) => (
                     <div key={index} className="relative aspect-square rounded-2xl overflow-hidden group">
