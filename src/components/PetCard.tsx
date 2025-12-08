@@ -6,9 +6,10 @@ import { useState } from "react";
 
 interface PetCardProps {
   pet: any;
+  onClick?: () => void;
 }
 
-const PetCard = ({ pet }: PetCardProps) => {
+const PetCard = ({ pet, onClick }: PetCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleFavorite = (e: React.MouseEvent) => {
@@ -16,8 +17,18 @@ const PetCard = ({ pet }: PetCardProps) => {
     setIsFavorite(!isFavorite);
   };
 
+  const handleView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <Card className="group overflow-hidden border-0 shadow-card hover:shadow-float transition-all duration-300 cursor-pointer animate-fade-in rounded-3xl">
+    <Card 
+      className="group overflow-hidden border-0 shadow-card hover:shadow-float transition-all duration-300 cursor-pointer animate-fade-in rounded-3xl"
+      onClick={onClick}
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={pet.images?.[0] || "/placeholder.svg"}
@@ -76,7 +87,7 @@ const PetCard = ({ pet }: PetCardProps) => {
                 )}
               </div>
             </div>
-            <Button size="sm" className="rounded-full">
+            <Button size="sm" className="rounded-full" onClick={handleView}>
               View
             </Button>
           </div>
