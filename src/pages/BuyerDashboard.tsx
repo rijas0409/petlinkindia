@@ -94,7 +94,7 @@ const BuyerDashboard = () => {
               variant="ghost"
               size="icon"
               className="rounded-full"
-              onClick={() => navigate("/buyer-profile")}
+              onClick={() => navigate("/profile")}
             >
               <User className="w-5 h-5" />
             </Button>
@@ -182,7 +182,7 @@ const BuyerDashboard = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPets.map((pet) => (
-                <PetCard key={pet.id} pet={pet} onClick={() => navigate(`/pet/${pet.id}`)} />
+                <PetCard key={pet.id} pet={pet} />
               ))}
             </div>
           )}
@@ -201,12 +201,7 @@ const BuyerDashboard = () => {
           <Button variant="ghost" size="icon" className="rounded-full">
             <MessageCircle className="w-5 h-5" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full"
-            onClick={() => navigate("/buyer-profile")}
-          >
+          <Button variant="ghost" size="icon" className="rounded-full">
             <User className="w-5 h-5" />
           </Button>
         </div>

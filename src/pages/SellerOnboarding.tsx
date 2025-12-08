@@ -7,16 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Heart, Loader2, Upload, FileText, Camera, Award, Shield, CheckCircle, CreditCard } from "lucide-react";
+import { Heart, Loader2, Upload, FileText, Camera, Award, Shield, CheckCircle, AlertCircle, Sparkles } from "lucide-react";
 
 const SellerOnboarding = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [aiVerified, setAiVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    fullName: "",
     phone: "",
-    email: "",
     isBreeder: false,
     businessName: "",
     businessAddress: "",
@@ -39,6 +40,7 @@ const SellerOnboarding = () => {
       }
       setFormData({ ...formData, [field]: file });
       
+      // Create preview for AI verification
       if (field === "aadhaarFrontFile" || field === "aadhaarBackFile" || field === "selfieFile") {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -52,7 +54,66 @@ const SellerOnboarding = () => {
           }
         };
         reader.readAsDataURL(file);
+        
+        // Reset AI verification when files change
+        setAiVerified(false);
+        setVerificationError(null);
       }
+    }
+  };
+
+  const verifyDocumentsWithAI = async () => {
+    if (!aadhaarFrontPreview || !aadhaarBackPreview || !selfiePreview) {
+      toast.error("Please upload both Aadhaar sides and selfie first");
+      return;
+    }
+
+    setIsVerifying(true);
+    setVerificationError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-documents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          aadhaarFrontImage: aadhaarFrontPreview,
+          aadhaarBackImage: aadhaarBackPreview,
+          selfieImage: selfiePreview,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        setVerificationError(result.error || 'Verification failed');
+        toast.error(result.error || 'Verification failed');
+        return;
+      }
+
+      if (result.verified) {
+        setAiVerified(true);
+        toast.success("Documents verified successfully!");
+      } else {
+        let errorMsg = result.message || 'Documents could not be verified';
+        if (result.details) {
+          if (result.details.aadhaarIssue) {
+            errorMsg = `Aadhaar Issue: ${result.details.aadhaarIssue}`;
+          }
+          if (result.details.selfieIssue) {
+            errorMsg = `Selfie Issue: ${result.details.selfieIssue}`;
+          }
+        }
+        setVerificationError(errorMsg);
+        toast.error(errorMsg);
+      }
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      setVerificationError("Failed to verify documents. Please try again.");
+      toast.error("Failed to verify documents");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -68,27 +129,11 @@ const SellerOnboarding = () => {
     return fileName;
   };
 
-  const handlePayAndSubmit = async () => {
-    // Simulate payment process
-    toast.info("Processing onboarding payment...");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    // In a real app, integrate with payment gateway here
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    toast.success("Payment successful!");
-    
-    // Now submit the form
-    await handleSubmit();
-  };
-
-  const handleSubmit = async () => {
     if (!formData.termsAccepted) {
       toast.error("Please accept the terms and conditions");
-      return;
-    }
-
-    if (!formData.fullName || !formData.businessAddress) {
-      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -97,6 +142,12 @@ const SellerOnboarding = () => {
       return;
     }
 
+    if (!aiVerified) {
+      toast.error("Please verify your documents with AI first");
+      return;
+    }
+
+    // If breeder is selected, license is mandatory
     if (formData.isBreeder && !formData.breederLicense) {
       toast.error("Please upload your breeder license certificate");
       return;
@@ -123,30 +174,22 @@ const SellerOnboarding = () => {
         breederUrl = await uploadFile(formData.breederLicense, userId, 'breeder_license');
       }
 
-      // Store business info as JSON
-      const businessInfo = JSON.stringify({
-        businessName: formData.businessName,
-        businessAddress: formData.businessAddress,
-      });
-
-      // Update profile - Set is_onboarding_complete to false, pending admin approval
+      // Update profile
       const { error } = await supabase
         .from("profiles")
         .update({
-          name: formData.fullName,
           phone: formData.phone,
-          email: formData.email || session.user.email,
           aadhaar_file: `${aadhaarFrontUrl}|${aadhaarBackUrl}`,
           selfie_file: selfieUrl,
-          breeder_license: breederUrl || businessInfo,
-          is_onboarding_complete: false, // Pending admin approval
+          breeder_license: breederUrl,
+          is_onboarding_complete: true,
         })
         .eq("id", userId);
 
       if (error) throw error;
 
-      toast.success("Verification submitted! Your account will be activated within 24 hours after admin approval.");
-      navigate("/auth");
+      toast.success("Verification submitted! Your account is now active.");
+      navigate("/seller-dashboard");
     } catch (error: any) {
       console.error("Onboarding error:", error);
       toast.error(error.message || "Failed to submit verification");
@@ -155,14 +198,13 @@ const SellerOnboarding = () => {
     }
   };
 
-  const canProceedToStep2 = formData.fullName && formData.phone && formData.businessAddress;
-  const canProceedToStep3 = formData.aadhaarFrontFile && formData.aadhaarBackFile && formData.selfieFile && 
+  const canProceedToStep3 = formData.aadhaarFrontFile && formData.aadhaarBackFile && formData.selfieFile && aiVerified && 
     (!formData.isBreeder || formData.breederLicense);
 
   const steps = [
     { number: 1, title: "Personal Info", icon: FileText },
-    { number: 2, title: "Documents", icon: Shield },
-    { number: 3, title: "Payment", icon: CreditCard },
+    { number: 2, title: "ID Verification", icon: Shield },
+    { number: 3, title: "Confirmation", icon: CheckCircle },
   ];
 
   return (
@@ -213,27 +255,14 @@ const SellerOnboarding = () => {
             <CardTitle className="text-2xl">Complete Your Seller Profile</CardTitle>
             <CardDescription>
               {currentStep === 1 && "Let's start with your basic information"}
-              {currentStep === 2 && "Upload your identity documents"}
-              {currentStep === 3 && "Review and pay to complete registration"}
+              {currentStep === 2 && "Upload your documents for AI verification"}
+              {currentStep === 3 && "Review and confirm your details"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {currentStep === 1 && (
                 <div className="space-y-4 animate-fade-in">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={formData.fullName}
-                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                      required
-                      className="rounded-2xl"
-                    />
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
                     <Input
@@ -251,18 +280,6 @@ const SellerOnboarding = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email (Optional)</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seller@example.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="rounded-2xl"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="businessName">Business/Shop Name (Optional)</Label>
                     <Input
                       id="businessName"
@@ -275,14 +292,13 @@ const SellerOnboarding = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="businessAddress">Address *</Label>
+                    <Label htmlFor="businessAddress">Business Address (Optional)</Label>
                     <Input
                       id="businessAddress"
                       type="text"
-                      placeholder="123, Pet Street, Mumbai, Maharashtra"
+                      placeholder="123, Pet Street, Mumbai"
                       value={formData.businessAddress}
                       onChange={(e) => setFormData({ ...formData, businessAddress: e.target.value })}
-                      required
                       className="rounded-2xl"
                     />
                   </div>
@@ -308,7 +324,7 @@ const SellerOnboarding = () => {
                     type="button"
                     className="w-full rounded-2xl bg-gradient-primary hover:opacity-90"
                     onClick={() => setCurrentStep(2)}
-                    disabled={!canProceedToStep2}
+                    disabled={!formData.phone}
                   >
                     Continue
                   </Button>
@@ -317,6 +333,17 @@ const SellerOnboarding = () => {
 
               {currentStep === 2 && (
                 <div className="space-y-4 animate-fade-in">
+                  {/* AI Verification Notice */}
+                  <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-2xl border border-primary/20">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium">AI-Powered Verification</p>
+                      <p className="text-xs text-muted-foreground">
+                        Your documents will be verified automatically using AI
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Aadhaar Upload - Front and Back Side */}
                   <div className="space-y-3">
                     <Label className="flex items-center gap-2">
@@ -324,12 +351,15 @@ const SellerOnboarding = () => {
                       Aadhaar Card *
                     </Label>
                     
+                    {/* Labels for front and back */}
                     <div className="grid grid-cols-2 gap-3">
                       <p className="text-sm text-muted-foreground text-center font-medium">Aadhaar Front Side</p>
                       <p className="text-sm text-muted-foreground text-center font-medium">Aadhaar Back Side</p>
                     </div>
                     
+                    {/* Upload boxes side by side */}
                     <div className="grid grid-cols-2 gap-3">
+                      {/* Front Side Upload */}
                       <div className="border-2 border-dashed border-border rounded-2xl p-4 text-center hover:border-primary/50 transition-colors">
                         <input
                           type="file"
@@ -350,12 +380,15 @@ const SellerOnboarding = () => {
                           ) : (
                             <>
                               <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-                              <p className="text-xs text-muted-foreground">Upload Front</p>
+                              <p className="text-xs text-muted-foreground">
+                                Upload Front
+                              </p>
                             </>
                           )}
                         </label>
                       </div>
 
+                      {/* Back Side Upload */}
                       <div className="border-2 border-dashed border-border rounded-2xl p-4 text-center hover:border-primary/50 transition-colors">
                         <input
                           type="file"
@@ -376,7 +409,9 @@ const SellerOnboarding = () => {
                           ) : (
                             <>
                               <Upload className="w-6 h-6 mx-auto mb-2 text-muted-foreground" />
-                              <p className="text-xs text-muted-foreground">Upload Back</p>
+                              <p className="text-xs text-muted-foreground">
+                                Upload Back
+                              </p>
                             </>
                           )}
                         </label>
@@ -423,7 +458,48 @@ const SellerOnboarding = () => {
                     </div>
                   </div>
 
-                  {/* Breeder License Upload */}
+                  {/* AI Verify Button */}
+                  {aadhaarFrontPreview && aadhaarBackPreview && selfiePreview && !aiVerified && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-2xl border-primary text-primary hover:bg-primary/10"
+                      onClick={verifyDocumentsWithAI}
+                      disabled={isVerifying}
+                    >
+                      {isVerifying ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Verifying with AI...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Verify Documents with AI
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {/* Verification Status */}
+                  {aiVerified && (
+                    <div className="flex items-center gap-2 p-3 bg-success/10 text-success rounded-2xl">
+                      <CheckCircle className="w-5 h-5" />
+                      <span className="font-medium">Documents verified successfully!</span>
+                    </div>
+                  )}
+
+                  {verificationError && (
+                    <div className="flex items-start gap-2 p-3 bg-destructive/10 text-destructive rounded-2xl">
+                      <AlertCircle className="w-5 h-5 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Verification Failed</p>
+                        <p className="text-sm">{verificationError}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Breeder License Upload - Only if isBreeder is true */}
                   {formData.isBreeder && (
                     <div className="space-y-2 animate-fade-in">
                       <Label className="flex items-center gap-2">
@@ -457,6 +533,9 @@ const SellerOnboarding = () => {
                           )}
                         </label>
                       </div>
+                      <p className="text-xs text-destructive">
+                        * Required for registered breeders
+                      </p>
                     </div>
                   )}
 
@@ -488,25 +567,8 @@ const SellerOnboarding = () => {
                     <h4 className="font-semibold">Review Your Details</h4>
                     
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Full Name</span>
-                      <span className="font-medium">{formData.fullName}</span>
-                    </div>
-
-                    <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Phone</span>
                       <span className="font-medium">{formData.phone}</span>
-                    </div>
-
-                    {formData.email && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Email</span>
-                        <span className="font-medium">{formData.email}</span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Address</span>
-                      <span className="font-medium text-right max-w-[200px] truncate">{formData.businessAddress}</span>
                     </div>
                     
                     {formData.businessName && (
@@ -519,14 +581,14 @@ const SellerOnboarding = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Aadhaar</span>
                       <span className="font-medium text-success flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4" /> Uploaded
+                        <CheckCircle className="w-4 h-4" /> Verified
                       </span>
                     </div>
                     
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Selfie with Aadhaar</span>
                       <span className="font-medium text-success flex items-center gap-1">
-                        <CheckCircle className="w-4 h-4" /> Uploaded
+                        <CheckCircle className="w-4 h-4" /> Verified
                       </span>
                     </div>
                     
@@ -538,25 +600,6 @@ const SellerOnboarding = () => {
                         </span>
                       </div>
                     )}
-                  </div>
-
-                  {/* Onboarding Fee */}
-                  <div className="bg-primary/10 rounded-2xl p-4 space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Onboarding Fee</span>
-                      <span className="text-xl font-bold text-primary">₹499</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      One-time payment for seller verification and account activation
-                    </p>
-                  </div>
-
-                  {/* Admin Approval Notice */}
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                    <p className="text-sm text-amber-800">
-                      <strong>Note:</strong> After payment, your account will be reviewed by our admin team. 
-                      You will get access to your seller dashboard within 24 hours.
-                    </p>
                   </div>
 
                   {/* Terms */}
@@ -587,21 +630,17 @@ const SellerOnboarding = () => {
                       Back
                     </Button>
                     <Button
-                      type="button"
-                      onClick={handlePayAndSubmit}
+                      type="submit"
                       className="flex-1 rounded-2xl bg-gradient-primary hover:opacity-90"
                       disabled={isLoading || !formData.termsAccepted}
                     >
                       {isLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Processing...
+                          Submitting...
                         </>
                       ) : (
-                        <>
-                          <CreditCard className="w-4 h-4 mr-2" />
-                          Pay ₹499 & Submit
-                        </>
+                        "Complete Verification"
                       )}
                     </Button>
                   </div>

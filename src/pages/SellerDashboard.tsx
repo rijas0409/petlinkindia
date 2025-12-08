@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, User, LogOut, Heart, Eye, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
-import SellerSidebar from "@/components/SellerSidebar";
-import PromotionModal from "@/components/PromotionModal";
 
 type Pet = Database["public"]["Tables"]["pets"]["Row"];
 
@@ -18,7 +16,6 @@ const SellerDashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [pets, setPets] = useState<Pet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [stats, setStats] = useState({
     totalListings: 0,
     activeOrders: 0,
@@ -48,6 +45,7 @@ const SellerDashboard = () => {
       return;
     }
 
+    // Check if seller has completed onboarding
     if (!profile?.is_onboarding_complete) {
       navigate("/seller-onboarding");
       return;
@@ -60,6 +58,7 @@ const SellerDashboard = () => {
   const fetchData = async (userId: string) => {
     setIsLoading(true);
     try {
+      // Fetch pets
       const { data: petsData, error: petsError } = await supabase
         .from("pets")
         .select("*")
@@ -69,6 +68,7 @@ const SellerDashboard = () => {
       if (petsError) throw petsError;
       setPets(petsData || []);
 
+      // Fetch stats
       const [ordersResult, earningsResult] = await Promise.all([
         supabase
           .from("orders")
@@ -117,6 +117,11 @@ const SellerDashboard = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
   const getVerificationBadge = (status: string | null) => {
     switch (status) {
       case "verified":
@@ -136,19 +141,46 @@ const SellerDashboard = () => {
     }).format(price);
   };
 
-  const promotionPets = pets.map(p => ({
-    id: p.id,
-    name: p.name,
-    breed: p.breed,
-    image: p.images?.[0],
-  }));
-
   return (
     <div className="min-h-screen bg-background">
-      <SellerSidebar onOpenPromotion={() => setShowPromotionModal(true)} />
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
+              <Heart className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                PetLink
+              </span>
+              <p className="text-xs text-muted-foreground">Partner Panel</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={() => navigate("/profile")}
+            >
+              <User className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </header>
 
       {/* Main Content */}
-      <main className="md:ml-64 p-4 md:p-8">
+      <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="border-0 shadow-card">
@@ -382,19 +414,6 @@ const SellerDashboard = () => {
           </TabsContent>
         </Tabs>
       </main>
-
-      {/* Promotion Modal */}
-      <PromotionModal
-        isOpen={showPromotionModal}
-        onClose={() => setShowPromotionModal(false)}
-        pets={promotionPets}
-        walletBalance={0}
-        onLaunchCampaign={(data) => {
-          console.log("Campaign launched:", data);
-          toast.success("Promotion campaign created!");
-          setShowPromotionModal(false);
-        }}
-      />
     </div>
   );
 };
