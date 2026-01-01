@@ -6,12 +6,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import DeliveryAuth from "./pages/DeliveryAuth";
+import AdminAuth from "./pages/AdminAuth";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import SellerDashboard from "./pages/SellerDashboard";
 import SellerOnboarding from "./pages/SellerOnboarding";
 import AddPet from "./pages/AddPet";
 import DeliveryDashboard from "./pages/DeliveryDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import ProfileMenu from "./pages/ProfileMenu";
+import Shop from "./pages/Shop";
+import Chats from "./pages/Chats";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,12 +30,16 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/delivery-auth" element={<DeliveryAuth />} />
+          <Route path="/admin-auth" element={<AdminAuth />} />
           <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
           <Route path="/seller-dashboard" element={<SellerDashboard />} />
           <Route path="/seller-onboarding" element={<SellerOnboarding />} />
           <Route path="/add-pet" element={<AddPet />} />
           <Route path="/delivery" element={<DeliveryDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/profile-menu" element={<ProfileMenu />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/chats" element={<Chats />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Heart, Search, User, LogOut, MessageCircle, ShoppingBag } from "lucide-react";
+import { Heart, Search, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import PetCard from "@/components/PetCard";
 import CategoryFilter from "@/components/CategoryFilter";
+import BottomNavigation from "@/components/BottomNavigation";
+import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 
 const BuyerDashboard = () => {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ const BuyerDashboard = () => {
 
   const fetchPets = async () => {
     try {
+      // Only fetch verified and available pets
       const { data, error } = await supabase
         .from("pets")
         .select(`
@@ -49,6 +51,7 @@ const BuyerDashboard = () => {
           profiles:owner_id (name, rating, profile_photo)
         `)
         .eq("is_available", true)
+        .eq("verification_status", "verified")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -60,17 +63,12 @@ const BuyerDashboard = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
-
   const filteredPets = selectedCategory
     ? pets.filter((pet) => pet.category === selectedCategory)
     : pets;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -84,28 +82,13 @@ const BuyerDashboard = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <MessageCircle className="w-5 h-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <ShoppingBag className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={() => navigate("/profile")}
+            <button 
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              onClick={() => toast.info("Cart coming soon")}
             >
-              <User className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+              <ShoppingCart className="w-5 h-5" />
+            </button>
+            <HeaderProfileDropdown />
           </div>
         </div>
       </header>
@@ -177,7 +160,7 @@ const BuyerDashboard = () => {
             </div>
           ) : filteredPets.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No pets found in this category</p>
+              <p className="text-muted-foreground">No verified pets found in this category</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -189,23 +172,7 @@ const BuyerDashboard = () => {
         </div>
       </section>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-lg border-t border-border py-3 md:hidden">
-        <div className="container mx-auto px-4 flex justify-around">
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Search className="w-5 h-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Heart className="w-5 h-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <MessageCircle className="w-5 h-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <User className="w-5 h-5" />
-          </Button>
-        </div>
-      </nav>
+      <BottomNavigation variant="buyer" />
     </div>
   );
 };
