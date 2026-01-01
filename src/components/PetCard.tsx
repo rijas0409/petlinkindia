@@ -3,12 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface PetCardProps {
   pet: any;
 }
 
 const PetCard = ({ pet }: PetCardProps) => {
+  const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleFavorite = (e: React.MouseEvent) => {
@@ -16,8 +18,20 @@ const PetCard = ({ pet }: PetCardProps) => {
     setIsFavorite(!isFavorite);
   };
 
+  const handleView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/pet/${pet.id}`);
+  };
+
+  const handleCardClick = () => {
+    navigate(`/pet/${pet.id}`);
+  };
+
   return (
-    <Card className="group overflow-hidden border-0 shadow-card hover:shadow-float transition-all duration-300 cursor-pointer animate-fade-in rounded-3xl">
+    <Card 
+      className="group overflow-hidden border-0 shadow-card hover:shadow-float transition-all duration-300 cursor-pointer animate-fade-in rounded-3xl"
+      onClick={handleCardClick}
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={pet.images?.[0] || "/placeholder.svg"}
@@ -45,6 +59,11 @@ const PetCard = ({ pet }: PetCardProps) => {
             Featured
           </Badge>
         )}
+        {pet.priority_verification && (
+          <Badge className="absolute bottom-3 right-3 bg-amber-500 text-white border-0 rounded-full">
+            Priority
+          </Badge>
+        )}
       </div>
 
       <CardContent className="p-4 space-y-3">
@@ -66,8 +85,16 @@ const PetCard = ({ pet }: PetCardProps) => {
         {pet.profiles && (
           <div className="pt-3 border-t border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-secondary flex items-center justify-center text-xs font-semibold">
-                {pet.profiles.name?.[0]?.toUpperCase() || "S"}
+              <div className="w-8 h-8 rounded-full bg-gradient-secondary flex items-center justify-center text-xs font-semibold overflow-hidden">
+                {pet.profiles.profile_photo ? (
+                  <img 
+                    src={pet.profiles.profile_photo} 
+                    alt={pet.profiles.name} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  pet.profiles.name?.[0]?.toUpperCase() || "S"
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium">{pet.profiles.name}</p>
@@ -76,7 +103,7 @@ const PetCard = ({ pet }: PetCardProps) => {
                 )}
               </div>
             </div>
-            <Button size="sm" className="rounded-full">
+            <Button size="sm" className="rounded-full" onClick={handleView}>
               View
             </Button>
           </div>

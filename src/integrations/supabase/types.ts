@@ -317,6 +317,8 @@ export type Database = {
           name: string
           owner_id: string | null
           price: number
+          priority_fee_paid: boolean | null
+          priority_verification: boolean | null
           state: string
           updated_at: string | null
           vaccinated: boolean | null
@@ -345,6 +347,8 @@ export type Database = {
           name: string
           owner_id?: string | null
           price: number
+          priority_fee_paid?: boolean | null
+          priority_verification?: boolean | null
           state: string
           updated_at?: string | null
           vaccinated?: boolean | null
@@ -373,6 +377,8 @@ export type Database = {
           name?: string
           owner_id?: string | null
           price?: number
+          priority_fee_paid?: boolean | null
+          priority_verification?: boolean | null
           state?: string
           updated_at?: string | null
           vaccinated?: boolean | null
@@ -395,10 +401,13 @@ export type Database = {
       profiles: {
         Row: {
           aadhaar_file: string | null
+          address: string | null
           breeder_license: string | null
           created_at: string | null
           email: string | null
+          full_name: string | null
           id: string
+          is_admin_approved: boolean | null
           is_breeder_verified: boolean | null
           is_onboarding_complete: boolean | null
           name: string
@@ -411,10 +420,13 @@ export type Database = {
         }
         Insert: {
           aadhaar_file?: string | null
+          address?: string | null
           breeder_license?: string | null
           created_at?: string | null
           email?: string | null
+          full_name?: string | null
           id: string
+          is_admin_approved?: boolean | null
           is_breeder_verified?: boolean | null
           is_onboarding_complete?: boolean | null
           name: string
@@ -427,10 +439,13 @@ export type Database = {
         }
         Update: {
           aadhaar_file?: string | null
+          address?: string | null
           breeder_license?: string | null
           created_at?: string | null
           email?: string | null
+          full_name?: string | null
           id?: string
+          is_admin_approved?: boolean | null
           is_breeder_verified?: boolean | null
           is_onboarding_complete?: boolean | null
           name?: string

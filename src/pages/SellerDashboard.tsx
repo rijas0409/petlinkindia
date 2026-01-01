@@ -5,17 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, User, LogOut, Heart, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Package, ShoppingBag, MessageCircle, Truck, DollarSign, Heart, Eye, Edit, Trash2, Megaphone, Clock, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
+import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
+import PromotionModal from "@/components/PromotionModal";
 
 type Pet = Database["public"]["Tables"]["pets"]["Row"];
 
 const SellerDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [pets, setPets] = useState<Pet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPromotionModalOpen, setIsPromotionModalOpen] = useState(false);
   const [stats, setStats] = useState({
     totalListings: 0,
     activeOrders: 0,
@@ -34,31 +38,35 @@ const SellerDashboard = () => {
       return;
     }
 
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", session.user.id)
       .single();
 
-    if (profile?.role === "buyer") {
+    if (profileData?.role === "buyer") {
       navigate("/buyer-dashboard");
       return;
     }
 
-    // Check if seller has completed onboarding
-    if (!profile?.is_onboarding_complete) {
+    if (!profileData?.is_onboarding_complete) {
       navigate("/seller-onboarding");
       return;
     }
 
+    // Check if admin approved
+    if (!profileData?.is_admin_approved) {
+      toast.info("Your account is pending admin approval. This usually takes up to 24 hours.");
+    }
+
     setUser(session.user);
+    setProfile(profileData);
     fetchData(session.user.id);
   };
 
   const fetchData = async (userId: string) => {
     setIsLoading(true);
     try {
-      // Fetch pets
       const { data: petsData, error: petsError } = await supabase
         .from("pets")
         .select("*")
@@ -68,7 +76,6 @@ const SellerDashboard = () => {
       if (petsError) throw petsError;
       setPets(petsData || []);
 
-      // Fetch stats
       const [ordersResult, earningsResult] = await Promise.all([
         supabase
           .from("orders")
@@ -117,11 +124,6 @@ const SellerDashboard = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
-
   const getVerificationBadge = (status: string | null) => {
     switch (status) {
       case "verified":
@@ -141,6 +143,13 @@ const SellerDashboard = () => {
     }).format(price);
   };
 
+  const promotionPets = pets.map(p => ({
+    id: p.id,
+    name: p.name,
+    breed: p.breed,
+    image: p.images?.[0],
+  }));
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -159,25 +168,28 @@ const SellerDashboard = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={() => navigate("/profile")}
+            <button 
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              onClick={() => toast.info("Cart coming soon")}
             >
-              <User className="w-5 h-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={handleLogout}
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+              <ShoppingCart className="w-5 h-5" />
+            </button>
+            <HeaderProfileDropdown />
           </div>
         </div>
       </header>
+
+      {/* Pending Approval Banner */}
+      {profile && !profile.is_admin_approved && (
+        <div className="bg-amber-50 border-b border-amber-200 py-3">
+          <div className="container mx-auto px-4 flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-600" />
+            <p className="text-sm text-amber-800">
+              <strong>Account Pending Approval:</strong> Your seller account is being reviewed. You'll get full access within 24 hours.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -250,10 +262,10 @@ const SellerDashboard = () => {
 
         {/* Tabs */}
         <Tabs defaultValue="listings" className="space-y-6">
-          <TabsList className="bg-muted/50 p-1 rounded-2xl">
+          <TabsList className="bg-muted/50 p-1 rounded-2xl flex-wrap h-auto">
             <TabsTrigger value="listings" className="rounded-xl">
               <Package className="w-4 h-4 mr-2" />
-              My Listings
+              Listings
             </TabsTrigger>
             <TabsTrigger value="orders" className="rounded-xl">
               <ShoppingBag className="w-4 h-4 mr-2" />
@@ -266,6 +278,10 @@ const SellerDashboard = () => {
             <TabsTrigger value="transport" className="rounded-xl">
               <Truck className="w-4 h-4 mr-2" />
               Transport
+            </TabsTrigger>
+            <TabsTrigger value="promotions" className="rounded-xl">
+              <Megaphone className="w-4 h-4 mr-2" />
+              Promotions
             </TabsTrigger>
             <TabsTrigger value="earnings" className="rounded-xl">
               <DollarSign className="w-4 h-4 mr-2" />
@@ -281,9 +297,7 @@ const SellerDashboard = () => {
               </CardHeader>
               <CardContent>
                 {isLoading ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    Loading listings...
-                  </div>
+                  <div className="text-center py-12 text-muted-foreground">Loading...</div>
                 ) : pets.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     No listings yet. Click "Add New Pet" to get started.
@@ -297,11 +311,7 @@ const SellerDashboard = () => {
                       >
                         <div className="aspect-video relative">
                           {pet.images && pet.images[0] ? (
-                            <img
-                              src={pet.images[0]}
-                              alt={pet.name}
-                              className="w-full h-full object-cover"
-                            />
+                            <img src={pet.images[0]} alt={pet.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full bg-muted flex items-center justify-center">
                               <Package className="w-8 h-8 text-muted-foreground" />
@@ -310,6 +320,13 @@ const SellerDashboard = () => {
                           <div className="absolute top-2 right-2">
                             {getVerificationBadge(pet.verification_status)}
                           </div>
+                          {pet.verification_status === "pending" && (
+                            <div className="absolute bottom-2 left-2 right-2">
+                              <p className="text-xs bg-black/70 text-white px-2 py-1 rounded-lg">
+                                Verification takes 24-48 hours
+                              </p>
+                            </div>
+                          )}
                         </div>
                         <div className="p-4">
                           <div className="flex items-start justify-between mb-2">
@@ -319,9 +336,7 @@ const SellerDashboard = () => {
                                 {pet.breed} • {pet.age_months} months
                               </p>
                             </div>
-                            <p className="font-bold text-primary">
-                              {formatPrice(Number(pet.price))}
-                            </p>
+                            <p className="font-bold text-primary">{formatPrice(Number(pet.price))}</p>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                             <Eye className="w-3 h-3" />
@@ -334,7 +349,7 @@ const SellerDashboard = () => {
                               variant="outline"
                               size="sm"
                               className="flex-1 rounded-xl"
-                              onClick={() => navigate(`/edit-pet/${pet.id}`)}
+                              onClick={() => toast.info("Edit feature coming soon")}
                             >
                               <Edit className="w-4 h-4 mr-1" />
                               Edit
@@ -399,6 +414,31 @@ const SellerDashboard = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="promotions">
+            <Card className="border-0 shadow-card">
+              <CardHeader>
+                <CardTitle>Promotions & Campaigns</CardTitle>
+                <CardDescription>Boost your pet listings visibility</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12">
+                  <Megaphone className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Promote Your Pets</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Get more visibility for your pet listings with our promotion options
+                  </p>
+                  <Button 
+                    className="rounded-2xl bg-gradient-primary"
+                    onClick={() => setIsPromotionModalOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Campaign
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="earnings">
             <Card className="border-0 shadow-card">
               <CardHeader>
@@ -414,6 +454,18 @@ const SellerDashboard = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Promotion Modal */}
+      <PromotionModal
+        isOpen={isPromotionModalOpen}
+        onClose={() => setIsPromotionModalOpen(false)}
+        pets={promotionPets}
+        walletBalance={0}
+        onLaunchCampaign={(data) => {
+          toast.success("Campaign launched successfully!");
+          setIsPromotionModalOpen(false);
+        }}
+      />
     </div>
   );
 };
