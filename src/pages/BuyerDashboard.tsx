@@ -7,6 +7,7 @@ import PetCard from "@/components/PetCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
+import { useWishlist } from "@/hooks/useWishlist";
 
 const BuyerDashboard = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const BuyerDashboard = () => {
   const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { totalWishlistCount } = useWishlist();
 
   useEffect(() => {
     checkUser();
@@ -82,6 +84,19 @@ const BuyerDashboard = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Wishlist Button */}
+            <button 
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
+              onClick={() => navigate("/wishlist")}
+            >
+              <Heart className="w-5 h-5" />
+              {totalWishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
+                  {totalWishlistCount}
+                </span>
+              )}
+            </button>
+            {/* Cart Button */}
             <button 
               className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
               onClick={() => toast.info("Cart coming soon")}
