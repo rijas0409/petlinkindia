@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ProfileMenu from "./pages/ProfileMenu";
 import Shop from "./pages/Shop";
 import Chats from "./pages/Chats";
+import Wishlist from "./pages/Wishlist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/profile-menu" element={<ProfileMenu />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/chats" element={<Chats />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

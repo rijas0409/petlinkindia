@@ -1,4 +1,4 @@
-import { Dog, Cat, Bird, Fish, Rabbit } from "lucide-react";
+import ShopCarousel from "./ShopCarousel";
 
 interface PetOption {
   id: string;
@@ -16,7 +16,7 @@ const PET_OPTIONS: PetOption[] = [
   { id: "guinea-pig", name: "Guinea Pig", image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=400", gradient: "from-emerald-400 to-teal-400" },
   { id: "turtle", name: "Turtle", image: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=400", gradient: "from-cyan-400 to-teal-400" },
   { id: "hamster", name: "Hamster", image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=400", gradient: "from-pink-400 to-rose-400" },
-  { id: "white-mouse", name: "White Mouse", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=400", gradient: "from-purple-400 to-violet-400" },
+  { id: "white-mouse", name: "Mouse", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=400", gradient: "from-purple-400 to-violet-400" },
 ];
 
 interface PetSelectionScreenProps {
@@ -25,12 +25,17 @@ interface PetSelectionScreenProps {
 
 const PetSelectionScreen = ({ onSelectPet }: PetSelectionScreenProps) => {
   return (
-    <div className="min-h-screen bg-background px-4 py-6">
-      <h1 className="text-2xl font-bold text-center text-foreground mb-8">
+    <div className="min-h-screen bg-background">
+      {/* Carousel Banner */}
+      <ShopCarousel />
+      
+      {/* Heading */}
+      <h1 className="text-xl font-bold text-center text-foreground px-4 mb-6">
         Who are you shopping for?
       </h1>
       
-      <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
+      {/* Pet Selection Grid */}
+      <div className="grid grid-cols-3 gap-3 px-4 max-w-md mx-auto pb-6">
         {PET_OPTIONS.map((pet) => (
           <button
             key={pet.id}
