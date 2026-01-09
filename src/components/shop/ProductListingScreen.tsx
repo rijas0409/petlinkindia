@@ -40,13 +40,12 @@ const FILTER_CHIPS = ["Price Drop", "Fresh", "Organic", "Verified"];
 
 interface ProductListingScreenProps {
   petType: string;
-  category: string;
   onBack: () => void;
   onAddToCart: (productId: string) => void;
 }
 
-const ProductListingScreen = ({ petType, category, onBack, onAddToCart }: ProductListingScreenProps) => {
-  const [selectedSidebarCategory, setSelectedSidebarCategory] = useState(category);
+const ProductListingScreen = ({ petType, onBack, onAddToCart }: ProductListingScreenProps) => {
+  const [selectedSidebarCategory, setSelectedSidebarCategory] = useState("food");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   
   const petName = petType.charAt(0).toUpperCase() + petType.slice(1).replace('-', ' ');

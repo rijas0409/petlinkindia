@@ -54,9 +54,10 @@ const SellerDashboard = () => {
       return;
     }
 
-    // Check if admin approved
+    // Check if admin approved - redirect to pending approval page if not
     if (!profileData?.is_admin_approved) {
-      toast.info("Your account is pending admin approval. This usually takes up to 24 hours.");
+      navigate("/seller-pending-approval");
+      return;
     }
 
     setUser(session.user);
@@ -178,18 +179,6 @@ const SellerDashboard = () => {
           </div>
         </div>
       </header>
-
-      {/* Pending Approval Banner */}
-      {profile && !profile.is_admin_approved && (
-        <div className="bg-amber-50 border-b border-amber-200 py-3">
-          <div className="container mx-auto px-4 flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-600" />
-            <p className="text-sm text-amber-800">
-              <strong>Account Pending Approval:</strong> Your seller account is being reviewed. You'll get full access within 24 hours.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
@@ -349,7 +338,7 @@ const SellerDashboard = () => {
                               variant="outline"
                               size="sm"
                               className="flex-1 rounded-xl"
-                              onClick={() => toast.info("Edit feature coming soon")}
+                              onClick={() => navigate(`/edit-pet/${pet.id}`)}
                             >
                               <Edit className="w-4 h-4 mr-1" />
                               Edit
