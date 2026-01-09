@@ -10,7 +10,10 @@ import AdminAuth from "./pages/AdminAuth";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import SellerDashboard from "./pages/SellerDashboard";
 import SellerOnboarding from "./pages/SellerOnboarding";
+import SellerPendingApproval from "./pages/SellerPendingApproval";
 import AddPet from "./pages/AddPet";
+import EditPet from "./pages/EditPet";
+import PetDetails from "./pages/PetDetails";
 import DeliveryDashboard from "./pages/DeliveryDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProfileMenu from "./pages/ProfileMenu";
@@ -35,7 +38,10 @@ const App = () => (
           <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
           <Route path="/seller-dashboard" element={<SellerDashboard />} />
           <Route path="/seller-onboarding" element={<SellerOnboarding />} />
+          <Route path="/seller-pending-approval" element={<SellerPendingApproval />} />
           <Route path="/add-pet" element={<AddPet />} />
+          <Route path="/edit-pet/:id" element={<EditPet />} />
+          <Route path="/pet/:id" element={<PetDetails />} />
           <Route path="/delivery" element={<DeliveryDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/profile-menu" element={<ProfileMenu />} />
