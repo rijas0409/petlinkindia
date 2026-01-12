@@ -5,8 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import DeliveryAuth from "./pages/DeliveryAuth";
-import AdminAuth from "./pages/AdminAuth";
+import AuthBuyer from "./pages/AuthBuyer";
+import AuthBreeder from "./pages/AuthBreeder";
+import AuthDelivery from "./pages/AuthDelivery";
+import AuthAdmin from "./pages/AuthAdmin";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import SellerDashboard from "./pages/SellerDashboard";
 import SellerOnboarding from "./pages/SellerOnboarding";
@@ -33,8 +35,10 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/delivery-auth" element={<DeliveryAuth />} />
-          <Route path="/admin-auth" element={<AdminAuth />} />
+          <Route path="/auth-buyer" element={<AuthBuyer />} />
+          <Route path="/auth-breeder" element={<AuthBreeder />} />
+          <Route path="/auth-delivery" element={<AuthDelivery />} />
+          <Route path="/auth-admin" element={<AuthAdmin />} />
           <Route path="/buyer-dashboard" element={<BuyerDashboard />} />
           <Route path="/seller-dashboard" element={<SellerDashboard />} />
           <Route path="/seller-onboarding" element={<SellerOnboarding />} />

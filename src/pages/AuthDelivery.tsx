@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ShieldCheck, Loader2 } from "lucide-react";
+import { Truck, Loader2, MapPin, Package } from "lucide-react";
 import { z } from "zod";
 
 const loginSchema = z.object({
@@ -18,10 +18,10 @@ const signupSchema = z.object({
   email: z.string().trim().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  adminCode: z.string().min(1, "Admin code is required"),
+  phone: z.string().trim().min(10, "Phone number must be at least 10 digits"),
 });
 
-const AdminAuth = () => {
+const AuthDelivery = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,22 +30,8 @@ const AdminAuth = () => {
     email: "",
     password: "",
     name: "",
-    adminCode: "",
+    phone: "",
   });
-
-  useEffect(() => {
-    checkExistingAdmin();
-  }, []);
-
-  const checkExistingAdmin = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data: userRole } = await supabase.rpc('get_user_role', { _user_id: session.user.id });
-      if (userRole === 'admin') {
-        navigate("/admin");
-      }
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +41,7 @@ const AdminAuth = () => {
     try {
       const schema = isLogin ? loginSchema : signupSchema;
       const validationResult = schema.safeParse(formData);
-
+      
       if (!validationResult.success) {
         const fieldErrors: Record<string, string> = {};
         validationResult.error.errors.forEach((err) => {
@@ -76,41 +62,48 @@ const AdminAuth = () => {
 
         if (error) throw error;
 
-        // Verify user is admin
-        const { data: userRole } = await supabase.rpc('get_user_role', { _user_id: data.user.id });
+        // Check if user is a delivery partner
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .eq("role", "delivery_partner")
+          .single();
 
-        if (userRole !== 'admin') {
+        if (!roleData) {
           await supabase.auth.signOut();
-          throw new Error("Access denied. Admin privileges required.");
+          toast.error("This account is not registered as a delivery partner");
+          setIsLoading(false);
+          return;
         }
-
-        toast.success("Welcome, Admin!");
-        navigate("/admin");
+        
+        toast.success("Welcome back, Delivery Partner!");
+        navigate("/delivery");
       } else {
-        // Verify admin code (simple check - in production use secure method)
-        if (formData.adminCode !== "PETLINK_ADMIN_2025") {
-          throw new Error("Invalid admin code");
-        }
-
         const { data, error } = await supabase.auth.signUp({
           email: formData.email.trim(),
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
+            emailRedirectTo: `${window.location.origin}/delivery`,
             data: {
               name: formData.name.trim(),
-              role: "admin",
+              role: "delivery_partner",
+              phone: formData.phone,
             },
           },
         });
 
         if (error) throw error;
 
-        toast.success("Admin account created! You can now sign in.");
-        setIsLogin(true);
+        toast.success("Account created! Welcome to PetLink Delivery");
+        navigate("/delivery");
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+      if (error.message?.includes("User already registered")) {
+        toast.error("This email is already registered. Please sign in instead.");
+      } else {
+        toast.error(error.message || "An error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -120,22 +113,34 @@ const AdminAuth = () => {
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6 animate-fade-in">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-primary rounded-3xl shadow-float mb-4">
-            <ShieldCheck className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl shadow-float mb-4">
+            <Truck className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Admin Portal
+          <h1 className="text-4xl font-bold text-emerald-600">
+            PetLink Delivery
           </h1>
-          <p className="text-muted-foreground">PetLink Administration Access</p>
+          <p className="text-muted-foreground">Delivery Partner Portal</p>
+        </div>
+
+        {/* Features Banner */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-2xl">
+            <MapPin className="w-5 h-5 text-emerald-600" />
+            <span className="text-sm text-emerald-800">Live Tracking</span>
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-teal-50 rounded-2xl">
+            <Package className="w-5 h-5 text-teal-600" />
+            <span className="text-sm text-teal-800">Pet Delivery</span>
+          </div>
         </div>
 
         <Card className="border-0 shadow-card">
           <CardHeader>
-            <CardTitle>{isLogin ? "Admin Sign In" : "Create Admin Account"}</CardTitle>
+            <CardTitle>{isLogin ? "Partner Login" : "Join as Delivery Partner"}</CardTitle>
             <CardDescription>
               {isLogin
-                ? "Sign in with your admin credentials"
-                : "Create a new admin account (requires admin code)"}
+                ? "Sign in to manage your deliveries"
+                : "Register to start delivering pets safely"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -147,7 +152,7 @@ const AdminAuth = () => {
                     <Input
                       id="name"
                       type="text"
-                      placeholder="Admin Name"
+                      placeholder="Your full name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required={!isLogin}
@@ -157,17 +162,17 @@ const AdminAuth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="adminCode">Admin Access Code</Label>
+                    <Label htmlFor="phone">Phone Number</Label>
                     <Input
-                      id="adminCode"
-                      type="password"
-                      placeholder="Enter admin code"
-                      value={formData.adminCode}
-                      onChange={(e) => setFormData({ ...formData, adminCode: e.target.value })}
+                      id="phone"
+                      type="tel"
+                      placeholder="+91 9876543210"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       required={!isLogin}
-                      className={`rounded-2xl ${errors.adminCode ? 'border-destructive' : ''}`}
+                      className={`rounded-2xl ${errors.phone ? 'border-destructive' : ''}`}
                     />
-                    {errors.adminCode && <p className="text-xs text-destructive">{errors.adminCode}</p>}
+                    {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
                   </div>
                 </>
               )}
@@ -177,7 +182,7 @@ const AdminAuth = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@petlink.com"
+                  placeholder="you@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -202,7 +207,7 @@ const AdminAuth = () => {
 
               <Button
                 type="submit"
-                className="w-full rounded-2xl bg-gradient-primary hover:opacity-90"
+                className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 transition-opacity"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -211,7 +216,7 @@ const AdminAuth = () => {
                     Please wait...
                   </>
                 ) : (
-                  <>{isLogin ? "Sign In" : "Create Admin Account"}</>
+                  <>{isLogin ? "Sign In" : "Register as Partner"}</>
                 )}
               </Button>
             </form>
@@ -220,12 +225,25 @@ const AdminAuth = () => {
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-primary hover:underline"
+                className="text-emerald-600 hover:underline"
               >
                 {isLogin
-                  ? "Need an admin account? Sign up"
-                  : "Already have an account? Sign in"}
+                  ? "New delivery partner? Register here"
+                  : "Already registered? Sign in"}
               </button>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-border">
+              <p className="text-xs text-center text-muted-foreground">
+                Looking for buyer/seller login?{" "}
+                <button
+                  type="button"
+                  onClick={() => navigate("/auth-buyer")}
+                  className="text-primary hover:underline"
+                >
+                  Click here
+                </button>
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -234,4 +252,4 @@ const AdminAuth = () => {
   );
 };
 
-export default AdminAuth;
+export default AuthDelivery;

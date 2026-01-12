@@ -61,6 +61,10 @@ const SellerPendingApproval = () => {
       return;
     }
 
+    // Check if priority was already paid
+    const hasPriorityPaid = profileData.priority_fee_paid === true;
+    setHasPriorityVerification(hasPriorityPaid);
+
     setProfile(profileData);
     setIsLoading(false);
   };
@@ -77,11 +81,16 @@ const SellerPendingApproval = () => {
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Update profile to mark priority verification requested
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // In a real app, this would be handled by a payment webhook
-        // For now, we just mark the preference
+        // Update profile to mark priority fee paid
+        const { error } = await supabase
+          .from("profiles")
+          .update({ priority_fee_paid: true })
+          .eq("id", session.user.id);
+
+        if (error) throw error;
+
         toast.success("Payment successful! Your verification is now prioritized.");
         setHasPriorityVerification(true);
         setIsPriorityModalOpen(false);

@@ -20,14 +20,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
   Package,
   Truck,
   Users,
-  TrendingUp,
   Clock,
   CheckCircle2,
   MapPin,
@@ -37,9 +35,12 @@ import {
   UserPlus,
   IndianRupee,
   BarChart3,
-  Settings,
-  Home,
   ShieldCheck,
+  UserCheck,
+  PawPrint,
+  RefreshCw,
+  XCircle,
+  Eye,
 } from "lucide-react";
 
 interface TransportRequest {
@@ -81,12 +82,45 @@ interface DeliveryPartner {
   email: string;
 }
 
+interface PendingSeller {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  full_name: string;
+  address: string;
+  is_onboarding_complete: boolean;
+  is_admin_approved: boolean;
+  priority_fee_paid?: boolean;
+  created_at: string;
+}
+
+interface PendingPet {
+  id: string;
+  name: string;
+  breed: string;
+  category: string;
+  price: number;
+  images: string[];
+  verification_status: string;
+  priority_verification: boolean;
+  priority_fee_paid: boolean;
+  created_at: string;
+  owner?: {
+    name: string;
+    phone: string;
+  };
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [requests, setRequests] = useState<TransportRequest[]>([]);
   const [partners, setPartners] = useState<DeliveryPartner[]>([]);
+  const [pendingSellers, setPendingSellers] = useState<PendingSeller[]>([]);
+  const [pendingPets, setPendingPets] = useState<PendingPet[]>([]);
+  const [reVerificationPets, setReVerificationPets] = useState<PendingPet[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -109,7 +143,7 @@ const AdminDashboard = () => {
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      navigate("/auth");
+      navigate("/auth-admin");
       return;
     }
 
@@ -132,7 +166,7 @@ const AdminDashboard = () => {
     setLoading(true);
     
     // Fetch transport requests
-    const { data: requestsData, error: requestsError } = await supabase
+    const { data: requestsData } = await supabase
       .from("transport_requests")
       .select(`
         *,
@@ -143,46 +177,113 @@ const AdminDashboard = () => {
       `)
       .order("created_at", { ascending: false });
 
-    if (requestsError) {
-      console.error("Error fetching requests:", requestsError);
-    } else {
-      setRequests(requestsData || []);
-    }
+    setRequests(requestsData || []);
 
     // Fetch delivery partners
-    const { data: partnersData, error: partnersError } = await supabase
+    const { data: partnersData } = await supabase
       .from("profiles")
       .select("id, name, phone, email")
       .eq("role", "delivery_partner");
 
-    if (partnersError) {
-      console.error("Error fetching partners:", partnersError);
-    } else {
-      setPartners(partnersData || []);
-    }
+    setPartners(partnersData || []);
+
+    // Fetch pending sellers (onboarding complete but not approved)
+    const { data: sellersData } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "seller")
+      .eq("is_onboarding_complete", true)
+      .eq("is_admin_approved", false)
+      .order("created_at", { ascending: false });
+
+    setPendingSellers(sellersData || []);
+
+    // Fetch pending pet verifications
+    const { data: petsData } = await supabase
+      .from("pets")
+      .select(`
+        *,
+        owner:profiles!pets_owner_id_fkey(name, phone)
+      `)
+      .eq("verification_status", "pending")
+      .order("priority_fee_paid", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    // Separate new listings from re-verifications
+    const newListings = (petsData || []).filter(pet => !pet.updated_at || pet.created_at === pet.updated_at);
+    const reVerifications = (petsData || []).filter(pet => pet.updated_at && pet.created_at !== pet.updated_at);
+    
+    setPendingPets(newListings);
+    setReVerificationPets(reVerifications);
 
     setLoading(false);
   };
 
   const setupRealtimeSubscription = () => {
     const channel = supabase
-      .channel('admin-transport-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'transport_requests'
-        },
-        () => {
-          fetchData();
-        }
-      )
+      .channel('admin-updates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'transport_requests' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pets' }, () => fetchData())
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
+  };
+
+  const approveSeller = async (sellerId: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_admin_approved: true })
+      .eq("id", sellerId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to approve seller", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Seller approved successfully" });
+      fetchData();
+    }
+  };
+
+  const rejectSeller = async (sellerId: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_onboarding_complete: false, is_admin_approved: false })
+      .eq("id", sellerId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to reject seller", variant: "destructive" });
+    } else {
+      toast({ title: "Seller Rejected", description: "Seller must re-submit verification" });
+      fetchData();
+    }
+  };
+
+  const verifyPet = async (petId: string) => {
+    const { error } = await supabase
+      .from("pets")
+      .update({ verification_status: "verified" })
+      .eq("id", petId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to verify pet", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Pet listing verified and now live" });
+      fetchData();
+    }
+  };
+
+  const rejectPet = async (petId: string) => {
+    const { error } = await supabase
+      .from("pets")
+      .update({ verification_status: "failed" })
+      .eq("id", petId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to reject pet", variant: "destructive" });
+    } else {
+      toast({ title: "Pet Rejected", description: "Seller will be notified" });
+      fetchData();
+    }
   };
 
   const assignPartner = async () => {
@@ -198,16 +299,9 @@ const AdminDashboard = () => {
       .eq("id", selectedRequest.id);
 
     if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to assign partner",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to assign partner", variant: "destructive" });
     } else {
-      toast({
-        title: "Partner Assigned",
-        description: "Delivery partner has been assigned successfully",
-      });
+      toast({ title: "Partner Assigned", description: "Delivery partner has been assigned successfully" });
       setAssignDialogOpen(false);
       setSelectedRequest(null);
       setSelectedPartner("");
@@ -217,7 +311,7 @@ const AdminDashboard = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/auth-admin");
   };
 
   const getStatusBadge = (status: string) => {
@@ -235,43 +329,31 @@ const AdminDashboard = () => {
 
   const filterRequests = () => {
     let filtered = requests;
-    
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(r => r.status === statusFilter);
-    }
-    
+    if (statusFilter !== "all") filtered = filtered.filter(r => r.status === statusFilter);
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(r => 
         r.pet?.name?.toLowerCase().includes(query) ||
         r.seller?.name?.toLowerCase().includes(query) ||
-        r.buyer?.name?.toLowerCase().includes(query) ||
-        r.pickup_address?.toLowerCase().includes(query) ||
-        r.delivery_address?.toLowerCase().includes(query)
+        r.buyer?.name?.toLowerCase().includes(query)
       );
     }
-    
     return filtered;
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+  const formatPrice = (price: number) => 
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(price);
 
-  // Stats
   const stats = {
     total: requests.length,
     pending: requests.filter(r => r.status === "requested").length,
     inTransit: requests.filter(r => ["assigned", "picked"].includes(r.status)).length,
     delivered: requests.filter(r => r.status === "delivered" || r.status === "completed").length,
-    totalRevenue: requests
-      .filter(r => r.status === "delivered" || r.status === "completed")
-      .reduce((sum, r) => sum + (r.fee || 0), 0),
+    totalRevenue: requests.filter(r => r.status === "delivered" || r.status === "completed").reduce((sum, r) => sum + (r.fee || 0), 0),
     partnersCount: partners.length,
+    pendingSellersCount: pendingSellers.length,
+    pendingPetsCount: pendingPets.length,
+    reVerificationCount: reVerificationPets.length,
   };
 
   if (loading) {
@@ -294,7 +376,7 @@ const AdminDashboard = () => {
               </div>
               <div>
                 <h1 className="font-bold text-lg">PetLink Admin</h1>
-                <p className="text-xs text-muted-foreground">Transport Management</p>
+                <p className="text-xs text-muted-foreground">Management Dashboard</p>
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={handleLogout}>
@@ -306,33 +388,56 @@ const AdminDashboard = () => {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full bg-muted/50 rounded-2xl p-1 mb-6">
-            <TabsTrigger value="overview" className="flex-1 rounded-xl">
-              <BarChart3 className="w-4 h-4 mr-2" />
+          <TabsList className="w-full bg-muted/50 rounded-2xl p-1 mb-6 flex flex-wrap">
+            <TabsTrigger value="overview" className="flex-1 rounded-xl text-xs">
+              <BarChart3 className="w-4 h-4 mr-1" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="requests" className="flex-1 rounded-xl">
-              <Truck className="w-4 h-4 mr-2" />
-              Requests
+            <TabsTrigger value="sellers" className="flex-1 rounded-xl text-xs relative">
+              <UserCheck className="w-4 h-4 mr-1" />
+              Sellers
+              {stats.pendingSellersCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                  {stats.pendingSellersCount}
+                </span>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="partners" className="flex-1 rounded-xl">
-              <Users className="w-4 h-4 mr-2" />
-              Partners
+            <TabsTrigger value="pets" className="flex-1 rounded-xl text-xs relative">
+              <PawPrint className="w-4 h-4 mr-1" />
+              Pets
+              {stats.pendingPetsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                  {stats.pendingPetsCount}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="reverify" className="flex-1 rounded-xl text-xs relative">
+              <RefreshCw className="w-4 h-4 mr-1" />
+              Re-verify
+              {stats.reVerificationCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                  {stats.reVerificationCount}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="transport" className="flex-1 rounded-xl text-xs">
+              <Truck className="w-4 h-4 mr-1" />
+              Transport
             </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card className="rounded-2xl shadow-card border-0">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <Package className="w-5 h-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                      <UserCheck className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stats.total}</p>
-                      <p className="text-xs text-muted-foreground">Total</p>
+                      <p className="text-2xl font-bold">{stats.pendingSellersCount}</p>
+                      <p className="text-xs text-muted-foreground">Pending Sellers</p>
                     </div>
                   </div>
                 </CardContent>
@@ -341,12 +446,12 @@ const AdminDashboard = () => {
               <Card className="rounded-2xl shadow-card border-0">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-yellow-600" />
+                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <PawPrint className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stats.pending}</p>
-                      <p className="text-xs text-muted-foreground">Pending</p>
+                      <p className="text-2xl font-bold">{stats.pendingPetsCount}</p>
+                      <p className="text-xs text-muted-foreground">Pending Pets</p>
                     </div>
                   </div>
                 </CardContent>
@@ -356,11 +461,11 @@ const AdminDashboard = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                      <Truck className="w-5 h-5 text-purple-600" />
+                      <RefreshCw className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stats.inTransit}</p>
-                      <p className="text-xs text-muted-foreground">In Transit</p>
+                      <p className="text-2xl font-bold">{stats.reVerificationCount}</p>
+                      <p className="text-xs text-muted-foreground">Re-verification</p>
                     </div>
                   </div>
                 </CardContent>
@@ -370,92 +475,133 @@ const AdminDashboard = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <Truck className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{stats.delivered}</p>
-                      <p className="text-xs text-muted-foreground">Delivered</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl shadow-card border-0">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                      <IndianRupee className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-bold">{formatPrice(stats.totalRevenue)}</p>
-                      <p className="text-xs text-muted-foreground">Revenue</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-2xl shadow-card border-0">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-accent rounded-xl flex items-center justify-center">
-                      <Users className="w-5 h-5 text-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{stats.partnersCount}</p>
-                      <p className="text-xs text-muted-foreground">Partners</p>
+                      <p className="text-2xl font-bold">{stats.pending}</p>
+                      <p className="text-xs text-muted-foreground">Transport Pending</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Recent Pending Requests */}
-            <Card className="rounded-2xl shadow-card border-0">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-yellow-600" />
-                  Pending Assignment
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {requests.filter(r => r.status === "requested").length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No pending requests</p>
-                ) : (
-                  <div className="space-y-4">
-                    {requests.filter(r => r.status === "requested").slice(0, 5).map((request) => (
-                      <div key={request.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted">
-                            {request.pet?.images?.[0] ? (
-                              <img
-                                src={request.pet.images[0]}
-                                alt={request.pet.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Package className="w-5 h-5 text-muted-foreground" />
-                              </div>
-                            )}
-                          </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Priority Sellers */}
+              <Card className="rounded-2xl shadow-card border-0">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Clock className="w-5 h-5 text-amber-500" />
+                    Priority Seller Approvals
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pendingSellers.filter(s => s.priority_fee_paid).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No priority requests</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {pendingSellers.filter(s => s.priority_fee_paid).map(seller => (
+                        <div key={seller.id} className="flex items-center justify-between p-3 bg-amber-50 rounded-xl">
                           <div>
-                            <p className="font-medium">{request.pet?.name || "Pet"}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {request.pickup_address?.split(',')[0]} → {request.delivery_address?.split(',')[0]}
-                            </p>
+                            <p className="font-medium">{seller.full_name || seller.name}</p>
+                            <p className="text-xs text-muted-foreground">{seller.email}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" className="rounded-lg" onClick={() => approveSeller(seller.id)}>
+                              <CheckCircle2 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="destructive" className="rounded-lg" onClick={() => rejectSeller(seller.id)}>
+                              <XCircle className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          className="rounded-xl"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setAssignDialogOpen(true);
-                          }}
-                        >
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Assign
-                        </Button>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Priority Pet Verifications */}
+              <Card className="rounded-2xl shadow-card border-0">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Clock className="w-5 h-5 text-amber-500" />
+                    Priority Pet Verifications
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pendingPets.filter(p => p.priority_fee_paid).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-4">No priority requests</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {pendingPets.filter(p => p.priority_fee_paid).map(pet => (
+                        <div key={pet.id} className="flex items-center gap-3 p-3 bg-amber-50 rounded-xl">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                            {pet.images?.[0] && <img src={pet.images[0]} alt={pet.name} className="w-full h-full object-cover" />}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium">{pet.name}</p>
+                            <p className="text-xs text-muted-foreground">{pet.breed} • {formatPrice(pet.price)}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" className="rounded-lg" onClick={() => verifyPet(pet.id)}>
+                              <CheckCircle2 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="destructive" className="rounded-lg" onClick={() => rejectPet(pet.id)}>
+                              <XCircle className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Sellers Approval Tab */}
+          <TabsContent value="sellers">
+            <Card className="rounded-2xl shadow-card border-0">
+              <CardHeader>
+                <CardTitle>Pending Seller Approvals</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingSellers.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No pending seller approvals</p>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingSellers.map(seller => (
+                      <div key={seller.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                            <Users className="w-6 h-6 text-primary" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{seller.full_name || seller.name}</p>
+                              {seller.priority_fee_paid && (
+                                <Badge className="bg-amber-100 text-amber-800 text-[10px]">PRIORITY</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{seller.email}</p>
+                            <p className="text-xs text-muted-foreground">{seller.phone} • {seller.address?.slice(0, 30)}...</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="rounded-xl">
+                            <Eye className="w-4 h-4 mr-1" />
+                            View Docs
+                          </Button>
+                          <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => approveSeller(seller.id)}>
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button size="sm" variant="destructive" className="rounded-xl" onClick={() => rejectSeller(seller.id)}>
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -464,14 +610,128 @@ const AdminDashboard = () => {
             </Card>
           </TabsContent>
 
-          {/* Requests Tab */}
-          <TabsContent value="requests">
-            {/* Filters */}
+          {/* Pet Verification Tab */}
+          <TabsContent value="pets">
+            <Card className="rounded-2xl shadow-card border-0">
+              <CardHeader>
+                <CardTitle>Pending Pet Verifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingPets.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No pending pet verifications</p>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingPets.map(pet => (
+                      <div key={pet.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted">
+                            {pet.images?.[0] ? (
+                              <img src={pet.images[0]} alt={pet.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <PawPrint className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{pet.name}</p>
+                              {pet.priority_fee_paid && (
+                                <Badge className="bg-amber-100 text-amber-800 text-[10px]">PRIORITY</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{pet.breed} • {pet.category}</p>
+                            <p className="text-sm font-medium text-primary">{formatPrice(pet.price)}</p>
+                            <p className="text-xs text-muted-foreground">By: {pet.owner?.name}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => navigate(`/pet/${pet.id}`)}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                          <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => verifyPet(pet.id)}>
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Verify
+                          </Button>
+                          <Button size="sm" variant="destructive" className="rounded-xl" onClick={() => rejectPet(pet.id)}>
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Re-verification Tab */}
+          <TabsContent value="reverify">
+            <Card className="rounded-2xl shadow-card border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <RefreshCw className="w-5 h-5 text-purple-500" />
+                  Re-verification Listings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {reVerificationPets.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No re-verification requests</p>
+                ) : (
+                  <div className="space-y-4">
+                    {reVerificationPets.map(pet => (
+                      <div key={pet.id} className="flex items-center justify-between p-4 bg-purple-50 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted">
+                            {pet.images?.[0] ? (
+                              <img src={pet.images[0]} alt={pet.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <PawPrint className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{pet.name}</p>
+                              <Badge className="bg-purple-100 text-purple-800 text-[10px]">EDITED</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{pet.breed} • {pet.category}</p>
+                            <p className="text-sm font-medium text-primary">{formatPrice(pet.price)}</p>
+                            <p className="text-xs text-muted-foreground">By: {pet.owner?.name}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="rounded-xl" onClick={() => navigate(`/pet/${pet.id}`)}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            Review
+                          </Button>
+                          <Button size="sm" className="rounded-xl bg-green-500 hover:bg-green-600" onClick={() => verifyPet(pet.id)}>
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button size="sm" variant="destructive" className="rounded-xl" onClick={() => rejectPet(pet.id)}>
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Transport Tab */}
+          <TabsContent value="transport">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by pet, seller, buyer, or address..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 rounded-xl"
@@ -488,13 +748,10 @@ const AdminDashboard = () => {
                   <SelectItem value="assigned">Assigned</SelectItem>
                   <SelectItem value="picked">Picked Up</SelectItem>
                   <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Requests List */}
             <div className="space-y-4">
               {filterRequests().length === 0 ? (
                 <Card className="rounded-2xl shadow-card border-0">
@@ -508,28 +765,20 @@ const AdminDashboard = () => {
                   <Card key={request.id} className="rounded-2xl shadow-card border-0">
                     <CardContent className="p-4">
                       <div className="flex flex-col md:flex-row md:items-center gap-4">
-                        {/* Pet Image */}
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted flex-shrink-0">
                           {request.pet?.images?.[0] ? (
-                            <img
-                              src={request.pet.images[0]}
-                              alt={request.pet.name}
-                              className="w-full h-full object-cover"
-                            />
+                            <img src={request.pet.images[0]} alt={request.pet.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
                               <Package className="w-6 h-6 text-muted-foreground" />
                             </div>
                           )}
                         </div>
-
-                        {/* Details */}
                         <div className="flex-1 space-y-2">
                           <div className="flex items-center justify-between">
                             <h3 className="font-semibold">{request.pet?.name || "Pet"}</h3>
                             {getStatusBadge(request.status)}
                           </div>
-                          
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                             <div className="flex items-center gap-2 text-muted-foreground">
                               <MapPin className="w-4 h-4 text-green-500" />
@@ -540,12 +789,8 @@ const AdminDashboard = () => {
                               <span className="truncate">{request.delivery_address}</span>
                             </div>
                           </div>
-
                           <div className="flex items-center gap-4 text-sm">
                             <span className="font-medium text-primary">{formatPrice(request.fee)}</span>
-                            {request.distance_km && (
-                              <span className="text-muted-foreground">{request.distance_km} km</span>
-                            )}
                             {request.partner && (
                               <Badge variant="outline" className="rounded-lg">
                                 <Users className="w-3 h-3 mr-1" />
@@ -554,8 +799,6 @@ const AdminDashboard = () => {
                             )}
                           </div>
                         </div>
-
-                        {/* Actions */}
                         {request.status === "requested" && (
                           <Button
                             size="sm"
@@ -566,62 +809,13 @@ const AdminDashboard = () => {
                             }}
                           >
                             <UserPlus className="w-4 h-4 mr-2" />
-                            Assign Partner
+                            Assign
                           </Button>
                         )}
                       </div>
                     </CardContent>
                   </Card>
                 ))
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Partners Tab */}
-          <TabsContent value="partners">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {partners.length === 0 ? (
-                <Card className="col-span-full rounded-2xl shadow-card border-0">
-                  <CardContent className="p-8 text-center">
-                    <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <p className="text-muted-foreground">No delivery partners registered</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                partners.map((partner) => {
-                  const activeDeliveries = requests.filter(
-                    r => r.assigned_partner_id === partner.id && ["assigned", "picked"].includes(r.status)
-                  ).length;
-                  const completedDeliveries = requests.filter(
-                    r => r.assigned_partner_id === partner.id && (r.status === "delivered" || r.status === "completed")
-                  ).length;
-
-                  return (
-                    <Card key={partner.id} className="rounded-2xl shadow-card border-0">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                            <Users className="w-6 h-6 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="font-semibold">{partner.name}</h3>
-                            <p className="text-sm text-muted-foreground">{partner.phone || partner.email}</p>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex items-center gap-4">
-                          <div className="flex-1 text-center p-2 bg-blue-50 rounded-xl">
-                            <p className="text-lg font-bold text-blue-600">{activeDeliveries}</p>
-                            <p className="text-xs text-muted-foreground">Active</p>
-                          </div>
-                          <div className="flex-1 text-center p-2 bg-green-50 rounded-xl">
-                            <p className="text-lg font-bold text-green-600">{completedDeliveries}</p>
-                            <p className="text-xs text-muted-foreground">Completed</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
               )}
             </div>
           </TabsContent>
@@ -633,11 +827,8 @@ const AdminDashboard = () => {
         <DialogContent className="rounded-2xl">
           <DialogHeader>
             <DialogTitle>Assign Delivery Partner</DialogTitle>
-            <DialogDescription>
-              Select a delivery partner for this transport request
-            </DialogDescription>
+            <DialogDescription>Select a delivery partner for this transport request</DialogDescription>
           </DialogHeader>
-          
           {selectedRequest && (
             <div className="space-y-4">
               <div className="p-4 bg-muted/30 rounded-xl">
@@ -645,11 +836,8 @@ const AdminDashboard = () => {
                 <p className="text-sm text-muted-foreground">
                   {selectedRequest.pickup_address?.split(',')[0]} → {selectedRequest.delivery_address?.split(',')[0]}
                 </p>
-                <p className="text-sm font-medium text-primary mt-1">
-                  {formatPrice(selectedRequest.fee)}
-                </p>
+                <p className="text-sm font-medium text-primary mt-1">{formatPrice(selectedRequest.fee)}</p>
               </div>
-
               <div className="space-y-2">
                 <Label>Select Partner</Label>
                 <Select value={selectedPartner} onValueChange={setSelectedPartner}>
@@ -665,24 +853,15 @@ const AdminDashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 rounded-xl"
-                  onClick={() => {
-                    setAssignDialogOpen(false);
-                    setSelectedRequest(null);
-                    setSelectedPartner("");
-                  }}
-                >
+                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => {
+                  setAssignDialogOpen(false);
+                  setSelectedRequest(null);
+                  setSelectedPartner("");
+                }}>
                   Cancel
                 </Button>
-                <Button
-                  className="flex-1 rounded-xl bg-gradient-primary"
-                  onClick={assignPartner}
-                  disabled={!selectedPartner}
-                >
+                <Button className="flex-1 rounded-xl bg-gradient-primary" onClick={assignPartner} disabled={!selectedPartner}>
                   Assign Partner
                 </Button>
               </div>
