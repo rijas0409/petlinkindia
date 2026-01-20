@@ -7,8 +7,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BottomNavigation from "@/components/BottomNavigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
+import { useWishlist } from "@/hooks/useWishlist";
+import { toast } from "sonner";
 const petCategories = [
   { id: "dogs", name: "Dogs", image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=100&h=100&fit=crop" },
   { id: "cats", name: "Cats", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&h=100&fit=crop" },
@@ -90,33 +91,43 @@ const Vet = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [location, setLocation] = useState("Greater Noida");
+  const { totalWishlistCount } = useWishlist();
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-pink-500 to-pink-400 text-white px-4 py-3">
-        <div className="flex items-center justify-between">
+      {/* Header - Same as Home page */}
+      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Heart className="w-7 h-7 fill-white" />
-            <div>
-              <h1 className="text-lg font-bold">PetLink</h1>
-              <button className="flex items-center gap-1 text-xs opacity-90">
-                <MapPin className="w-3 h-3" />
-                <span>{location}</span>
-                <ChevronDown className="w-3 h-3" />
-              </button>
+            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
+              <Heart className="w-5 h-5 text-white" />
             </div>
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              PetLink
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2">
+
+          <div className="flex items-center gap-2">
+            {/* Wishlist Button */}
+            <button 
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
+              onClick={() => navigate("/wishlist")}
+            >
               <Heart className="w-5 h-5" />
+              {totalWishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
+                  {totalWishlistCount}
+                </span>
+              )}
             </button>
-            <button className="p-2">
+            {/* Cart Button */}
+            <button 
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              onClick={() => toast.info("Cart coming soon")}
+            >
               <ShoppingCart className="w-5 h-5" />
             </button>
-            <Avatar className="w-8 h-8 border-2 border-white/50">
-              <AvatarFallback className="bg-pink-300 text-white text-sm font-semibold">R</AvatarFallback>
-            </Avatar>
+            <HeaderProfileDropdown />
           </div>
         </div>
       </header>
