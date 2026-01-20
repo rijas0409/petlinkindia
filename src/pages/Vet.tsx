@@ -2,14 +2,33 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Search, SlidersHorizontal, MapPin, ChevronDown, Star, 
-  Phone, Stethoscope, Syringe, Sparkles, Heart, ShoppingCart,
-  ChevronRight, Play, BadgeCheck
+  MessageCircle, Stethoscope, Syringe, Sparkles, Heart, ShoppingCart,
+  ChevronRight, Play, BadgeCheck, X, Check
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { useWishlist } from "@/hooks/useWishlist";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+const cities = [
+  { id: "greater-noida", name: "Greater Noida", state: "Uttar Pradesh" },
+  { id: "noida", name: "Noida", state: "Uttar Pradesh" },
+  { id: "delhi", name: "Delhi", state: "Delhi" },
+  { id: "gurgaon", name: "Gurgaon", state: "Haryana" },
+  { id: "mumbai", name: "Mumbai", state: "Maharashtra" },
+  { id: "bangalore", name: "Bangalore", state: "Karnataka" },
+  { id: "hyderabad", name: "Hyderabad", state: "Telangana" },
+  { id: "chennai", name: "Chennai", state: "Tamil Nadu" },
+  { id: "pune", name: "Pune", state: "Maharashtra" },
+  { id: "kolkata", name: "Kolkata", state: "West Bengal" },
+];
 const petCategories = [
   { id: "dogs", name: "Dogs", image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=100&h=100&fit=crop" },
   { id: "cats", name: "Cats", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&h=100&fit=crop" },
@@ -91,20 +110,37 @@ const Vet = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [location, setLocation] = useState("Greater Noida");
+  const [locationModalOpen, setLocationModalOpen] = useState(false);
+  const [searchCity, setSearchCity] = useState("");
   const { totalWishlistCount } = useWishlist();
+
+  const filteredCities = cities.filter(city =>
+    city.name.toLowerCase().includes(searchCity.toLowerCase()) ||
+    city.state.toLowerCase().includes(searchCity.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header - Same as Home page */}
+      {/* Header - Same as Home page with Location Selector */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
               <Heart className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              PetLink
-            </span>
+            <div>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                PetLink
+              </span>
+              <button 
+                onClick={() => setLocationModalOpen(true)}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <MapPin className="w-3 h-3" />
+                <span>{location}</span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -131,6 +167,78 @@ const Vet = () => {
           </div>
         </div>
       </header>
+
+      {/* Location Selector Modal */}
+      <Dialog open={locationModalOpen} onOpenChange={setLocationModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-lg font-bold">Select Your Location</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-4">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search city..."
+                value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-muted/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            {/* City List */}
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {filteredCities.map((city) => (
+                <button
+                  key={city.id}
+                  onClick={() => {
+                    setLocation(city.name);
+                    setLocationModalOpen(false);
+                    setSearchCity("");
+                    toast.success(`Location set to ${city.name}`);
+                  }}
+                  className={cn(
+                    "w-full flex items-center justify-between p-3 rounded-xl transition-colors text-left",
+                    location === city.name 
+                      ? "bg-pink-50 border border-pink-200" 
+                      : "hover:bg-muted"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center",
+                      location === city.name ? "bg-pink-100" : "bg-muted"
+                    )}>
+                      <MapPin className={cn(
+                        "w-4 h-4",
+                        location === city.name ? "text-pink-500" : "text-muted-foreground"
+                      )} />
+                    </div>
+                    <div>
+                      <p className={cn(
+                        "font-medium text-sm",
+                        location === city.name ? "text-pink-600" : "text-foreground"
+                      )}>
+                        {city.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{city.state}</p>
+                    </div>
+                  </div>
+                  {location === city.name && (
+                    <Check className="w-5 h-5 text-pink-500" />
+                  )}
+                </button>
+              ))}
+              {filteredCities.length === 0 && (
+                <p className="text-center text-muted-foreground text-sm py-4">
+                  No cities found
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="px-4 py-4 space-y-6">
         {/* Search Bar */}
@@ -348,8 +456,11 @@ const Vet = () => {
                 <button className="flex-1 bg-gradient-to-r from-pink-500 to-pink-400 text-white py-3 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-shadow">
                   Book Now
                 </button>
-                <button className="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center border border-pink-100">
-                  <Phone className="w-5 h-5 text-pink-500" />
+                <button 
+                  onClick={() => toast.info("Chat with doctor coming soon")}
+                  className="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center border border-pink-100 hover:bg-pink-50 transition-colors"
+                >
+                  <MessageCircle className="w-5 h-5 text-pink-500" />
                 </button>
               </div>
             </div>
