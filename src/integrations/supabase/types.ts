@@ -412,6 +412,7 @@ export type Database = {
           is_onboarding_complete: boolean | null
           name: string
           phone: string | null
+          priority_fee_paid: boolean | null
           profile_photo: string | null
           rating: number | null
           role: Database["public"]["Enums"]["user_role"]
@@ -431,6 +432,7 @@ export type Database = {
           is_onboarding_complete?: boolean | null
           name: string
           phone?: string | null
+          priority_fee_paid?: boolean | null
           profile_photo?: string | null
           rating?: number | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -450,6 +452,7 @@ export type Database = {
           is_onboarding_complete?: boolean | null
           name?: string
           phone?: string | null
+          priority_fee_paid?: boolean | null
           profile_photo?: string | null
           rating?: number | null
           role?: Database["public"]["Enums"]["user_role"]

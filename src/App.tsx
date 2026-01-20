@@ -22,6 +22,7 @@ import ProfileMenu from "./pages/ProfileMenu";
 import Shop from "./pages/Shop";
 import Chats from "./pages/Chats";
 import Wishlist from "./pages/Wishlist";
+import Vet from "./pages/Vet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
           <Route path="/shop" element={<Shop />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/vet" element={<Vet />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

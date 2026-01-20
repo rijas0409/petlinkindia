@@ -86,7 +86,7 @@ const SellerPendingApproval = () => {
         // Update profile to mark priority fee paid
         const { error } = await supabase
           .from("profiles")
-          .update({ priority_fee_paid: true })
+          .update({ priority_fee_paid: true } as any)
           .eq("id", session.user.id);
 
         if (error) throw error;
