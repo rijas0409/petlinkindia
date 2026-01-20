@@ -1,11 +1,11 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, ShoppingBag, MessageCircle, User } from "lucide-react";
+import { Home, ShoppingBag, Stethoscope, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { id: "home", icon: Home, label: "Home", path: "/buyer-dashboard" },
   { id: "shop", icon: ShoppingBag, label: "Shop", path: "/shop" },
-  { id: "chat", icon: MessageCircle, label: "Chat", path: "/chats" },
+  { id: "vet", icon: Stethoscope, label: "Vet", path: "/vet" },
   { id: "profile", icon: User, label: "Profile", path: "/profile-menu" },
 ];
 
