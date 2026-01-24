@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, HelpCircle, Check, Video, FileText, MessageSquare, Shield, ArrowRight } from "lucide-react";
-import BottomNavigation from "@/components/BottomNavigation";
+import vetConsultationDoctor from "@/assets/vet-consultation-doctor.png";
 
 const ConsultationPlan = () => {
   const navigate = useNavigate();
@@ -28,12 +28,12 @@ const ConsultationPlan = () => {
 
       <div className="px-4 space-y-6">
         {/* Hero Image Card */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-pink-50 to-teal-50 p-1">
-          <div className="rounded-3xl overflow-hidden">
+        <div className="relative rounded-3xl overflow-hidden bg-gray-100 p-1">
+          <div className="rounded-3xl overflow-hidden bg-gray-50">
             <img 
-              src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop"
+              src={vetConsultationDoctor}
               alt="Vet with pet"
-              className="w-full h-64 object-cover"
+              className="w-full h-72 object-cover object-top"
             />
             {/* Overlay Badge */}
             <div className="absolute bottom-6 left-6 right-6">
@@ -124,8 +124,6 @@ const ConsultationPlan = () => {
           By proceeding, you agree to our <span className="text-pink-500 font-medium">Terms & Refund Policy</span>
         </p>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 };
