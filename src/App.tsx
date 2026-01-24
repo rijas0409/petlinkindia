@@ -23,6 +23,13 @@ import Shop from "./pages/Shop";
 import Chats from "./pages/Chats";
 import Wishlist from "./pages/Wishlist";
 import Vet from "./pages/Vet";
+import ConsultationPlan from "./pages/vet/ConsultationPlan";
+import PaymentSummary from "./pages/vet/PaymentSummary";
+import PaymentFailed from "./pages/vet/PaymentFailed";
+import FindingVet from "./pages/vet/FindingVet";
+import ConnectionReady from "./pages/vet/ConnectionReady";
+import VideoCall from "./pages/vet/VideoCall";
+import DigitalPrescription from "./pages/vet/DigitalPrescription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +61,13 @@ const App = () => (
           <Route path="/chats" element={<Chats />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/vet" element={<Vet />} />
+          <Route path="/vet/consultation-plan" element={<ConsultationPlan />} />
+          <Route path="/vet/payment-summary" element={<PaymentSummary />} />
+          <Route path="/vet/payment-failed" element={<PaymentFailed />} />
+          <Route path="/vet/finding-vet" element={<FindingVet />} />
+          <Route path="/vet/connection-ready" element={<ConnectionReady />} />
+          <Route path="/vet/video-call" element={<VideoCall />} />
+          <Route path="/vet/prescription" element={<DigitalPrescription />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
