@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, HelpCircle, X, Info } from "lucide-react";
-import BottomNavigation from "@/components/BottomNavigation";
 
 const PaymentFailed = () => {
   const navigate = useNavigate();
@@ -79,8 +78,6 @@ const PaymentFailed = () => {
           Try Another Method
         </button>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 };
