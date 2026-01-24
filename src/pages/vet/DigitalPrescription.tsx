@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Share2, Star, ShoppingCart, FileText, Calendar, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import BottomNavigation from "@/components/BottomNavigation";
 
 const medicines = [
   {
@@ -229,8 +228,6 @@ const DigitalPrescription = () => {
           </div>
         </div>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, HelpCircle, Star, Video, BadgeCheck } from "lucide-react";
-import BottomNavigation from "@/components/BottomNavigation";
 
 const ConnectionReady = () => {
   const navigate = useNavigate();
@@ -94,8 +93,6 @@ const ConnectionReady = () => {
           Start Video Call
         </button>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 };

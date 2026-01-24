@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, HelpCircle, Plus, Check, Stethoscope } from "lucide-react";
 import { cn } from "@/lib/utils";
-import BottomNavigation from "@/components/BottomNavigation";
 
 const pets = [
   { id: "1", name: "Fluffy", image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=100&h=100&fit=crop", selected: true },
@@ -236,8 +235,6 @@ const FindingVet = () => {
           to { transform: rotate(360deg); }
         }
       `}</style>
-
-      <BottomNavigation />
     </div>
   );
 };

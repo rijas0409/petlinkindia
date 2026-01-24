@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ChevronRight, CreditCard, Shield, BadgeCheck, Lock, Percent, Gift } from "lucide-react";
-import BottomNavigation from "@/components/BottomNavigation";
 
 const PaymentSummary = () => {
   const navigate = useNavigate();
@@ -137,8 +136,6 @@ const PaymentSummary = () => {
           </div>
         </div>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 };

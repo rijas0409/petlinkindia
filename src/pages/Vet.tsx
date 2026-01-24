@@ -5,7 +5,7 @@ import {
   MessageCircle, Stethoscope, Syringe, Sparkles, Heart, ShoppingCart,
   ChevronRight, Play, BadgeCheck, X, Check, Video
 } from "lucide-react";
-import doctorIllustration from "@/assets/doctor-illustration.png";
+import vetDoctorBanner from "@/assets/vet-doctor-banner.png";
 import { cn } from "@/lib/utils";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
@@ -316,9 +316,9 @@ const Vet = () => {
           </div>
           
           {/* Doctor illustration */}
-          <div className="absolute right-0 bottom-0 w-36 h-40">
+          <div className="absolute right-0 bottom-0 w-40 h-44">
             <img 
-              src={doctorIllustration}
+              src={vetDoctorBanner}
               alt="Doctor"
               className="w-full h-full object-contain object-bottom"
             />
