@@ -31,6 +31,7 @@ import ConnectionReady from "./pages/vet/ConnectionReady";
 import VideoCall from "./pages/vet/VideoCall";
 import DigitalPrescription from "./pages/vet/DigitalPrescription";
 import AIVetAssistant from "./pages/vet/AIVetAssistant";
+import AIVetAssessment from "./pages/vet/AIVetAssessment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="/vet/video-call" element={<VideoCall />} />
           <Route path="/vet/prescription" element={<DigitalPrescription />} />
           <Route path="/vet/ai-assistant" element={<AIVetAssistant />} />
+          <Route path="/vet/ai-assessment" element={<AIVetAssessment />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
