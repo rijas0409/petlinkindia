@@ -288,28 +288,28 @@ const Vet = () => {
         </div>
 
         {/* Instant Video Call Banner - Split Layout */}
-        <div className="rounded-[22px] overflow-hidden flex min-h-[180px]" style={{ maxHeight: '200px' }}>
+        <div className="rounded-[22px] overflow-hidden flex min-h-[130px]" style={{ maxHeight: '150px' }}>
           {/* Left Section - Pastel Pink */}
-          <div className="flex-1 flex flex-col justify-center px-5 py-4" style={{ backgroundColor: '#FDE7EC' }}>
-            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: '#FF4D6D' }}>
+          <div className="flex-1 flex flex-col justify-center px-4 py-3" style={{ backgroundColor: '#FDE7EC' }}>
+            <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: '#FF4D6D' }}>
               AVAILABLE NOW
             </p>
-            <h3 className="text-2xl font-bold text-foreground leading-tight mb-1">
+            <h3 className="text-lg font-bold text-foreground leading-tight mb-0.5">
               Instant Video Call
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-xs text-muted-foreground mb-2">
               Medical advice in 60 seconds
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button 
                 onClick={() => navigate("/vet/consultation-plan")}
-                className="bg-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                className="bg-white px-4 py-2 rounded-full text-xs font-bold shadow-md hover:shadow-lg transition-all"
                 style={{ color: '#FF4D6D' }}
               >
                 Call Now
               </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD6DE' }}>
-                <Play className="w-4 h-4 fill-current" style={{ color: '#FF4D6D' }} />
+              <button className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD6DE' }}>
+                <Play className="w-3.5 h-3.5 fill-current" style={{ color: '#FF4D6D' }} />
               </button>
             </div>
           </div>
@@ -326,21 +326,21 @@ const Vet = () => {
         {/* Smart Match Card */}
         <div 
           onClick={() => navigate("/vet/ai-assistant")}
-          className="bg-card rounded-[20px] p-4 shadow-md border border-border flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow"
-          style={{ minHeight: '110px' }}
+          className="bg-card rounded-[20px] p-3 shadow-md border border-border flex items-center gap-3 cursor-pointer hover:shadow-lg transition-shadow"
+          style={{ minHeight: '80px' }}
         >
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F2EAFE' }}>
-            <Sparkles className="w-7 h-7" style={{ color: '#8B5CF6' }} />
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F2EAFE' }}>
+            <Sparkles className="w-5 h-5" style={{ color: '#8B5CF6' }} />
           </div>
-          <div className="flex-1">
-            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: '#8B5CF6' }}>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: '#8B5CF6' }}>
               SMART MATCH
             </p>
-            <h4 className="font-bold text-foreground text-base leading-snug">Not sure which vet to choose?</h4>
-            <p className="text-sm text-muted-foreground">Let our AI find the perfect specialist</p>
+            <h4 className="font-bold text-foreground text-sm leading-snug">Not sure which vet to choose?</h4>
+            <p className="text-xs text-muted-foreground">Let our AI find the perfect specialist</p>
           </div>
-          <button className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1F2937' }}>
-            <ChevronRight className="w-5 h-5 text-white" />
+          <button className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1F2937' }}>
+            <ChevronRight className="w-4 h-4 text-white" />
           </button>
         </div>
 
