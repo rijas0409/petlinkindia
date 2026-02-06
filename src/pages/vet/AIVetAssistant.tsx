@@ -33,9 +33,9 @@ const AIVetAssistant = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50/50 via-white to-white flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-6 pb-2">
+    <div className="h-screen bg-gradient-to-b from-pink-50/50 via-white to-white flex flex-col overflow-hidden">
+      {/* Header - Fixed */}
+      <header className="flex-shrink-0 flex items-center justify-between px-4 pt-6 pb-2">
         <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
@@ -48,48 +48,51 @@ const AIVetAssistant = () => {
         </button>
       </header>
 
-      {/* Pet Image Collage */}
-      <div className="px-8 py-6">
-        <div className="grid grid-cols-2 gap-3 max-w-[280px] mx-auto">
-          {petImages.map((pet, i) => (
-            <div key={i} className={`rounded-2xl overflow-hidden aspect-square shadow-lg ${pet.rotate}`}>
-              <img src={pet.src} alt={pet.alt} className="w-full h-full object-cover" />
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Pet Image Collage */}
+        <div className="px-8 py-6">
+          <div className="grid grid-cols-2 gap-3 max-w-[280px] mx-auto">
+            {petImages.map((pet, i) => (
+              <div key={i} className={`rounded-2xl overflow-hidden aspect-square shadow-lg ${pet.rotate}`}>
+                <img src={pet.src} alt={pet.alt} className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Heading */}
+        <div className="text-center px-6 mb-2">
+          <h1 className="text-2xl font-bold text-foreground leading-tight">
+            Smart Care for{" "}
+            <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+              Your Best Friend
+            </span>
+          </h1>
+        </div>
+        <p className="text-center text-sm text-muted-foreground px-8 mb-6">
+          Get instant veterinary guidance and book appointments with top-rated local experts.
+        </p>
+
+        {/* Feature Cards */}
+        <div className="px-4 space-y-3 mb-6">
+          {features.map((f, i) => (
+            <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-border flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl ${f.iconBg} flex items-center justify-center flex-shrink-0`}>
+                {f.icon}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-foreground text-sm">{f.title}</h4>
+                <p className="text-xs text-muted-foreground">{f.subtitle}</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
             </div>
           ))}
         </div>
       </div>
 
-      {/* Main Heading */}
-      <div className="text-center px-6 mb-2">
-        <h1 className="text-2xl font-bold text-foreground leading-tight">
-          Smart Care for{" "}
-          <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-            Your Best Friend
-          </span>
-        </h1>
-      </div>
-      <p className="text-center text-sm text-muted-foreground px-8 mb-6">
-        Get instant veterinary guidance and book appointments with top-rated local experts.
-      </p>
-
-      {/* Feature Cards */}
-      <div className="px-4 space-y-3 mb-6">
-        {features.map((f, i) => (
-          <div key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-border flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-xl ${f.iconBg} flex items-center justify-center flex-shrink-0`}>
-              {f.icon}
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-foreground text-sm">{f.title}</h4>
-              <p className="text-xs text-muted-foreground">{f.subtitle}</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-          </div>
-        ))}
-      </div>
-
-      {/* Footer CTA */}
-      <div className="mt-auto px-4 pb-8 pt-4">
+      {/* Footer CTA - Fixed */}
+      <div className="flex-shrink-0 px-4 pb-8 pt-4 bg-gradient-to-t from-white via-white to-transparent">
         <button className="w-full py-4 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-pink-500 to-purple-500 hover:shadow-xl transition-shadow">
           Start AI Assessment
           <ArrowRight className="w-5 h-5" />
