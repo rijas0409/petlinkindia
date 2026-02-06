@@ -326,21 +326,20 @@ const Vet = () => {
         {/* Smart Match Card */}
         <div 
           onClick={() => navigate("/vet/ai-assistant")}
-          className="bg-card rounded-[20px] p-3 shadow-md border border-border flex items-center gap-3 cursor-pointer hover:shadow-lg transition-shadow"
-          style={{ minHeight: '80px' }}
+          className="bg-card rounded-[18px] px-3 py-2.5 shadow-md border border-border flex items-center gap-2.5 cursor-pointer hover:shadow-lg transition-shadow"
         >
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F2EAFE' }}>
-            <Sparkles className="w-5 h-5" style={{ color: '#8B5CF6' }} />
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F2EAFE' }}>
+            <Sparkles className="w-4 h-4" style={{ color: '#8B5CF6' }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ color: '#8B5CF6' }}>
+            <p className="text-[9px] font-bold tracking-widest uppercase leading-none mb-0.5" style={{ color: '#8B5CF6' }}>
               SMART MATCH
             </p>
-            <h4 className="font-bold text-foreground text-sm leading-snug">Not sure which vet to choose?</h4>
-            <p className="text-xs text-muted-foreground">Let our AI find the perfect specialist</p>
+            <h4 className="font-bold text-foreground text-xs leading-snug">Not sure which vet to choose?</h4>
+            <p className="text-[11px] text-muted-foreground leading-tight">Let our AI find the perfect specialist</p>
           </div>
-          <button className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1F2937' }}>
-            <ChevronRight className="w-4 h-4 text-white" />
+          <button className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1F2937' }}>
+            <ChevronRight className="w-3.5 h-3.5 text-white" />
           </button>
         </div>
 
