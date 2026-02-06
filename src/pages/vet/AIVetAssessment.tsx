@@ -80,7 +80,7 @@ const AIVetAssessment = () => {
       ? "animate-slide-in-right-custom"
       : "animate-slide-in-left";
 
-  const ctaLabels = ["Continue", "Analyze Symptoms", "Continue", "Continue", "Submit Assessment"];
+  const ctaLabels = ["Continue", "Continue", "Continue", "Continue", "Analyze Symptoms"];
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
