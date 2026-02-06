@@ -100,6 +100,22 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        "slide-in-right-custom": {
+          from: { opacity: "0", transform: "translateX(60px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-in-left": {
+          from: { opacity: "0", transform: "translateX(-60px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-out-left": {
+          from: { opacity: "1", transform: "translateX(0)" },
+          to: { opacity: "0", transform: "translateX(-60px)" },
+        },
+        "slide-out-right": {
+          from: { opacity: "1", transform: "translateX(0)" },
+          to: { opacity: "0", transform: "translateX(60px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.3s ease-out",
@@ -110,6 +126,10 @@ export default {
         "slide-up": "slide-up 0.4s ease-out",
         "shimmer": "shimmer 2s infinite",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
+        "slide-in-right-custom": "slide-in-right-custom 0.3s ease-out",
+        "slide-in-left": "slide-in-left 0.3s ease-out",
+        "slide-out-left": "slide-out-left 0.3s ease-out",
+        "slide-out-right": "slide-out-right 0.3s ease-out",
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
