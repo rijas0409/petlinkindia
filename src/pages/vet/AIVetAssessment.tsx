@@ -149,7 +149,7 @@ const AIVetAssessment = () => {
             </button>
           )}
           <button
-            onClick={step === 5 ? () => navigate("/vet/consultation-plan") : goNext}
+            onClick={step === 5 ? () => navigate("/vet/ai-analyzing", { state: { selectedPet, petName, years, months, selectedSymptoms, duration, urgency, additionalDetails, vaccinated, existingConditions, medications } }) : goNext}
             className="flex-1 py-4 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
             style={{ background: 'linear-gradient(90deg, #FF4D6D, #8B5CF6)' }}
           >
