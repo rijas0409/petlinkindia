@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { 
   Search, SlidersHorizontal, MapPin, ChevronDown, Star, 
   MessageCircle, Stethoscope, Syringe, Sparkles, Heart, ShoppingCart,
-  ChevronRight, Play, BadgeCheck, X, Check, Video
+  ChevronRight, Play, BadgeCheck, X, Check, Video, Brain, ArrowRight
 } from "lucide-react";
-import vetDoctorBanner from "@/assets/vet-doctor-banner.png";
+import vetDoctorIllustration from "@/assets/vet-doctor-illustration.png";
 import { cn } from "@/lib/utils";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
@@ -288,42 +288,54 @@ const Vet = () => {
         </div>
 
         {/* Instant Video Call Banner */}
-        <div className="relative bg-gradient-to-r from-pink-500 via-pink-400 to-purple-400 rounded-3xl p-5 overflow-hidden min-h-[160px]">
-          {/* Background decorative elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-purple-300/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-300/20 rounded-full blur-2xl" />
-          
-          {/* Content */}
-          <div className="relative z-10 max-w-[55%]">
-            <div className="flex items-center gap-1 mb-2">
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <p className="text-xs font-semibold text-white tracking-wider">AVAILABLE NOW</p>
-            </div>
-            <h3 className="text-2xl font-bold text-white leading-tight mb-1">Instant</h3>
-            <h3 className="text-2xl font-bold text-white leading-tight mb-3">Video Call</h3>
-            <p className="text-sm text-white/90 mb-4">Get medical advice in 60 seconds</p>
+        <div className="rounded-[22px] overflow-hidden min-h-[180px] flex shadow-sm">
+          {/* Left - Pink section */}
+          <div className="flex-1 bg-[#FDE7EC] p-5 flex flex-col justify-center">
+            <p className="text-xs font-bold tracking-widest text-[#FF4D6D] mb-2">AVAILABLE NOW</p>
+            <h3 className="text-xl font-bold text-foreground leading-tight mb-1">Instant Video Call</h3>
+            <p className="text-sm text-muted-foreground mb-4">Medical advice in 60 seconds</p>
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => navigate("/vet/consultation-plan")}
-                className="bg-white text-pink-500 px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                className="bg-white text-[#FF4D6D] px-5 py-2 rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all hover:scale-105"
               >
                 Call Now
               </button>
-              <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-colors">
-                <Video className="w-5 h-5 text-white" />
+              <button 
+                onClick={() => navigate("/vet/consultation-plan")}
+                className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-sm"
+              >
+                <Play className="w-4 h-4 text-[#FF4D6D] fill-[#FF4D6D]" />
               </button>
             </div>
           </div>
-          
-          {/* Doctor illustration */}
-          <div className="absolute right-0 bottom-0 w-40 h-44">
+          {/* Right - Teal section with doctor */}
+          <div className="w-[42%] bg-[#6FB7B1] flex items-end justify-center">
             <img 
-              src={vetDoctorBanner}
+              src={vetDoctorIllustration}
               alt="Doctor"
-              className="w-full h-full object-contain object-bottom"
+              className="w-full h-full object-cover object-top"
             />
           </div>
         </div>
+
+        {/* Smart Match Card */}
+        <button 
+          onClick={() => navigate("/vet/ai-assistant")}
+          className="w-full bg-card rounded-[20px] p-4 shadow-md border border-border flex items-center gap-4 hover:shadow-lg transition-shadow text-left"
+        >
+          <div className="w-12 h-12 rounded-xl bg-[#F2EAFE] flex items-center justify-center flex-shrink-0">
+            <Brain className="w-6 h-6 text-[#8B5CF6]" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-bold tracking-widest text-[#8B5CF6] mb-0.5">SMART MATCH</p>
+            <p className="font-semibold text-sm text-foreground">Not sure which vet to choose?</p>
+            <p className="text-xs text-muted-foreground">Let our AI find the perfect specialist</p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+            <ArrowRight className="w-5 h-5 text-white" />
+          </div>
+        </button>
 
         {/* Expert Specialties */}
         <section>
