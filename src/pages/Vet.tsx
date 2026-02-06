@@ -287,42 +287,61 @@ const Vet = () => {
           </div>
         </div>
 
-        {/* Instant Video Call Banner */}
-        <div className="relative bg-gradient-to-r from-pink-500 via-pink-400 to-purple-400 rounded-3xl p-5 overflow-hidden min-h-[160px]">
-          {/* Background decorative elements */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-purple-300/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-pink-300/20 rounded-full blur-2xl" />
-          
-          {/* Content */}
-          <div className="relative z-10 max-w-[55%]">
-            <div className="flex items-center gap-1 mb-2">
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <p className="text-xs font-semibold text-white tracking-wider">AVAILABLE NOW</p>
-            </div>
-            <h3 className="text-2xl font-bold text-white leading-tight mb-1">Instant</h3>
-            <h3 className="text-2xl font-bold text-white leading-tight mb-3">Video Call</h3>
-            <p className="text-sm text-white/90 mb-4">Get medical advice in 60 seconds</p>
+        {/* Instant Video Call Banner - Split Layout */}
+        <div className="rounded-[22px] overflow-hidden flex min-h-[180px]" style={{ maxHeight: '200px' }}>
+          {/* Left Section - Pastel Pink */}
+          <div className="flex-1 flex flex-col justify-center px-5 py-4" style={{ backgroundColor: '#FDE7EC' }}>
+            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: '#FF4D6D' }}>
+              AVAILABLE NOW
+            </p>
+            <h3 className="text-2xl font-bold text-foreground leading-tight mb-1">
+              Instant Video Call
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Medical advice in 60 seconds
+            </p>
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => navigate("/vet/consultation-plan")}
-                className="bg-white text-pink-500 px-6 py-2.5 rounded-full text-sm font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                className="bg-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                style={{ color: '#FF4D6D' }}
               >
                 Call Now
               </button>
-              <button className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm hover:bg-white/30 transition-colors">
-                <Video className="w-5 h-5 text-white" />
+              <button className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFD6DE' }}>
+                <Play className="w-4 h-4 fill-current" style={{ color: '#FF4D6D' }} />
               </button>
             </div>
           </div>
-          
-          {/* Doctor illustration */}
-          <div className="absolute right-0 bottom-0 w-40 h-44">
+          {/* Right Section - Teal with Doctor */}
+          <div className="w-[42%] relative" style={{ backgroundColor: '#6FB7B1' }}>
             <img 
               src={vetDoctorBanner}
               alt="Doctor"
-              className="w-full h-full object-contain object-bottom"
+              className="w-full h-full object-cover object-top"
             />
           </div>
+        </div>
+
+        {/* Smart Match Card */}
+        <div 
+          onClick={() => navigate("/vet/ai-assistant")}
+          className="bg-card rounded-[20px] p-4 shadow-md border border-border flex items-center gap-4 cursor-pointer hover:shadow-lg transition-shadow"
+          style={{ minHeight: '110px' }}
+        >
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F2EAFE' }}>
+            <Sparkles className="w-7 h-7" style={{ color: '#8B5CF6' }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: '#8B5CF6' }}>
+              SMART MATCH
+            </p>
+            <h4 className="font-bold text-foreground text-base leading-snug">Not sure which vet to choose?</h4>
+            <p className="text-sm text-muted-foreground">Let our AI find the perfect specialist</p>
+          </div>
+          <button className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#1F2937' }}>
+            <ChevronRight className="w-5 h-5 text-white" />
+          </button>
         </div>
 
         {/* Expert Specialties */}
