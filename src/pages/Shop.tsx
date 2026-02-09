@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { ShoppingCart, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import BottomNavigation from "@/components/BottomNavigation";
-import PetSelectionScreen from "@/components/shop/PetSelectionScreen";
+import ShopHomeScreen from "@/components/shop/ShopHomeScreen";
+import PetShopScreen from "@/components/shop/PetShopScreen";
 import ProductListingScreen from "@/components/shop/ProductListingScreen";
-import { useWishlist } from "@/hooks/useWishlist";
 import { toast } from "sonner";
 
-type ShopScreen = "pet-selection" | "product-listing";
+type ShopScreen = "home" | "pet-shop" | "product-listing";
 
 interface CartItem {
   productId: string;
@@ -17,19 +15,26 @@ interface CartItem {
 
 const Shop = () => {
   const navigate = useNavigate();
-  const [currentScreen, setCurrentScreen] = useState<ShopScreen>("pet-selection");
+  const [currentScreen, setCurrentScreen] = useState<ShopScreen>("home");
   const [selectedPet, setSelectedPet] = useState<string>("");
   const [cart, setCart] = useState<CartItem[]>([]);
-  const { totalWishlistCount } = useWishlist();
 
   const handleSelectPet = (petId: string) => {
     setSelectedPet(petId);
+    setCurrentScreen("pet-shop");
+  };
+
+  const handleBackFromPetShop = () => {
+    setCurrentScreen("home");
+    setSelectedPet("");
+  };
+
+  const handleViewAllProducts = () => {
     setCurrentScreen("product-listing");
   };
 
   const handleBackFromProducts = () => {
-    setCurrentScreen("pet-selection");
-    setSelectedPet("");
+    setCurrentScreen("pet-shop");
   };
 
   const handleAddToCart = (productId: string) => {
@@ -47,45 +52,19 @@ const Shop = () => {
     toast.success("Added to cart");
   };
 
-  const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header Actions - Floating */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        {/* Wishlist Button */}
-        <Button
-          variant="default"
-          size="icon"
-          className="rounded-full relative shadow-lg"
-          onClick={() => navigate("/wishlist")}
-        >
-          <Heart className="w-5 h-5" />
-          {totalWishlistCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-              {totalWishlistCount}
-            </span>
-          )}
-        </Button>
+      {currentScreen === "home" && (
+        <ShopHomeScreen onSelectPet={handleSelectPet} onAddToCart={handleAddToCart} />
+      )}
 
-        {/* Cart Button */}
-        {totalCartItems > 0 && (
-          <Button
-            variant="default"
-            size="icon"
-            className="rounded-full relative shadow-lg"
-            onClick={() => toast.info("Cart checkout coming soon")}
-          >
-            <ShoppingCart className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-              {totalCartItems}
-            </span>
-          </Button>
-        )}
-      </div>
-
-      {currentScreen === "pet-selection" && (
-        <PetSelectionScreen onSelectPet={handleSelectPet} />
+      {currentScreen === "pet-shop" && (
+        <PetShopScreen
+          petType={selectedPet}
+          onBack={handleBackFromPetShop}
+          onViewAllProducts={handleViewAllProducts}
+          onAddToCart={handleAddToCart}
+        />
       )}
 
       {currentScreen === "product-listing" && (
