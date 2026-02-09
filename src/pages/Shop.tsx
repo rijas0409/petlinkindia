@@ -4,20 +4,15 @@ import BottomNavigation from "@/components/BottomNavigation";
 import ShopHomeScreen from "@/components/shop/ShopHomeScreen";
 import PetShopScreen from "@/components/shop/PetShopScreen";
 import ProductListingScreen from "@/components/shop/ProductListingScreen";
-import { toast } from "sonner";
+import { useCart } from "@/contexts/CartContext";
 
 type ShopScreen = "home" | "pet-shop" | "product-listing";
-
-interface CartItem {
-  productId: string;
-  quantity: number;
-}
 
 const Shop = () => {
   const navigate = useNavigate();
   const [currentScreen, setCurrentScreen] = useState<ShopScreen>("home");
   const [selectedPet, setSelectedPet] = useState<string>("");
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { addToCart: handleAddToCart } = useCart();
 
   const handleSelectPet = (petId: string) => {
     setSelectedPet(petId);
@@ -35,21 +30,6 @@ const Shop = () => {
 
   const handleBackFromProducts = () => {
     setCurrentScreen("pet-shop");
-  };
-
-  const handleAddToCart = (productId: string) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.productId === productId);
-      if (existing) {
-        return prev.map((item) =>
-          item.productId === productId
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { productId, quantity: 1 }];
-    });
-    toast.success("Added to cart");
   };
 
   return (

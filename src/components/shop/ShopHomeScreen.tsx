@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
 import { generateProducts } from "@/lib/shopData";
+import { useCart } from "@/contexts/CartContext";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
-import { toast } from "sonner";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import shopPromoBanner from "@/assets/shop-promo-banner.png";
@@ -133,6 +133,7 @@ interface ShopHomeScreenProps {
 const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
   const navigate = useNavigate();
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
+  const { cartCount } = useCart();
 
   // Generate best sellers from all 9 pet types mixed together
   const bestSellers = (() => {
@@ -199,10 +200,15 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
               )}
             </button>
             <button
-              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
               onClick={() => navigate("/cart")}
             >
               <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
             </button>
             <HeaderProfileDropdown />
           </div>
