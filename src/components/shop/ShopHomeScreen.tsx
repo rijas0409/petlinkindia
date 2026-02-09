@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
 import { generateProducts } from "@/lib/shopData";
+import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
+import { toast } from "sonner";
 import shopPromoBanner from "@/assets/shop-promo-banner.png";
 
 const PET_OPTIONS = [
@@ -56,27 +58,28 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-card border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)' }}>
-                <Heart className="w-4 h-4 text-white fill-white" />
-              </div>
-              <span className="text-lg font-bold text-foreground">PetLink</span>
+      {/* Header - Same as Vet page */}
+      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
+              <Heart className="w-5 h-5 text-white" />
             </div>
-            <div className="flex items-center gap-1 mt-0.5 ml-10">
-              <MapPin className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Gurgaon</span>
-              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+            <div>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                PetLink
+              </span>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="w-3 h-3" />
+                <span>Gurgaon</span>
+                <ChevronDown className="w-3 h-3" />
+              </div>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full relative"
+            <button 
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
               onClick={() => navigate("/wishlist")}
             >
               <Heart className="w-5 h-5" />
@@ -85,13 +88,14 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
                   {totalWishlistCount}
                 </span>
               )}
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            </button>
+            <button 
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              onClick={() => toast.info("Cart coming soon")}
+            >
               <ShoppingCart className="w-5 h-5" />
-            </Button>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ background: 'linear-gradient(135deg, #ec4899, #f97316)' }}>
-              R
-            </div>
+            </button>
+            <HeaderProfileDropdown />
           </div>
         </div>
       </header>
