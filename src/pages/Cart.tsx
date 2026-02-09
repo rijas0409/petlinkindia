@@ -1,35 +1,13 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import { useCart } from "@/contexts/CartContext";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  const updateQuantity = (id: string, delta: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  const { cartItems, updateQuantity, removeItem } = useCart();
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = cartItems.length > 0 ? 49 : 0;

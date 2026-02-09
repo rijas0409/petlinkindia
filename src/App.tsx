@@ -42,11 +42,13 @@ import AIVetAssessment from "./pages/vet/AIVetAssessment";
 import AIAnalyzingCondition from "./pages/vet/AIAnalyzingCondition";
 import BookingDetails from "./pages/vet/BookingDetails";
 import NotFound from "./pages/NotFound";
+import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <CartProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -95,6 +97,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </CartProvider>
   </QueryClientProvider>
 );
 
