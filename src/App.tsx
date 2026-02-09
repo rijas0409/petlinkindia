@@ -19,6 +19,13 @@ import PetDetails from "./pages/PetDetails";
 import DeliveryDashboard from "./pages/DeliveryDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProfileMenu from "./pages/ProfileMenu";
+import ProfileSettings from "./pages/ProfileSettings";
+import Addresses from "./pages/Addresses";
+import WalletPage from "./pages/WalletPage";
+import Bookings from "./pages/Bookings";
+import Notifications from "./pages/Notifications";
+import PrivacySecurity from "./pages/PrivacySecurity";
+import Cart from "./pages/Cart";
 import Shop from "./pages/Shop";
 import Chats from "./pages/Chats";
 import Wishlist from "./pages/Wishlist";
@@ -61,6 +68,13 @@ const App = () => (
           <Route path="/delivery" element={<DeliveryDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/profile-menu" element={<ProfileMenu />} />
+          <Route path="/profile/settings" element={<ProfileSettings />} />
+          <Route path="/profile/addresses" element={<Addresses />} />
+          <Route path="/profile/wallet" element={<WalletPage />} />
+          <Route path="/profile/bookings" element={<Bookings />} />
+          <Route path="/profile/notifications" element={<Notifications />} />
+          <Route path="/profile/privacy" element={<PrivacySecurity />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/chats" element={<Chats />} />
           <Route path="/wishlist" element={<Wishlist />} />

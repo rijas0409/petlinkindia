@@ -101,7 +101,7 @@ const ProfileMenu = () => {
               <Card
                 key={item.id}
                 className="p-4 cursor-pointer hover:shadow-card transition-all rounded-2xl border-0 shadow-sm"
-                onClick={() => toast.info(`${item.title} page coming soon`)}
+                onClick={() => navigate(item.path)}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
