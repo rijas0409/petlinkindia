@@ -95,7 +95,8 @@ export const useWishlist = () => {
         toast.success("Added to wishlist");
       }
     } catch (error: any) {
-      toast.error("Failed to update wishlist");
+      console.error("Wishlist pet error:", error);
+      toast.error(error?.message || "Failed to update wishlist");
     }
   };
 
@@ -108,6 +109,18 @@ export const useWishlist = () => {
   }) => {
     if (!userId) {
       toast.error("Please login to add to wishlist");
+      return;
+    }
+
+    // Verify profile exists before attempting wishlist operation
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .single();
+
+    if (!profile) {
+      toast.error("Please complete your profile first");
       return;
     }
 
@@ -143,7 +156,8 @@ export const useWishlist = () => {
         toast.success("Added to wishlist");
       }
     } catch (error: any) {
-      toast.error("Failed to update wishlist");
+      console.error("Wishlist product error:", error);
+      toast.error(error?.message || "Failed to update wishlist");
     }
   };
 
