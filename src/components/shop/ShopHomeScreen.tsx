@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,40 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { generateProducts } from "@/lib/shopData";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { toast } from "sonner";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import shopPromoBanner from "@/assets/shop-promo-banner.png";
+
+const PROMO_SLIDES = [
+  {
+    gradient: "linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)",
+    title: "Summer Pet\nCare Deals",
+    subtitle: "Up to 40% off sunscreens &\nhydration kits",
+    cta: "Shop Now",
+    image: shopPromoBanner,
+  },
+  {
+    gradient: "linear-gradient(135deg, #0ea5e9, #6366f1, #8b5cf6)",
+    title: "Premium\nPet Food",
+    subtitle: "Top brands at best prices\nFree delivery above ₹499",
+    cta: "Explore",
+    image: "https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=400",
+  },
+  {
+    gradient: "linear-gradient(135deg, #f59e0b, #ef4444, #ec4899)",
+    title: "New Arrivals\nToys & Treats",
+    subtitle: "Exciting toys for your\nfurry friends",
+    cta: "Browse",
+    image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400",
+  },
+  {
+    gradient: "linear-gradient(135deg, #10b981, #14b8a6, #0ea5e9)",
+    title: "Pet Health\nEssentials",
+    subtitle: "Vitamins, supplements &\nmore at 30% off",
+    cta: "Shop Now",
+    image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400",
+  },
+];
 
 const PET_OPTIONS = [
   { id: "dog", name: "Dogs", image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=200" },
@@ -20,6 +53,78 @@ const PET_OPTIONS = [
   { id: "white-mouse", name: "Mouse", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=200" },
 ];
 
+// Promo Carousel Component
+const PromoCarousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true },
+    [Autoplay({ delay: 4000, stopOnInteraction: false })]
+  );
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCurrentIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    onSelect();
+  }, [emblaApi, onSelect]);
+
+  return (
+    <div>
+      <div className="relative overflow-hidden rounded-2xl" ref={emblaRef}>
+        <div className="flex">
+          {PROMO_SLIDES.map((slide, index) => (
+            <div key={index} className="flex-[0_0_100%] min-w-0">
+              <div
+                className="relative rounded-2xl overflow-hidden"
+                style={{ background: slide.gradient }}
+              >
+                <div className="flex items-center">
+                  <div className="flex-1 p-5">
+                    <h3 className="text-white text-xl font-bold leading-tight whitespace-pre-line">
+                      {slide.title}
+                    </h3>
+                    <p className="text-white/80 text-xs mt-1 whitespace-pre-line">
+                      {slide.subtitle}
+                    </p>
+                    <button className="mt-3 bg-white text-foreground text-xs font-semibold px-4 py-1.5 rounded-full">
+                      {slide.cta}
+                    </button>
+                  </div>
+                  <div className="w-36 h-32 flex-shrink-0">
+                    <img
+                      src={slide.image}
+                      alt={slide.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Dots */}
+      <div className="flex justify-center gap-1.5 mt-2.5">
+        {PROMO_SLIDES.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => emblaApi?.scrollTo(index)}
+            className={`h-1.5 rounded-full transition-all ${
+              index === currentIndex
+                ? "w-5 bg-primary"
+                : "w-1.5 bg-muted-foreground/30"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 interface ShopHomeScreenProps {
   onSelectPet: (petId: string) => void;
   onAddToCart: (productId: string) => void;
@@ -28,9 +133,7 @@ interface ShopHomeScreenProps {
 const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
   const navigate = useNavigate();
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
-  const [sortBy, setSortBy] = useState("relevance");
 
-  // Generate best sellers from mixed pet types
   const bestSellers = generateProducts("dog", "food").slice(0, 4).map((p, i) => ({
     ...p,
     id: `best-seller-${i}`,
@@ -76,9 +179,8 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
               </div>
             </div>
           </div>
-
           <div className="flex items-center gap-2">
-            <button 
+            <button
               className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
               onClick={() => navigate("/wishlist")}
             >
@@ -89,7 +191,7 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
                 </span>
               )}
             </button>
-            <button 
+            <button
               className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
               onClick={() => toast.info("Cart coming soon")}
             >
@@ -108,22 +210,9 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
         </div>
       </div>
 
-      {/* Promo Banner */}
+      {/* Promo Carousel */}
       <div className="px-4 pb-4">
-        <div className="relative rounded-2xl overflow-hidden" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)' }}>
-          <div className="flex items-center">
-            <div className="flex-1 p-5">
-              <h3 className="text-white text-xl font-bold leading-tight">Summer Pet<br />Care Deals</h3>
-              <p className="text-white/80 text-xs mt-1">Up to 40% off sunscreens &<br />hydration kits</p>
-              <button className="mt-3 bg-white text-foreground text-xs font-semibold px-4 py-1.5 rounded-full">
-                Shop Now
-              </button>
-            </div>
-            <div className="w-40 h-36">
-              <img src={shopPromoBanner} alt="Pet care deals" className="w-full h-full object-cover" />
-            </div>
-          </div>
-        </div>
+        <PromoCarousel />
       </div>
 
       {/* Who are you shopping for? */}
