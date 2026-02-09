@@ -134,20 +134,27 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
   const navigate = useNavigate();
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
 
-  const bestSellers = generateProducts("dog", "food").slice(0, 4).map((p, i) => ({
-    ...p,
-    id: `best-seller-${i}`,
-    name: ["Hills Organic Mix For Small Dogs", "Pedigree Jumbone Peanut Butter...", "Hills Organic Mix For Small Dogs", "Pedigree Jumbone Peanut Butter..."][i],
-    price: [1446, 200, 1446, 200][i],
-    originalPrice: [1786, 0, 1786, 0][i],
-    discount: [32, 0, 32, 0][i],
-    image: [
-      "https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=400",
-      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400",
-      "https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=400",
-      "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400",
-    ][i],
-  }));
+  // Generate best sellers from all 9 pet types mixed together
+  const bestSellers = (() => {
+    const allPetTypes = ["dog", "cat", "birds", "fish", "rabbit", "hamster", "guinea-pig", "turtle", "white-mouse"];
+    const allProducts: any[] = [];
+    
+    allPetTypes.forEach((pet) => {
+      const categories = ["food", "treats", "toys"];
+      categories.forEach((cat) => {
+        const products = generateProducts(pet, cat);
+        // Pick top 1-2 products per pet (simulating "best selling" by highest discount)
+        const sorted = [...products].sort((a, b) => b.discount - a.discount);
+        allProducts.push(...sorted.slice(0, 1));
+      });
+    });
+
+    // Sort by discount (simulating sales popularity) and pick top 8
+    return allProducts
+      .sort((a, b) => b.discount - a.discount)
+      .slice(0, 8)
+      .map((p, i) => ({ ...p, id: `best-seller-${i}` }));
+  })();
 
   const handleToggleWishlist = async (product: any) => {
     await toggleProductWishlist({
@@ -155,7 +162,7 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
       name: product.name,
       price: product.price,
       image: product.image,
-      petType: "dog",
+      petType: product.petType || "dog",
     });
   };
 
@@ -193,7 +200,7 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
             </button>
             <button
               className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
-              onClick={() => toast.info("Cart coming soon")}
+              onClick={() => navigate("/cart")}
             >
               <ShoppingCart className="w-5 h-5" />
             </button>
