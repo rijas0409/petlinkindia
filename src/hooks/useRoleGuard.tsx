@@ -31,20 +31,38 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
         }
 
         const meta = session.user.user_metadata as any;
-        const expectedRole = meta?.role as AllowedRole | undefined;
+        const metaRole = meta?.role as AllowedRole | undefined;
+        const expectedRole = metaRole || allowedRoles?.[0];
         const userName = meta?.name || meta?.full_name || "User";
 
-        // Self-heal: ensure user_roles + profiles rows exist
+        // Self-heal: ensure user_roles + profiles rows exist (even if metadata role is missing)
         if (expectedRole) {
+          const initRes = await supabase.rpc("ensure_user_initialized" as any, {
+            _role: expectedRole,
+            _name: userName,
+            _email: session.user.email || "",
+          });
+          if (initRes.error) {
+            throw new Error(initRes.error.message);
+          }
+        }
+
+        // Get role (retry once after init)
+        let roleData: AllowedRole | null = null;
+        const roleRpc1 = await supabase.rpc("get_user_role", { _user_id: session.user.id });
+        roleData = (roleRpc1.data as any) ?? null;
+
+        if (!roleData && expectedRole) {
+          // One more attempt to initialize + read
           await supabase.rpc("ensure_user_initialized" as any, {
             _role: expectedRole,
             _name: userName,
             _email: session.user.email || "",
           });
-        }
 
-        // Get role
-        let { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
+          const roleRpc2 = await supabase.rpc("get_user_role", { _user_id: session.user.id });
+          roleData = (roleRpc2.data as any) ?? null;
+        }
 
         if (!roleData) {
           // Last-resort direct read
