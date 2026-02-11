@@ -18,15 +18,29 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
   const [profile, setProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // IMPORTANT: callers often pass array literals like ["product_seller"].
+  // Using the array directly in the dependency list causes the effect to re-run on every render
+  // (new array identity) -> repeated redirects/loading loops.
+  const rolesKey = (allowedRoles || []).slice().sort().join("|");
+
   useEffect(() => {
     let cancelled = false;
+
+    const safeNavigate = (to: string) => {
+      // Avoid repeated navigation to the same path which can look like "refresh loops"
+      if (window.location.pathname === to) return;
+      navigate(to, { replace: true });
+    };
 
     const checkAccess = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
 
         if (!session) {
-          if (!cancelled) { setIsLoading(false); navigate(redirectPath || "/auth"); }
+          if (!cancelled) {
+            setIsLoading(false);
+            safeNavigate(redirectPath || "/auth");
+          }
           return;
         }
 
@@ -42,9 +56,7 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
             _name: userName,
             _email: session.user.email || "",
           });
-          if (initRes.error) {
-            throw new Error(initRes.error.message);
-          }
+          if (initRes.error) throw new Error(initRes.error.message);
         }
 
         // Get role (retry once after init)
@@ -53,7 +65,6 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
         roleData = (roleRpc1.data as any) ?? null;
 
         if (!roleData && expectedRole) {
-          // One more attempt to initialize + read
           await supabase.rpc("ensure_user_initialized" as any, {
             _role: expectedRole,
             _name: userName,
@@ -78,25 +89,26 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
 
         if (!roleData || !allowedRoles.includes(roleData as AllowedRole)) {
           switch (roleData) {
-            case "buyer": navigate("/buyer-dashboard"); break;
-            case "seller": navigate("/seller-dashboard"); break;
-            case "admin": navigate("/admin"); break;
-            case "delivery_partner": navigate("/delivery"); break;
-            case "product_seller": navigate("/products-dashboard"); break;
-            case "vet": navigate("/vet-dashboard"); break;
-            default: navigate(redirectPath || "/auth");
+            case "buyer": safeNavigate("/buyer-dashboard"); break;
+            case "seller": safeNavigate("/seller-dashboard"); break;
+            case "admin": safeNavigate("/admin"); break;
+            case "delivery_partner": safeNavigate("/delivery"); break;
+            case "product_seller": safeNavigate("/products-dashboard"); break;
+            case "vet": safeNavigate("/vet-dashboard"); break;
+            default: safeNavigate(redirectPath || "/auth");
           }
           setIsLoading(false);
           return;
         }
 
         // Fetch profile
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
           .maybeSingle();
 
+        if (profileError) throw new Error(profileError.message);
         if (cancelled) return;
 
         setUser(session.user);
@@ -118,7 +130,8 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
 
     checkAccess();
     return () => { cancelled = true; };
-  }, [navigate, allowedRoles, redirectPath]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, redirectPath, rolesKey]);
 
   return { isLoading, user, profile, error };
 };
