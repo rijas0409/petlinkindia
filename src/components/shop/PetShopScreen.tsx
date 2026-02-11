@@ -15,6 +15,8 @@ import shopBannerGuineaPig from "@/assets/shop-banner-guinea-pig.png";
 import shopBannerTurtle from "@/assets/shop-banner-turtle.png";
 import dogShopBanner from "@/assets/dog-shop-banner.png";
 import dogBreedsGrid from "@/assets/dog-breeds-grid.png";
+import catShopBanner from "@/assets/cat-shop-banner.png";
+import catBreedsGrid from "@/assets/cat-breeds-grid.png";
 
 const BANNER_IMAGES: Record<string, string> = {
   dog: shopBannerDog,
@@ -126,7 +128,12 @@ const PET_BREED_CATEGORIES: Record<string, { name: string; image: string; bgColo
 
 const DOG_BREED_NAMES = [
   "Golden Retriever", "Labrador Retriever", "German Shepherd", "Beagle",
-  "Pug", "Shih Tzu", "Shih Tzu", "Cocker Spaniel",
+  "Pug", "Shih Tzu", "Husky", "Cocker Spaniel",
+];
+
+const CAT_BREED_NAMES = [
+  "Persian", "British Shorthair", "Maine Coon", "Siamese",
+  "Bengal", "Ragdoll", "Himalayan", "Domestic Shorthair",
 ];
 
 interface PetShopScreenProps {
@@ -214,6 +221,8 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
       <div className="px-4 pb-4">
         {petType === "dog" ? (
           <img src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
+        ) : petType === "cat" ? (
+          <img src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
         ) : (
           <div className="rounded-2xl overflow-hidden" style={{ background: bannerGradient }}>
             <div className="flex items-center">
@@ -236,6 +245,20 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
             <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {DOG_BREED_NAMES.map((breed, i) => (
+                <button
+                  key={i}
+                  className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
+                  onClick={() => onViewAllProducts(breed)}
+                  aria-label={breed}
+                />
+              ))}
+            </div>
+          </div>
+        ) : petType === "cat" ? (
+          <div className="relative">
+            <img src={catBreedsGrid} alt="Cat Breeds" className="w-full rounded-2xl" />
+            <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
+              {CAT_BREED_NAMES.map((breed, i) => (
                 <button
                   key={i}
                   className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
