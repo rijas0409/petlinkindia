@@ -1118,6 +1118,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      ensure_user_initialized: {
+        Args: {
+          _email: string
+          _name: string
+          _role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: undefined
+      }
       get_public_seller_info: {
         Args: { _seller_id: string }
         Returns: {

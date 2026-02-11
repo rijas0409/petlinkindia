@@ -8,6 +8,7 @@ interface RoleGuardResult {
   isLoading: boolean;
   user: any;
   profile: any;
+  error: string | null;
 }
 
 export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string): RoleGuardResult => {
@@ -15,25 +16,38 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const checkAccess = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
 
         if (!session) {
-          setIsLoading(false);
-          navigate(redirectPath || "/auth");
+          if (!cancelled) { setIsLoading(false); navigate(redirectPath || "/auth"); }
           return;
         }
 
-        // Get role from user_roles table (authoritative source)
+        const meta = session.user.user_metadata as any;
+        const expectedRole = meta?.role as AllowedRole | undefined;
+        const userName = meta?.name || meta?.full_name || "User";
+
+        // Self-heal: ensure user_roles + profiles rows exist
+        if (expectedRole) {
+          await supabase.rpc("ensure_user_initialized" as any, {
+            _role: expectedRole,
+            _name: userName,
+            _email: session.user.email || "",
+          });
+        }
+
+        // Get role
         let { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
 
-        // Fallback: in some edge cases the RPC may return null (e.g. missing row). Try direct read.
         if (!roleData) {
+          // Last-resort direct read
           const roleRes = await supabase
             .from("user_roles")
             .select("role")
@@ -42,81 +56,51 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
           roleData = (roleRes.data as any)?.role ?? null;
         }
 
+        if (cancelled) return;
+
         if (!roleData || !allowedRoles.includes(roleData as AllowedRole)) {
-          // Redirect to appropriate dashboard
           switch (roleData) {
-            case "buyer":
-              navigate("/buyer-dashboard");
-              break;
-            case "seller":
-              navigate("/seller-dashboard");
-              break;
-            case "admin":
-              navigate("/admin");
-              break;
-            case "delivery_partner":
-              navigate("/delivery");
-              break;
-            case "product_seller":
-              navigate("/products-dashboard");
-              break;
-            case "vet":
-              navigate("/vet-dashboard");
-              break;
-            default:
-              navigate(redirectPath || "/auth");
+            case "buyer": navigate("/buyer-dashboard"); break;
+            case "seller": navigate("/seller-dashboard"); break;
+            case "admin": navigate("/admin"); break;
+            case "delivery_partner": navigate("/delivery"); break;
+            case "product_seller": navigate("/products-dashboard"); break;
+            case "vet": navigate("/vet-dashboard"); break;
+            default: navigate(redirectPath || "/auth");
           }
           setIsLoading(false);
           return;
         }
 
-        // NOTE: .single() throws when 0 rows, which can cause dashboards to get stuck.
-        // Use maybeSingle() and auto-create the missing profile row if needed.
-        const profileRes = await supabase
+        // Fetch profile
+        const { data: profileData } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
           .maybeSingle();
 
-        let profileData = profileRes.data;
-
-        if (!profileData) {
-          const fallbackName =
-            (session.user.user_metadata as any)?.name ||
-            (session.user.user_metadata as any)?.full_name ||
-            "User";
-
-          // Upsert a minimal profile row so RLS + app queries work reliably
-          await supabase
-            .from("profiles")
-            .upsert(
-              {
-                id: session.user.id,
-                name: fallbackName,
-                email: session.user.email,
-                role: roleData as any,
-              } as any,
-              { onConflict: "id" }
-            );
-
-          const retry = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", session.user.id)
-            .maybeSingle();
-
-          profileData = retry.data;
-        }
+        if (cancelled) return;
 
         setUser(session.user);
-        setProfile(profileData);
+        setProfile(profileData || {
+          id: session.user.id,
+          name: userName,
+          email: session.user.email,
+          role: roleData,
+          is_onboarding_complete: false,
+          is_admin_approved: false,
+        });
+      } catch (err: any) {
+        console.error("useRoleGuard error:", err);
+        if (!cancelled) setError(err?.message || "Authentication check failed");
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     checkAccess();
+    return () => { cancelled = true; };
   }, [navigate, allowedRoles, redirectPath]);
 
-  return { isLoading, user, profile };
+  return { isLoading, user, profile, error };
 };
