@@ -21,6 +21,12 @@ import { toast } from "sonner";
 import { useWishlist } from "@/hooks/useWishlist";
 import { PET_CATEGORIES, PET_NAMES, generateProducts, SORT_OPTIONS, BRAND_OPTIONS, QUICK_FILTERS } from "@/lib/shopData";
 
+const DOG_BREEDS = [
+  "All Breeds",
+  "Golden Retriever", "Labrador Retriever", "German Shepherd", "Beagle",
+  "Pug", "Shih Tzu", "Cocker Spaniel",
+];
+
 interface ProductListingScreenProps {
   petType: string;
   initialBreed?: string;
@@ -34,11 +40,12 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
   
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id || "food");
   const [sortBy, setSortBy] = useState("relevance");
+  const [selectedBreed, setSelectedBreed] = useState(initialBreed || "All Breeds");
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState(initialBreed || "");
-  const [isSearchOpen, setIsSearchOpen] = useState(!!initialBreed);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isPriceFilterOpen, setIsPriceFilterOpen] = useState(false);
   
   const { toggleProductWishlist, isProductInWishlist } = useWishlist();
@@ -204,6 +211,32 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Breed (dog only) */}
+            {petType === "dog" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant={selectedBreed !== "All Breeds" ? "default" : "outline"}
+                    size="sm"
+                    className="rounded-full whitespace-nowrap flex items-center gap-1"
+                  >
+                    {selectedBreed !== "All Breeds" ? `🐕 ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="rounded-xl max-h-60 overflow-y-auto">
+                  {DOG_BREEDS.map((breed) => (
+                    <DropdownMenuItem
+                      key={breed}
+                      onClick={() => setSelectedBreed(breed)}
+                      className={selectedBreed === breed ? "bg-primary/10" : ""}
+                    >
+                      {breed}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
 
             {/* Brand */}
             <DropdownMenu>
