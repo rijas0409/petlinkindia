@@ -24,7 +24,13 @@ import { PET_CATEGORIES, PET_NAMES, generateProducts, SORT_OPTIONS, BRAND_OPTION
 const DOG_BREEDS = [
   "All Breeds",
   "Golden Retriever", "Labrador Retriever", "German Shepherd", "Beagle",
-  "Pug", "Shih Tzu", "Cocker Spaniel",
+  "Pug", "Shih Tzu", "Husky", "Cocker Spaniel",
+];
+
+const CAT_BREEDS = [
+  "All Breeds",
+  "Persian", "British Shorthair", "Maine Coon", "Siamese",
+  "Bengal", "Ragdoll", "Himalayan", "Domestic Shorthair",
 ];
 
 interface ProductListingScreenProps {
@@ -212,8 +218,8 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Breed (dog only) */}
-            {petType === "dog" && (
+            {/* Breed (dog & cat) */}
+            {(petType === "dog" || petType === "cat") && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -221,11 +227,11 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
                     size="sm"
                     className="rounded-full whitespace-nowrap flex items-center gap-1"
                   >
-                    {selectedBreed !== "All Breeds" ? `🐕 ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
+                    {selectedBreed !== "All Breeds" ? `${petType === "dog" ? "🐕" : "🐈"} ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-xl max-h-60 overflow-y-auto">
-                  {DOG_BREEDS.map((breed) => (
+                  {(petType === "dog" ? DOG_BREEDS : CAT_BREEDS).map((breed) => (
                     <DropdownMenuItem
                       key={breed}
                       onClick={() => setSelectedBreed(breed)}
