@@ -24,21 +24,31 @@ const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
   }, []);
 
   const fetchUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("name, email, profile_photo")
-        .eq("id", session.user.id)
-        .single();
-      
-      if (profile) {
-        setUser({
-          name: profile.name || "User",
-          email: profile.email || session.user.email || "",
-          photo: profile.profile_photo,
-        });
-      }
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("name, email, profile_photo")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (profile) {
+      setUser({
+        name: profile.name || "User",
+        email: profile.email || session.user.email || "",
+        photo: profile.profile_photo,
+      });
+    } else {
+      // Avoid hard errors when profile row is temporarily missing.
+      setUser({
+        name: (session.user.user_metadata as any)?.name || "User",
+        email: session.user.email || "",
+        photo: null,
+      });
     }
   };
 
