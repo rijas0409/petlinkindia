@@ -5,20 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useRoleGuard } from "@/hooks/useRoleGuard";
-import { PET_CATEGORIES, PET_NAMES } from "@/lib/shopData";
+import { PET_NAMES } from "@/lib/shopData";
+import ProductFormFields, { INITIAL_PRODUCT_FORM, type ProductFormData } from "@/components/products/ProductFormFields";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import {
-  Plus, Package, Heart, Eye, Edit, Trash2, DollarSign, Loader2, Upload, X, ShoppingBag, BarChart3, LogOut, ImageIcon
+  Plus, Package, Heart, Eye, Edit, Trash2, Loader2, ShoppingBag, LogOut, ImageIcon
 } from "lucide-react";
-
-const ALL_PET_TYPES = Object.keys(PET_NAMES);
 
 const ProductsDashboard = () => {
   const navigate = useNavigate();
@@ -30,12 +25,10 @@ const ProductsDashboard = () => {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedPetType, setSelectedPetType] = useState("");
-  const [newProduct, setNewProduct] = useState({
-    name: "", description: "", brand: "", category: "", pet_type: "",
-    price: "", original_price: "", discount: "0", stock: "", weight: "",
-  });
+  const [formData, setFormData] = useState<ProductFormData>(INITIAL_PRODUCT_FORM);
   const [productImages, setProductImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     if (user && profile) {
@@ -59,14 +52,14 @@ const ProductsDashboard = () => {
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + productImages.length > 5) {
+    const totalExisting = existingImageUrls.length;
+    if (files.length + productImages.length + totalExisting > 5) {
       toast.error("Maximum 5 images allowed");
       return;
     }
     const newFiles = [...productImages, ...files];
     setProductImages(newFiles);
-    const urls = newFiles.map(f => URL.createObjectURL(f));
-    setImagePreviewUrls(urls);
+    setImagePreviewUrls(newFiles.map(f => URL.createObjectURL(f)));
   };
 
   const removeImage = (index: number) => {
@@ -74,6 +67,10 @@ const ProductsDashboard = () => {
     const newUrls = imagePreviewUrls.filter((_, i) => i !== index);
     setProductImages(newFiles);
     setImagePreviewUrls(newUrls);
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImageUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const uploadImages = async (files: File[], userId: string) => {
@@ -90,7 +87,7 @@ const ProductsDashboard = () => {
   };
 
   const handleAddProduct = async () => {
-    if (!newProduct.name || !newProduct.brand || !newProduct.category || !newProduct.pet_type || !newProduct.price || !newProduct.stock) {
+    if (!formData.name || !formData.brand || !formData.category || !formData.pet_type || !formData.price || !formData.stock) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -103,16 +100,16 @@ const ProductsDashboard = () => {
 
       const { error } = await supabase.from("shop_products").insert({
         seller_id: user.id,
-        name: newProduct.name,
-        description: newProduct.description,
-        brand: newProduct.brand,
-        category: newProduct.category,
-        pet_type: newProduct.pet_type,
-        price: parseFloat(newProduct.price),
-        original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : parseFloat(newProduct.price),
-        discount: parseInt(newProduct.discount) || 0,
-        stock: parseInt(newProduct.stock),
-        weight: newProduct.weight,
+        name: formData.name,
+        description: formData.description,
+        brand: formData.brand,
+        category: formData.category,
+        pet_type: formData.pet_type,
+        price: parseFloat(formData.price),
+        original_price: formData.original_price ? parseFloat(formData.original_price) : parseFloat(formData.price),
+        discount: parseInt(formData.discount) || 0,
+        stock: parseInt(formData.stock),
+        weight: formData.weight,
         images: imageUrls,
       });
 
@@ -137,13 +134,25 @@ const ProductsDashboard = () => {
 
   const openEditModal = (product: any) => {
     setEditingProduct(product);
-    setNewProduct({
-      name: product.name, description: product.description || "", brand: product.brand,
-      category: product.category, pet_type: product.pet_type,
-      price: String(product.price), original_price: String(product.original_price || ""),
-      discount: String(product.discount || 0), stock: String(product.stock), weight: product.weight || "",
+    setFormData({
+      name: product.name,
+      description: product.description || "",
+      brand: product.brand,
+      category: product.category,
+      pet_type: product.pet_type,
+      price: String(product.price),
+      original_price: String(product.original_price || ""),
+      discount: String(product.discount || 0),
+      stock: String(product.stock),
+      weight: product.weight || "",
+      unit: "piece",
+      sku: "",
+      tags: "",
     });
     setSelectedPetType(product.pet_type);
+    setExistingImageUrls(product.images || []);
+    setProductImages([]);
+    setImagePreviewUrls([]);
     setIsEditModalOpen(true);
   };
 
@@ -151,20 +160,25 @@ const ProductsDashboard = () => {
     if (!editingProduct) return;
     setIsSubmitting(true);
     try {
-      let imageUrls = editingProduct.images || [];
+      let imageUrls = [...existingImageUrls];
       if (productImages.length > 0) {
         const newUrls = await uploadImages(productImages, user.id);
         imageUrls = [...imageUrls, ...newUrls];
       }
 
       const { error } = await supabase.from("shop_products").update({
-        name: newProduct.name, description: newProduct.description, brand: newProduct.brand,
-        category: newProduct.category, pet_type: newProduct.pet_type,
-        price: parseFloat(newProduct.price),
-        original_price: newProduct.original_price ? parseFloat(newProduct.original_price) : parseFloat(newProduct.price),
-        discount: parseInt(newProduct.discount) || 0, stock: parseInt(newProduct.stock),
-        weight: newProduct.weight, images: imageUrls,
-        verification_status: "pending", // Re-verification on edit
+        name: formData.name,
+        description: formData.description,
+        brand: formData.brand,
+        category: formData.category,
+        pet_type: formData.pet_type,
+        price: parseFloat(formData.price),
+        original_price: formData.original_price ? parseFloat(formData.original_price) : parseFloat(formData.price),
+        discount: parseInt(formData.discount) || 0,
+        stock: parseInt(formData.stock),
+        weight: formData.weight,
+        images: imageUrls,
+        verification_status: "pending",
       }).eq("id", editingProduct.id);
 
       if (error) throw error;
@@ -180,9 +194,10 @@ const ProductsDashboard = () => {
   };
 
   const resetForm = () => {
-    setNewProduct({ name: "", description: "", brand: "", category: "", pet_type: "", price: "", original_price: "", discount: "0", stock: "", weight: "" });
+    setFormData(INITIAL_PRODUCT_FORM);
     setProductImages([]);
     setImagePreviewUrls([]);
+    setExistingImageUrls([]);
     setSelectedPetType("");
     setEditingProduct(null);
   };
@@ -201,8 +216,6 @@ const ProductsDashboard = () => {
     pending: products.filter(p => p.verification_status === "pending").length,
     totalSold: products.reduce((sum, p) => sum + (p.total_sold || 0), 0),
   };
-
-  const categories = selectedPetType ? (PET_CATEGORIES[selectedPetType] || []) : [];
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/auth-products"); };
 
@@ -233,86 +246,6 @@ const ProductsDashboard = () => {
       <div className="text-center space-y-3">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
         <p className="text-sm text-muted-foreground">Loading your products...</p>
-      </div>
-    </div>
-  );
-
-  const ProductFormFields = () => (
-    <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-      <div className="space-y-2">
-        <Label>Product Name *</Label>
-        <Input value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Premium Dog Food" className="rounded-xl" />
-      </div>
-      <div className="space-y-2">
-        <Label>Description</Label>
-        <Textarea value={newProduct.description} onChange={e => setNewProduct({ ...newProduct, description: e.target.value })} placeholder="Product description..." className="rounded-xl" />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>Brand *</Label>
-          <Input value={newProduct.brand} onChange={e => setNewProduct({ ...newProduct, brand: e.target.value })} placeholder="Royal Canin" className="rounded-xl" />
-        </div>
-        <div className="space-y-2">
-          <Label>Pet Type *</Label>
-          <Select value={newProduct.pet_type} onValueChange={v => { setNewProduct({ ...newProduct, pet_type: v, category: "" }); setSelectedPetType(v); }}>
-            <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select" /></SelectTrigger>
-            <SelectContent>
-              {ALL_PET_TYPES.map(pt => <SelectItem key={pt} value={pt}>{PET_NAMES[pt]}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label>Category *</Label>
-          <Select value={newProduct.category} onValueChange={v => setNewProduct({ ...newProduct, category: v })} disabled={!selectedPetType}>
-            <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select" /></SelectTrigger>
-            <SelectContent>
-              {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Weight</Label>
-          <Input value={newProduct.weight} onChange={e => setNewProduct({ ...newProduct, weight: e.target.value })} placeholder="1kg" className="rounded-xl" />
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div className="space-y-2">
-          <Label>Price (₹) *</Label>
-          <Input type="number" value={newProduct.price} onChange={e => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="499" className="rounded-xl" />
-        </div>
-        <div className="space-y-2">
-          <Label>Original Price</Label>
-          <Input type="number" value={newProduct.original_price} onChange={e => setNewProduct({ ...newProduct, original_price: e.target.value })} placeholder="699" className="rounded-xl" />
-        </div>
-        <div className="space-y-2">
-          <Label>Discount %</Label>
-          <Input type="number" value={newProduct.discount} onChange={e => setNewProduct({ ...newProduct, discount: e.target.value })} placeholder="20" className="rounded-xl" />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Stock *</Label>
-        <Input type="number" value={newProduct.stock} onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })} placeholder="100" className="rounded-xl" />
-      </div>
-      <div className="space-y-2">
-        <Label>Product Images (max 5)</Label>
-        <div className="flex gap-2 flex-wrap">
-          {imagePreviewUrls.map((url, i) => (
-            <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
-              <img src={url} alt="" className="w-full h-full object-cover" />
-              <button onClick={() => removeImage(i)} className="absolute top-0.5 right-0.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
-                <X className="w-3 h-3 text-white" />
-              </button>
-            </div>
-          ))}
-          {productImages.length < 5 && (
-            <label className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors">
-              <input type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
-              <Upload className="w-5 h-5 text-muted-foreground" />
-            </label>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -447,13 +380,22 @@ const ProductsDashboard = () => {
 
       {/* Add Product Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={v => { if (!v) resetForm(); setIsAddModalOpen(v); }}>
-        <DialogContent className="sm:max-w-lg rounded-3xl">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-lg rounded-3xl max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2"><Plus className="w-5 h-5" />Add New Product</DialogTitle>
             <DialogDescription>Fill in the product details. It will be visible after admin approval.</DialogDescription>
           </DialogHeader>
-          <ProductFormFields />
-          <Button className="w-full rounded-2xl bg-gradient-primary hover:opacity-90" onClick={handleAddProduct} disabled={isSubmitting}>
+          <ProductFormFields
+            formData={formData}
+            onFormChange={setFormData}
+            selectedPetType={selectedPetType}
+            onPetTypeChange={setSelectedPetType}
+            productImages={productImages}
+            imagePreviewUrls={imagePreviewUrls}
+            onImageSelect={handleImageSelect}
+            onRemoveImage={removeImage}
+          />
+          <Button className="w-full rounded-2xl bg-gradient-primary hover:opacity-90 flex-shrink-0 mt-2" onClick={handleAddProduct} disabled={isSubmitting}>
             {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Adding...</> : "Add Product"}
           </Button>
         </DialogContent>
@@ -461,13 +403,24 @@ const ProductsDashboard = () => {
 
       {/* Edit Product Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={v => { if (!v) resetForm(); setIsEditModalOpen(v); }}>
-        <DialogContent className="sm:max-w-lg rounded-3xl">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-lg rounded-3xl max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2"><Edit className="w-5 h-5" />Edit Product</DialogTitle>
             <DialogDescription>Update product details. Changes require re-verification.</DialogDescription>
           </DialogHeader>
-          <ProductFormFields />
-          <Button className="w-full rounded-2xl bg-gradient-primary hover:opacity-90" onClick={handleEditProduct} disabled={isSubmitting}>
+          <ProductFormFields
+            formData={formData}
+            onFormChange={setFormData}
+            selectedPetType={selectedPetType}
+            onPetTypeChange={setSelectedPetType}
+            productImages={productImages}
+            imagePreviewUrls={imagePreviewUrls}
+            existingImageUrls={existingImageUrls}
+            onImageSelect={handleImageSelect}
+            onRemoveImage={removeImage}
+            onRemoveExistingImage={removeExistingImage}
+          />
+          <Button className="w-full rounded-2xl bg-gradient-primary hover:opacity-90 flex-shrink-0 mt-2" onClick={handleEditProduct} disabled={isSubmitting}>
             {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : "Save Changes"}
           </Button>
         </DialogContent>
