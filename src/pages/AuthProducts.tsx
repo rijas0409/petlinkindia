@@ -31,16 +31,24 @@ const AuthProducts = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        await supabase.rpc("ensure_user_initialized" as any, {
+          _role: "product_seller",
+          _name: (session.user.user_metadata as any)?.name || "User",
+          _email: session.user.email || "",
+        });
+
         const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
-        
+
         if (roleData === "product_seller") {
           const { data: profile } = await supabase
             .from("profiles")
             .select("is_onboarding_complete, is_admin_approved")
             .eq("id", session.user.id)
-            .single();
+            .maybeSingle();
 
           if (!profile?.is_onboarding_complete) {
             navigate("/products-onboarding");
@@ -50,6 +58,8 @@ const AuthProducts = () => {
             navigate("/products-dashboard");
           }
         }
+      } catch {
+        // Ignore auto-redirect errors on load
       }
     };
     checkSession();
@@ -84,6 +94,12 @@ const AuthProducts = () => {
 
         if (error) throw error;
 
+        await supabase.rpc("ensure_user_initialized" as any, {
+          _role: "product_seller",
+          _name: formData.name || (data.user.user_metadata as any)?.name || "User",
+          _email: data.user.email || "",
+        });
+
         const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: data.user.id });
 
         if (roleData !== "product_seller") {
@@ -96,10 +112,10 @@ const AuthProducts = () => {
           .from("profiles")
           .select("is_onboarding_complete, is_admin_approved")
           .eq("id", data.user.id)
-          .single();
+          .maybeSingle();
 
         toast.success("Welcome back!");
-        
+
         if (!profile?.is_onboarding_complete) {
           navigate("/products-onboarding");
         } else if (!profile?.is_admin_approved) {

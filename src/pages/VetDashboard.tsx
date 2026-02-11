@@ -36,41 +36,55 @@ const VetDashboard = () => {
   const [editData, setEditData] = useState<any>({});
 
   useEffect(() => {
-    if (user && profile) {
-      if (!profile.is_onboarding_complete) { navigate("/vet-onboarding"); return; }
-      if (!profile.is_admin_approved) { navigate("/vet-pending-approval"); return; }
-      fetchAll();
-      setupRealtime();
-    }
-  }, [user, profile]);
+    if (!user || !profile) return;
 
-  const fetchAll = async () => {
-    setIsLoading(true);
+    if (!profile.is_onboarding_complete) { navigate("/vet-onboarding"); return; }
+    if (!profile.is_admin_approved) { navigate("/vet-pending-approval"); return; }
+
+    fetchAll(false);
+
+    const cleanup = setupRealtime();
+    return () => {
+      if (typeof cleanup === "function") cleanup();
+    };
+  }, [user, profile, navigate]);
+
+  const fetchAll = async (silent: boolean) => {
+    if (!silent) setIsLoading(true);
+
     const [vpRes, apRes, erRes, rvRes] = await Promise.all([
       supabase.from("vet_profiles").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("vet_appointments").select("*").eq("vet_id", user.id).order("appointment_date", { ascending: false }),
       supabase.from("vet_earnings").select("*").eq("vet_id", user.id).order("created_at", { ascending: false }),
       supabase.from("vet_reviews").select("*").eq("vet_id", user.id).order("created_at", { ascending: false }),
     ]);
+
     setVetProfile(vpRes.data);
     setAppointments(apRes.data || []);
     setEarnings(erRes.data || []);
     setReviews(rvRes.data || []);
     if (vpRes.data) setEditData(vpRes.data);
-    setIsLoading(false);
+
+    if (!silent) setIsLoading(false);
   };
 
   const setupRealtime = () => {
-    const channel = supabase.channel('vet-appointments')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'vet_appointments', filter: `vet_id=eq.${user.id}` }, () => fetchAll())
+    const channel = supabase
+      .channel("vet-appointments")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "vet_appointments", filter: `vet_id=eq.${user.id}` },
+        () => fetchAll(true)
+      )
       .subscribe();
+
     return () => supabase.removeChannel(channel);
   };
 
   const updateAppointmentStatus = async (id: string, status: string) => {
     const { error } = await supabase.from("vet_appointments").update({ status }).eq("id", id);
     if (error) toast.error("Failed to update");
-    else { toast.success(`Appointment ${status}`); fetchAll(); }
+    else { toast.success(`Appointment ${status}`); fetchAll(true); }
   };
 
   const saveConsultationNotes = async () => {
@@ -92,7 +106,7 @@ const VetDashboard = () => {
       });
       toast.success("Consultation completed!");
       setNotesDialog(false);
-      fetchAll();
+      fetchAll(true);
     }
   };
 
@@ -108,7 +122,7 @@ const VetDashboard = () => {
       consultation_type: editData.consultation_type,
     }).eq("user_id", user.id);
     if (error) toast.error("Failed to update profile");
-    else { toast.success("Profile updated!"); setEditProfileDialog(false); fetchAll(); }
+    else { toast.success("Profile updated!"); setEditProfileDialog(false); fetchAll(true); }
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/auth-vet"); };
@@ -151,7 +165,8 @@ const VetDashboard = () => {
     </div>
   );
 
-  if (isLoading) return (
+  // Show blocking loader only on very first load
+  if (isLoading && !vetProfile && appointments.length === 0 && earnings.length === 0 && reviews.length === 0) return (
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
       <div className="text-center space-y-3">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
@@ -302,7 +317,7 @@ const VetDashboard = () => {
                           {apt.status === "confirmed" && apt.reschedule_count < 2 && (
                             <Button size="sm" variant="ghost" className="rounded-xl text-xs" onClick={async () => {
                               await supabase.from("vet_appointments").update({ status: "rescheduled", reschedule_count: (apt.reschedule_count || 0) + 1 }).eq("id", apt.id);
-                              toast.success("Marked as rescheduled"); fetchAll();
+                              toast.success("Marked as rescheduled"); fetchAll(true);
                             }}>Reschedule</Button>
                           )}
                         </div>

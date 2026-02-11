@@ -11,14 +11,33 @@ const VetPendingApproval = () => {
 
   useEffect(() => {
     const check = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/auth-vet"); return; }
-      const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
-      if (roleData !== "vet") { navigate("/auth-vet"); return; }
-      const { data: profile } = await supabase.from("profiles").select("is_admin_approved, is_onboarding_complete").eq("id", session.user.id).single();
-      if (!profile?.is_onboarding_complete) { navigate("/vet-onboarding"); return; }
-      if (profile?.is_admin_approved) { navigate("/vet-dashboard"); return; }
-      setIsChecking(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { navigate("/auth-vet"); return; }
+
+        await supabase.rpc("ensure_user_initialized" as any, {
+          _role: "vet",
+          _name: (session.user.user_metadata as any)?.name || "User",
+          _email: session.user.email || "",
+        });
+
+        const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
+        if (roleData !== "vet") { navigate("/auth-vet"); return; }
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("is_admin_approved, is_onboarding_complete")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        if (!profile?.is_onboarding_complete) { navigate("/vet-onboarding"); return; }
+        if (profile?.is_admin_approved) { navigate("/vet-dashboard"); return; }
+
+        setIsChecking(false);
+      } catch {
+        // Keep user on this screen; stop infinite spinner
+        setIsChecking(false);
+      }
     };
     check();
     const interval = setInterval(check, 30000);
