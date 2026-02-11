@@ -35,14 +35,21 @@ const CAT_BREEDS = [
   "Bengal", "Ragdoll", "Himalayan", "Domestic Shorthair",
 ];
 
+const BIRD_BREEDS = [
+  "All Breeds",
+  "Parrots", "Budgies", "Cockatiels", "Love Birds",
+  "Finches", "Canaries", "Pigeons", "Doves",
+];
+
 interface ProductListingScreenProps {
   petType: string;
   initialBreed?: string;
+  initialSearch?: string;
   onBack: () => void;
   onAddToCart: (productId: string) => void;
 }
 
-const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: ProductListingScreenProps) => {
+const ProductListingScreen = ({ petType, initialBreed, initialSearch, onBack, onAddToCart }: ProductListingScreenProps) => {
   const navigate = useNavigate();
   const categories = PET_CATEGORIES[petType] || PET_CATEGORIES.dog;
   const petName = PET_NAMES[petType] || "Pet";
@@ -54,8 +61,8 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(initialSearch || "");
+  const [isSearchOpen, setIsSearchOpen] = useState(!!initialSearch);
   const [isPriceFilterOpen, setIsPriceFilterOpen] = useState(false);
   
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
@@ -244,8 +251,8 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Breed (dog & cat) */}
-            {(petType === "dog" || petType === "cat") && (
+            {/* Breed (dog, cat & birds) */}
+            {(petType === "dog" || petType === "cat" || petType === "birds") && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -253,11 +260,11 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
                     size="sm"
                     className="rounded-full whitespace-nowrap flex items-center gap-1"
                   >
-                    {selectedBreed !== "All Breeds" ? `${petType === "dog" ? "🐕" : "🐈"} ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
+                    {selectedBreed !== "All Breeds" ? `${petType === "dog" ? "🐕" : petType === "cat" ? "🐈" : "🐦"} ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-xl max-h-60 overflow-y-auto">
-                  {(petType === "dog" ? DOG_BREEDS : CAT_BREEDS).map((breed) => (
+                  {(petType === "dog" ? DOG_BREEDS : petType === "cat" ? CAT_BREEDS : BIRD_BREEDS).map((breed) => (
                     <DropdownMenuItem
                       key={breed}
                       onClick={() => setSelectedBreed(breed)}

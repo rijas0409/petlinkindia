@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -128,12 +128,15 @@ const PromoCarousel = () => {
 interface ShopHomeScreenProps {
   onSelectPet: (petId: string) => void;
   onAddToCart: (productId: string) => void;
+  onSearch?: (query: string) => void;
 }
 
-const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
+const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenProps) => {
   const navigate = useNavigate();
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
   const { cartCount } = useCart();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Generate best sellers from all 9 pet types mixed together
   const bestSellers = (() => {
@@ -217,10 +220,35 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart }: ShopHomeScreenProps) => {
 
       {/* Search Bar */}
       <div className="px-4 py-3">
-        <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2.5">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Search food, toys, meds…</span>
-        </div>
+        {isSearchOpen ? (
+          <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-1.5">
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim() && onSearch) {
+                  onSearch(searchQuery.trim());
+                }
+              }}
+              placeholder="Search food, toys, meds…"
+              className="flex-1 bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
+              autoFocus
+            />
+            <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}>
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        ) : (
+          <button
+            className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2.5 w-full"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Search food, toys, meds…</span>
+          </button>
+        )}
       </div>
 
       {/* Promo Carousel */}
