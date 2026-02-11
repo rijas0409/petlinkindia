@@ -42,6 +42,10 @@ import AIVetAssessment from "./pages/vet/AIVetAssessment";
 import AIAnalyzingCondition from "./pages/vet/AIAnalyzingCondition";
 import BookingDetails from "./pages/vet/BookingDetails";
 import NotFound from "./pages/NotFound";
+import AuthProducts from "./pages/AuthProducts";
+import ProductsOnboarding from "./pages/ProductsOnboarding";
+import ProductsPendingApproval from "./pages/ProductsPendingApproval";
+import ProductsDashboard from "./pages/ProductsDashboard";
 import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
@@ -92,6 +96,10 @@ const App = () => (
           <Route path="/vet/ai-assessment" element={<AIVetAssessment />} />
           <Route path="/vet/ai-analyzing" element={<AIAnalyzingCondition />} />
           <Route path="/vet/booking-details" element={<BookingDetails />} />
+          <Route path="/auth-products" element={<AuthProducts />} />
+          <Route path="/products-onboarding" element={<ProductsOnboarding />} />
+          <Route path="/products-pending-approval" element={<ProductsPendingApproval />} />
+          <Route path="/products-dashboard" element={<ProductsDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

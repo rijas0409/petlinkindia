@@ -29,14 +29,23 @@ const BuyerDashboard = () => {
       return;
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    // Check role from authoritative user_roles table
+    const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
 
-    if (profile?.role === "seller") {
+    if (roleData === "seller") {
       navigate("/seller-dashboard");
+      return;
+    }
+    if (roleData === "admin") {
+      navigate("/admin");
+      return;
+    }
+    if (roleData === "delivery_partner") {
+      navigate("/delivery");
+      return;
+    }
+    if (roleData === "product_seller") {
+      navigate("/products-dashboard");
       return;
     }
 
