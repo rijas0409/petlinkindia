@@ -22,11 +22,24 @@ const ProductsPendingApproval = () => {
       const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
       if (roleData !== "product_seller") { navigate("/"); return; }
 
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
-        .single();
+        .maybeSingle();
+
+      if (error) {
+        toast.error("Failed to load your profile");
+        setIsLoading(false);
+        return;
+      }
+
+      if (!profile) {
+        // Should not happen after initialization, but keep UI resilient
+        toast.error("Profile not found. Please try logging in again.");
+        setIsLoading(false);
+        return;
+      }
 
       if (!profile?.is_onboarding_complete) { navigate("/products-onboarding"); return; }
       if (profile?.is_admin_approved) { navigate("/products-dashboard"); return; }
