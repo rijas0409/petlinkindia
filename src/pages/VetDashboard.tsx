@@ -22,7 +22,7 @@ import {
 
 const VetDashboard = () => {
   const navigate = useNavigate();
-  const { isLoading: guardLoading, user, profile } = useRoleGuard(["vet"], "/auth-vet");
+  const { isLoading: guardLoading, user, profile, error: guardError } = useRoleGuard(["vet"], "/auth-vet");
   const [vetProfile, setVetProfile] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [earnings, setEarnings] = useState<any[]>([]);
@@ -47,7 +47,7 @@ const VetDashboard = () => {
   const fetchAll = async () => {
     setIsLoading(true);
     const [vpRes, apRes, erRes, rvRes] = await Promise.all([
-      supabase.from("vet_profiles").select("*").eq("user_id", user.id).single(),
+      supabase.from("vet_profiles").select("*").eq("user_id", user.id).maybeSingle(),
       supabase.from("vet_appointments").select("*").eq("vet_id", user.id).order("appointment_date", { ascending: false }),
       supabase.from("vet_earnings").select("*").eq("vet_id", user.id).order("created_at", { ascending: false }),
       supabase.from("vet_reviews").select("*").eq("vet_id", user.id).order("created_at", { ascending: false }),
@@ -129,9 +129,34 @@ const VetDashboard = () => {
     return <Badge className={`${map[status] || "bg-gray-100"} border-0`}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
   };
 
-  if (guardLoading || isLoading) return (
+  if (guardError) return (
+    <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
+      <Card className="max-w-md w-full border-0 shadow-card text-center">
+        <CardContent className="p-8 space-y-4">
+          <XCircle className="w-12 h-12 text-destructive mx-auto" />
+          <h2 className="text-xl font-bold">Something went wrong</h2>
+          <p className="text-sm text-muted-foreground">{guardError}</p>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => window.location.reload()} className="rounded-xl">Try Again</Button>
+            <Button variant="outline" onClick={() => navigate("/auth-vet")} className="rounded-xl">Go to Login</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  if (guardLoading) return (
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+    </div>
+  );
+
+  if (isLoading) return (
+    <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
+      <div className="text-center space-y-3">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+        <p className="text-sm text-muted-foreground">Loading your dashboard...</p>
+      </div>
     </div>
   );
 

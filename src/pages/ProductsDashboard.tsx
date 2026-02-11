@@ -22,7 +22,7 @@ const ALL_PET_TYPES = Object.keys(PET_NAMES);
 
 const ProductsDashboard = () => {
   const navigate = useNavigate();
-  const { isLoading: guardLoading, user, profile } = useRoleGuard(["product_seller"], "/auth-products");
+  const { isLoading: guardLoading, user, profile, error: guardError } = useRoleGuard(["product_seller"], "/auth-products");
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -206,9 +206,34 @@ const ProductsDashboard = () => {
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/auth-products"); };
 
-  if (guardLoading || (isLoading && !products.length)) return (
+  if (guardError) return (
+    <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
+      <Card className="max-w-md w-full border-0 shadow-card text-center">
+        <CardContent className="p-8 space-y-4">
+          <Package className="w-12 h-12 text-destructive mx-auto" />
+          <h2 className="text-xl font-bold">Something went wrong</h2>
+          <p className="text-sm text-muted-foreground">{guardError}</p>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={() => window.location.reload()} className="rounded-xl">Try Again</Button>
+            <Button variant="outline" onClick={() => navigate("/auth-products")} className="rounded-xl">Go to Login</Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  if (guardLoading) return (
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+    </div>
+  );
+
+  if (isLoading && !products.length) return (
+    <div className="min-h-screen bg-gradient-soft flex items-center justify-center">
+      <div className="text-center space-y-3">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
+        <p className="text-sm text-muted-foreground">Loading your products...</p>
+      </div>
     </div>
   );
 
