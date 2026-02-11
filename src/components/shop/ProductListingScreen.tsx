@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
-import { ArrowLeft, Search, ChevronDown, Plus, Heart, X } from "lucide-react";
+import { ArrowLeft, Search, ChevronDown, Plus, Heart, X, ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -41,8 +43,10 @@ interface ProductListingScreenProps {
 }
 
 const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: ProductListingScreenProps) => {
+  const navigate = useNavigate();
   const categories = PET_CATEGORIES[petType] || PET_CATEGORIES.dog;
   const petName = PET_NAMES[petType] || "Pet";
+  const { cartCount } = useCart();
   
   const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id || "food");
   const [sortBy, setSortBy] = useState("relevance");
@@ -54,7 +58,7 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isPriceFilterOpen, setIsPriceFilterOpen] = useState(false);
   
-  const { toggleProductWishlist, isProductInWishlist } = useWishlist();
+  const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
 
   // Generate products based on selected pet type and category
   const allProducts = useMemo(() => {
@@ -179,14 +183,36 @@ const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: Pr
             )}
           </div>
           {!isSearchOpen && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={() => setIsSearchOpen(true)}
-            >
-              <Search className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <button
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+                onClick={() => setIsSearchOpen(true)}
+              >
+                <Search className="w-5 h-5" />
+              </button>
+              <button
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
+                onClick={() => navigate("/wishlist")}
+              >
+                <Heart className="w-5 h-5" />
+                {isProductInWishlist && totalWishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
+                    {totalWishlistCount}
+                  </span>
+                )}
+              </button>
+              <button
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
+                onClick={() => navigate("/cart")}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            </div>
           )}
         </div>
 

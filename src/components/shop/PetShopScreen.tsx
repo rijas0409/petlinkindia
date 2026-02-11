@@ -2,6 +2,7 @@ import { ArrowLeft, Heart, ShoppingCart, Search, Plus, ChevronRight } from "luci
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useCart } from "@/contexts/CartContext";
 import { PET_NAMES, generateProducts } from "@/lib/shopData";
 
 import shopBannerDog from "@/assets/shop-banner-dog.png";
@@ -150,6 +151,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
   const bannerGradient = BANNER_GRADIENTS[petType] || BANNER_GRADIENTS.dog;
   const breedCategories = PET_BREED_CATEGORIES[petType] || PET_BREED_CATEGORIES.dog;
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
+  const { cartCount } = useCart();
 
   const featuredProducts = generateProducts(petType, "food").slice(0, 2).map((p, i) => ({
     ...p,
@@ -189,10 +191,8 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
             <h1 className="text-lg font-bold text-foreground">{petName} Shop</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full relative"
+            <button
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
               onClick={() => navigate("/wishlist")}
             >
               <Heart className="w-5 h-5" />
@@ -201,10 +201,18 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
                   {totalWishlistCount}
                 </span>
               )}
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            </button>
+            <button
+              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
+              onClick={() => navigate("/cart")}
+            >
               <ShoppingCart className="w-5 h-5" />
-            </Button>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </header>
