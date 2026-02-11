@@ -13,6 +13,7 @@ const Shop = () => {
   const [currentScreen, setCurrentScreen] = useState<ShopScreen>("home");
   const [selectedPet, setSelectedPet] = useState<string>("");
   const [selectedBreed, setSelectedBreed] = useState<string>("");
+  const [initialSearchQuery, setInitialSearchQuery] = useState<string>("");
   const { addToCart: handleAddToCart } = useCart();
 
   const handleSelectPet = (petId: string) => {
@@ -27,18 +28,31 @@ const Shop = () => {
 
   const handleViewAllProducts = (breed?: string) => {
     setSelectedBreed(breed || "");
+    setInitialSearchQuery("");
+    setCurrentScreen("product-listing");
+  };
+
+  const handleSearchFromShop = (query: string, petType?: string) => {
+    if (petType) setSelectedPet(petType);
+    setSelectedBreed("");
+    setInitialSearchQuery(query);
     setCurrentScreen("product-listing");
   };
 
   const handleBackFromProducts = () => {
     setSelectedBreed("");
+    setInitialSearchQuery("");
     setCurrentScreen("pet-shop");
   };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       {currentScreen === "home" && (
-        <ShopHomeScreen onSelectPet={handleSelectPet} onAddToCart={handleAddToCart} />
+        <ShopHomeScreen
+          onSelectPet={handleSelectPet}
+          onAddToCart={handleAddToCart}
+          onSearch={(query) => handleSearchFromShop(query, "dog")}
+        />
       )}
 
       {currentScreen === "pet-shop" && (
@@ -47,6 +61,7 @@ const Shop = () => {
           onBack={handleBackFromPetShop}
           onViewAllProducts={handleViewAllProducts}
           onAddToCart={handleAddToCart}
+          onSearch={(query) => handleSearchFromShop(query, selectedPet)}
         />
       )}
 
@@ -54,6 +69,7 @@ const Shop = () => {
         <ProductListingScreen
           petType={selectedPet}
           initialBreed={selectedBreed}
+          initialSearch={initialSearchQuery}
           onBack={handleBackFromProducts}
           onAddToCart={handleAddToCart}
         />

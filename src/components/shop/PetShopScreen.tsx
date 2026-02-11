@@ -1,4 +1,5 @@
-import { ArrowLeft, Heart, ShoppingCart, Search, Plus, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Heart, ShoppingCart, Search, Plus, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -18,6 +19,8 @@ import dogShopBanner from "@/assets/dog-shop-banner.png";
 import dogBreedsGrid from "@/assets/dog-breeds-grid.png";
 import catShopBanner from "@/assets/cat-shop-banner.png";
 import catBreedsGrid from "@/assets/cat-breeds-grid.png";
+import birdShopBanner from "@/assets/bird-shop-banner.png";
+import birdBreedsGrid from "@/assets/bird-breeds-grid.png";
 
 const BANNER_IMAGES: Record<string, string> = {
   dog: shopBannerDog,
@@ -137,15 +140,23 @@ const CAT_BREED_NAMES = [
   "Bengal", "Ragdoll", "Himalayan", "Domestic Shorthair",
 ];
 
+const BIRD_BREED_NAMES = [
+  "Parrots", "Budgies", "Cockatiels", "Love Birds",
+  "Finches", "Canaries", "Pigeons", "Doves",
+];
+
 interface PetShopScreenProps {
   petType: string;
   onBack: () => void;
   onViewAllProducts: (breed?: string) => void;
   onAddToCart: (productId: string) => void;
+  onSearch?: (query: string) => void;
 }
 
-const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetShopScreenProps) => {
+const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart, onSearch }: PetShopScreenProps) => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const petName = PET_NAMES[petType] || "Pet";
   const bannerImage = BANNER_IMAGES[petType] || shopBannerDog;
   const bannerGradient = BANNER_GRADIENTS[petType] || BANNER_GRADIENTS.dog;
@@ -219,10 +230,35 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
 
       {/* Search Bar */}
       <div className="px-4 py-3">
-        <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2.5">
-          <Search className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Search {petName.toLowerCase()} products...</span>
-        </div>
+        {isSearchOpen ? (
+          <div className="flex items-center gap-2 bg-muted rounded-xl px-4 py-1.5">
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim() && onSearch) {
+                  onSearch(searchQuery.trim());
+                }
+              }}
+              placeholder={`Search ${petName.toLowerCase()} products...`}
+              className="flex-1 bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
+              autoFocus
+            />
+            <button onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}>
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+        ) : (
+          <button
+            className="flex items-center gap-2 bg-muted rounded-xl px-4 py-2.5 w-full"
+            onClick={() => setIsSearchOpen(true)}
+          >
+            <Search className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Search {petName.toLowerCase()} products...</span>
+          </button>
+        )}
       </div>
 
       {/* Banner */}
@@ -231,6 +267,8 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
           <img src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
         ) : petType === "cat" ? (
           <img src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
+        ) : petType === "birds" ? (
+          <img src={birdShopBanner} alt="Shop for Birds" className="w-full rounded-2xl" />
         ) : (
           <div className="rounded-2xl overflow-hidden" style={{ background: bannerGradient }}>
             <div className="flex items-center">
@@ -267,6 +305,20 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
             <img src={catBreedsGrid} alt="Cat Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {CAT_BREED_NAMES.map((breed, i) => (
+                <button
+                  key={i}
+                  className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
+                  onClick={() => onViewAllProducts(breed)}
+                  aria-label={breed}
+                />
+              ))}
+            </div>
+          </div>
+        ) : petType === "birds" ? (
+          <div className="relative">
+            <img src={birdBreedsGrid} alt="Bird Breeds" className="w-full rounded-2xl" />
+            <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
+              {BIRD_BREED_NAMES.map((breed, i) => (
                 <button
                   key={i}
                   className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
