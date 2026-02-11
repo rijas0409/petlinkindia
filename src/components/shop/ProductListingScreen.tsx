@@ -23,11 +23,12 @@ import { PET_CATEGORIES, PET_NAMES, generateProducts, SORT_OPTIONS, BRAND_OPTION
 
 interface ProductListingScreenProps {
   petType: string;
+  initialBreed?: string;
   onBack: () => void;
   onAddToCart: (productId: string) => void;
 }
 
-const ProductListingScreen = ({ petType, onBack, onAddToCart }: ProductListingScreenProps) => {
+const ProductListingScreen = ({ petType, initialBreed, onBack, onAddToCart }: ProductListingScreenProps) => {
   const categories = PET_CATEGORIES[petType] || PET_CATEGORIES.dog;
   const petName = PET_NAMES[petType] || "Pet";
   
@@ -36,8 +37,8 @@ const ProductListingScreen = ({ petType, onBack, onAddToCart }: ProductListingSc
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(initialBreed || "");
+  const [isSearchOpen, setIsSearchOpen] = useState(!!initialBreed);
   const [isPriceFilterOpen, setIsPriceFilterOpen] = useState(false);
   
   const { toggleProductWishlist, isProductInWishlist } = useWishlist();
