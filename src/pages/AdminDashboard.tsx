@@ -192,7 +192,7 @@ const AdminDashboard = () => {
     const { data: sellersData } = await supabase
       .from("profiles")
       .select("*")
-      .in("role", ["seller", "product_seller"])
+      .in("role", ["seller", "product_seller", "vet"])
       .eq("is_onboarding_complete", true)
       .eq("is_admin_approved", false)
       .order("created_at", { ascending: false });

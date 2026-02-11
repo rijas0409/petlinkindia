@@ -57,6 +57,10 @@ const SellerDashboard = () => {
       navigate("/products-dashboard");
       return;
     }
+    if (roleData === "vet") {
+      navigate("/vet-dashboard");
+      return;
+    }
     if (roleData !== "seller") {
       navigate("/auth");
       return;

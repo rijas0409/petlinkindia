@@ -29,6 +29,9 @@ const Index = () => {
         case "product_seller":
           navigate("/products-dashboard");
           break;
+        case "vet":
+          navigate("/vet-dashboard");
+          break;
         default:
           navigate("/buyer-dashboard");
       }
