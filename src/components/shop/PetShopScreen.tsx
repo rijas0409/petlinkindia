@@ -220,13 +220,9 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
       {/* Banner */}
       <div className="px-4 pb-4">
         {petType === "dog" ? (
-          <div className="w-full aspect-[16/7] rounded-2xl overflow-hidden">
-            <img src={dogShopBanner} alt="Shop for Dogs" className="w-full h-full object-cover rounded-2xl" />
-          </div>
+          <img src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
         ) : petType === "cat" ? (
-          <div className="w-full aspect-[16/7] rounded-2xl overflow-hidden">
-            <img src={catShopBanner} alt="Shop for Cats" className="w-full h-full object-cover rounded-2xl" />
-          </div>
+          <img src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
         ) : (
           <div className="rounded-2xl overflow-hidden" style={{ background: bannerGradient }}>
             <div className="flex items-center">
@@ -245,8 +241,8 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
       {/* Breed/Category Grid */}
       <div className="px-4 pb-4">
         {petType === "dog" ? (
-          <div className="relative aspect-[2/1] rounded-2xl overflow-hidden">
-            <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full h-full object-cover rounded-2xl" />
+          <div className="relative">
+            <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {DOG_BREED_NAMES.map((breed, i) => (
                 <button
@@ -259,8 +255,8 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
             </div>
           </div>
         ) : petType === "cat" ? (
-          <div className="relative aspect-[2/1] rounded-2xl overflow-hidden">
-            <img src={catBreedsGrid} alt="Cat Breeds" className="w-full h-full object-cover rounded-2xl" />
+          <div className="relative">
+            <img src={catBreedsGrid} alt="Cat Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {CAT_BREED_NAMES.map((breed, i) => (
                 <button
