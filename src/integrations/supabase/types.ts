@@ -406,6 +406,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           full_name: string | null
+          gst_number: string | null
           id: string
           is_admin_approved: boolean | null
           is_breeder_verified: boolean | null
@@ -426,6 +427,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           full_name?: string | null
+          gst_number?: string | null
           id: string
           is_admin_approved?: boolean | null
           is_breeder_verified?: boolean | null
@@ -446,6 +448,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           full_name?: string | null
+          gst_number?: string | null
           id?: string
           is_admin_approved?: boolean | null
           is_breeder_verified?: boolean | null
@@ -547,6 +550,95 @@ export type Database = {
           },
           {
             foreignKeyName: "seller_earnings_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_products: {
+        Row: {
+          brand: string
+          category: string
+          created_at: string
+          description: string | null
+          discount: number | null
+          id: string
+          images: string[] | null
+          is_active: boolean | null
+          name: string
+          original_price: number | null
+          pet_type: string
+          price: number
+          priority_fee_paid: boolean | null
+          priority_verification: boolean | null
+          seller_id: string
+          stock: number
+          total_sold: number | null
+          updated_at: string
+          variants: Json | null
+          verification_status:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          views: number | null
+          weight: string | null
+        }
+        Insert: {
+          brand?: string
+          category: string
+          created_at?: string
+          description?: string | null
+          discount?: number | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          name: string
+          original_price?: number | null
+          pet_type: string
+          price: number
+          priority_fee_paid?: boolean | null
+          priority_verification?: boolean | null
+          seller_id: string
+          stock?: number
+          total_sold?: number | null
+          updated_at?: string
+          variants?: Json | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          views?: number | null
+          weight?: string | null
+        }
+        Update: {
+          brand?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          discount?: number | null
+          id?: string
+          images?: string[] | null
+          is_active?: boolean | null
+          name?: string
+          original_price?: number | null
+          pet_type?: string
+          price?: number
+          priority_fee_paid?: boolean | null
+          priority_verification?: boolean | null
+          seller_id?: string
+          stock?: number
+          total_sold?: number | null
+          updated_at?: string
+          variants?: Json | null
+          verification_status?:
+            | Database["public"]["Enums"]["verification_status"]
+            | null
+          views?: number | null
+          weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_products_seller_id_fkey"
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -823,7 +915,12 @@ export type Database = {
         | "delivered"
         | "completed"
         | "cancelled"
-      user_role: "buyer" | "seller" | "admin" | "delivery_partner"
+      user_role:
+        | "buyer"
+        | "seller"
+        | "admin"
+        | "delivery_partner"
+        | "product_seller"
       verification_status: "pending" | "verified" | "failed"
     }
     CompositeTypes: {
@@ -972,7 +1069,13 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
-      user_role: ["buyer", "seller", "admin", "delivery_partner"],
+      user_role: [
+        "buyer",
+        "seller",
+        "admin",
+        "delivery_partner",
+        "product_seller",
+      ],
       verification_status: ["pending", "verified", "failed"],
     },
   },

@@ -14,16 +14,23 @@ const Index = () => {
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
+      const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
 
-      if (profile?.role === "seller") {
-        navigate("/seller-dashboard");
-      } else {
-        navigate("/buyer-dashboard");
+      switch (roleData) {
+        case "seller":
+          navigate("/seller-dashboard");
+          break;
+        case "admin":
+          navigate("/admin");
+          break;
+        case "delivery_partner":
+          navigate("/delivery");
+          break;
+        case "product_seller":
+          navigate("/products-dashboard");
+          break;
+        default:
+          navigate("/buyer-dashboard");
       }
     }
   };

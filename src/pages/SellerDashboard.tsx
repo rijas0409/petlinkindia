@@ -38,23 +38,41 @@ const SellerDashboard = () => {
       return;
     }
 
+    // Check role from authoritative user_roles table
+    const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
+
+    if (roleData === "buyer") {
+      navigate("/buyer-dashboard");
+      return;
+    }
+    if (roleData === "admin") {
+      navigate("/admin");
+      return;
+    }
+    if (roleData === "delivery_partner") {
+      navigate("/delivery");
+      return;
+    }
+    if (roleData === "product_seller") {
+      navigate("/products-dashboard");
+      return;
+    }
+    if (roleData !== "seller") {
+      navigate("/auth");
+      return;
+    }
+
     const { data: profileData } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", session.user.id)
       .single();
 
-    if (profileData?.role === "buyer") {
-      navigate("/buyer-dashboard");
-      return;
-    }
-
     if (!profileData?.is_onboarding_complete) {
       navigate("/seller-onboarding");
       return;
     }
 
-    // Check if admin approved - redirect to pending approval page if not
     if (!profileData?.is_admin_approved) {
       navigate("/seller-pending-approval");
       return;

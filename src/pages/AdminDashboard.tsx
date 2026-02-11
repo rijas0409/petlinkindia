@@ -121,6 +121,7 @@ const AdminDashboard = () => {
   const [pendingSellers, setPendingSellers] = useState<PendingSeller[]>([]);
   const [pendingPets, setPendingPets] = useState<PendingPet[]>([]);
   const [reVerificationPets, setReVerificationPets] = useState<PendingPet[]>([]);
+  const [pendingProducts, setPendingProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -187,11 +188,11 @@ const AdminDashboard = () => {
 
     setPartners(partnersData || []);
 
-    // Fetch pending sellers (onboarding complete but not approved)
+    // Fetch pending sellers (both pet sellers and product sellers, onboarding complete but not approved)
     const { data: sellersData } = await supabase
       .from("profiles")
       .select("*")
-      .eq("role", "seller")
+      .in("role", ["seller", "product_seller"])
       .eq("is_onboarding_complete", true)
       .eq("is_admin_approved", false)
       .order("created_at", { ascending: false });
@@ -215,6 +216,16 @@ const AdminDashboard = () => {
     
     setPendingPets(newListings);
     setReVerificationPets(reVerifications);
+
+    // Fetch pending shop products
+    const { data: productsData } = await supabase
+      .from("shop_products")
+      .select("*, seller:profiles!shop_products_seller_id_fkey(name, phone)")
+      .eq("verification_status", "pending")
+      .order("priority_fee_paid", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    setPendingProducts(productsData || []);
 
     setLoading(false);
   };
@@ -286,6 +297,18 @@ const AdminDashboard = () => {
     }
   };
 
+  const verifyProduct = async (productId: string) => {
+    const { error } = await supabase.from("shop_products").update({ verification_status: "verified" }).eq("id", productId);
+    if (error) toast({ title: "Error", description: "Failed to verify product", variant: "destructive" });
+    else { toast({ title: "Success", description: "Product verified and now live in shop" }); fetchData(); }
+  };
+
+  const rejectProduct = async (productId: string) => {
+    const { error } = await supabase.from("shop_products").update({ verification_status: "failed" }).eq("id", productId);
+    if (error) toast({ title: "Error", description: "Failed to reject product", variant: "destructive" });
+    else { toast({ title: "Product Rejected", description: "Seller will be notified" }); fetchData(); }
+  };
+
   const assignPartner = async () => {
     if (!selectedRequest || !selectedPartner) return;
 
@@ -354,6 +377,7 @@ const AdminDashboard = () => {
     pendingSellersCount: pendingSellers.length,
     pendingPetsCount: pendingPets.length,
     reVerificationCount: reVerificationPets.length,
+    pendingProductsCount: pendingProducts.length,
   };
 
   if (loading) {
@@ -423,6 +447,15 @@ const AdminDashboard = () => {
             <TabsTrigger value="transport" className="flex-1 rounded-xl text-xs">
               <Truck className="w-4 h-4 mr-1" />
               Transport
+            </TabsTrigger>
+            <TabsTrigger value="products" className="flex-1 rounded-xl text-xs relative">
+              <Package className="w-4 h-4 mr-1" />
+              Products
+              {stats.pendingProductsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                  {stats.pendingProductsCount}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -818,6 +851,49 @@ const AdminDashboard = () => {
                 ))
               )}
             </div>
+          </TabsContent>
+
+          {/* Products Verification Tab */}
+          <TabsContent value="products">
+            <Card className="rounded-2xl shadow-card border-0">
+              <CardHeader>
+                <CardTitle>Pending Product Verifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pendingProducts.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-8">No pending product verifications</p>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingProducts.map((product: any) => (
+                      <div key={product.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-xl overflow-hidden bg-muted">
+                            {product.images?.[0] ? (
+                              <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-muted-foreground" /></div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold">{product.name}</p>
+                            <p className="text-sm text-muted-foreground">{product.brand} • {product.pet_type} • ₹{product.price}</p>
+                            <p className="text-xs text-muted-foreground">By: {product.seller?.name || "Unknown"}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" className="rounded-xl bg-emerald-500 hover:bg-emerald-600" onClick={() => verifyProduct(product.id)}>
+                            <CheckCircle2 className="w-4 h-4 mr-1" />Approve
+                          </Button>
+                          <Button size="sm" variant="destructive" className="rounded-xl" onClick={() => rejectProduct(product.id)}>
+                            <XCircle className="w-4 h-4 mr-1" />Reject
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
