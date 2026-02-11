@@ -48,6 +48,10 @@ const BuyerDashboard = () => {
       navigate("/products-dashboard");
       return;
     }
+    if (roleData === "vet") {
+      navigate("/vet-dashboard");
+      return;
+    }
 
     setUser(session.user);
   };

@@ -792,6 +792,250 @@ export type Database = {
         }
         Relationships: []
       }
+      vet_appointments: {
+        Row: {
+          amount: number
+          appointment_date: string
+          appointment_time: string
+          appointment_type: string
+          call_duration: number | null
+          care_instructions: string | null
+          consultation_notes: string | null
+          created_at: string
+          diagnosis: string | null
+          id: string
+          medicines: string | null
+          pet_breed: string | null
+          pet_name: string
+          pet_type: string
+          reschedule_count: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          vet_id: string
+        }
+        Insert: {
+          amount?: number
+          appointment_date: string
+          appointment_time: string
+          appointment_type?: string
+          call_duration?: number | null
+          care_instructions?: string | null
+          consultation_notes?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          id?: string
+          medicines?: string | null
+          pet_breed?: string | null
+          pet_name: string
+          pet_type: string
+          reschedule_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          vet_id: string
+        }
+        Update: {
+          amount?: number
+          appointment_date?: string
+          appointment_time?: string
+          appointment_type?: string
+          call_duration?: number | null
+          care_instructions?: string | null
+          consultation_notes?: string | null
+          created_at?: string
+          diagnosis?: string | null
+          id?: string
+          medicines?: string | null
+          pet_breed?: string | null
+          pet_name?: string
+          pet_type?: string
+          reschedule_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          vet_id?: string
+        }
+        Relationships: []
+      }
+      vet_earnings: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          commission: number
+          created_at: string
+          id: string
+          net_amount: number
+          payout_date: string | null
+          payout_status: string
+          vet_id: string
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          commission?: number
+          created_at?: string
+          id?: string
+          net_amount: number
+          payout_date?: string | null
+          payout_status?: string
+          vet_id: string
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          commission?: number
+          created_at?: string
+          id?: string
+          net_amount?: number
+          payout_date?: string | null
+          payout_status?: string
+          vet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vet_earnings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "vet_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vet_profiles: {
+        Row: {
+          available_days: string[]
+          average_rating: number | null
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_ifsc: string | null
+          bank_name: string | null
+          clinic_address: string | null
+          clinic_registration_file: string | null
+          consultation_type: string
+          created_at: string
+          evening_slots: boolean | null
+          govt_id_file: string | null
+          id: string
+          is_active: boolean | null
+          morning_slots: boolean | null
+          offline_fee: number
+          online_fee: number
+          preferred_language: string | null
+          profile_photo: string | null
+          qualification: string
+          registration_number: string | null
+          specializations: string[]
+          total_consultations: number | null
+          updated_at: string
+          user_id: string
+          verification_status: string
+          vet_degree_file: string | null
+          wallet_balance: number | null
+          years_of_experience: number
+        }
+        Insert: {
+          available_days?: string[]
+          average_rating?: number | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_ifsc?: string | null
+          bank_name?: string | null
+          clinic_address?: string | null
+          clinic_registration_file?: string | null
+          consultation_type?: string
+          created_at?: string
+          evening_slots?: boolean | null
+          govt_id_file?: string | null
+          id?: string
+          is_active?: boolean | null
+          morning_slots?: boolean | null
+          offline_fee?: number
+          online_fee?: number
+          preferred_language?: string | null
+          profile_photo?: string | null
+          qualification?: string
+          registration_number?: string | null
+          specializations?: string[]
+          total_consultations?: number | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+          vet_degree_file?: string | null
+          wallet_balance?: number | null
+          years_of_experience?: number
+        }
+        Update: {
+          available_days?: string[]
+          average_rating?: number | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_ifsc?: string | null
+          bank_name?: string | null
+          clinic_address?: string | null
+          clinic_registration_file?: string | null
+          consultation_type?: string
+          created_at?: string
+          evening_slots?: boolean | null
+          govt_id_file?: string | null
+          id?: string
+          is_active?: boolean | null
+          morning_slots?: boolean | null
+          offline_fee?: number
+          online_fee?: number
+          preferred_language?: string | null
+          profile_photo?: string | null
+          qualification?: string
+          registration_number?: string | null
+          specializations?: string[]
+          total_consultations?: number | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+          vet_degree_file?: string | null
+          wallet_balance?: number | null
+          years_of_experience?: number
+        }
+        Relationships: []
+      }
+      vet_reviews: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          id: string
+          rating: number
+          review_text: string | null
+          user_id: string
+          vet_id: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          review_text?: string | null
+          user_id: string
+          vet_id: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          review_text?: string | null
+          user_id?: string
+          vet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vet_reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "vet_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlist_pets: {
         Row: {
           created_at: string
@@ -921,6 +1165,7 @@ export type Database = {
         | "admin"
         | "delivery_partner"
         | "product_seller"
+        | "vet"
       verification_status: "pending" | "verified" | "failed"
     }
     CompositeTypes: {
@@ -1075,6 +1320,7 @@ export const Constants = {
         "admin",
         "delivery_partner",
         "product_seller",
+        "vet",
       ],
       verification_status: ["pending", "verified", "failed"],
     },

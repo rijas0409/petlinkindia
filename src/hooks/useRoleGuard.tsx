@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-type AllowedRole = "buyer" | "seller" | "admin" | "delivery_partner" | "product_seller";
+type AllowedRole = "buyer" | "seller" | "admin" | "delivery_partner" | "product_seller" | "vet";
 
 interface RoleGuardResult {
   isLoading: boolean;
@@ -44,6 +44,9 @@ export const useRoleGuard = (allowedRoles: AllowedRole[], redirectPath?: string)
             break;
           case "product_seller":
             navigate("/products-dashboard");
+            break;
+          case "vet":
+            navigate("/vet-dashboard");
             break;
           default:
             navigate("/auth");
