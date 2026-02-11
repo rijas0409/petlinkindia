@@ -13,6 +13,8 @@ import shopBannerHamster from "@/assets/shop-banner-hamster.png";
 import shopBannerMouse from "@/assets/shop-banner-mouse.png";
 import shopBannerGuineaPig from "@/assets/shop-banner-guinea-pig.png";
 import shopBannerTurtle from "@/assets/shop-banner-turtle.png";
+import dogShopBanner from "@/assets/dog-shop-banner.png";
+import dogBreedsGrid from "@/assets/dog-breeds-grid.png";
 
 const BANNER_IMAGES: Record<string, string> = {
   dog: shopBannerDog,
@@ -205,37 +207,45 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
 
       {/* Banner */}
       <div className="px-4 pb-4">
-        <div className="rounded-2xl overflow-hidden" style={{ background: bannerGradient }}>
-          <div className="flex items-center">
-            <div className="flex-1 p-5">
-              <h3 className="text-foreground text-xl font-bold leading-tight">Shop for {petName}s</h3>
-              <p className="text-muted-foreground text-xs mt-1">Find everything your {petName.toLowerCase()}<br />needs in one place.</p>
-            </div>
-            <div className="w-40 h-32">
-              <img src={bannerImage} alt={`Shop for ${petName}s`} className="w-full h-full object-contain" />
+        {petType === "dog" ? (
+          <img src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
+        ) : (
+          <div className="rounded-2xl overflow-hidden" style={{ background: bannerGradient }}>
+            <div className="flex items-center">
+              <div className="flex-1 p-5">
+                <h3 className="text-foreground text-xl font-bold leading-tight">Shop for {petName}s</h3>
+                <p className="text-muted-foreground text-xs mt-1">Find everything your {petName.toLowerCase()}<br />needs in one place.</p>
+              </div>
+              <div className="w-40 h-32">
+                <img src={bannerImage} alt={`Shop for ${petName}s`} className="w-full h-full object-contain" />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Breed/Category Grid */}
       <div className="px-4 pb-4">
-        <div className={`grid ${gridCols} gap-2.5`}>
-          {breedCategories.map((item, index) => (
-            <button
-              key={index}
-              className="flex flex-col items-center"
-            >
-              <div
-                className="w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center p-2"
-                style={{ backgroundColor: item.bgColor }}
+        {petType === "dog" ? (
+          <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
+        ) : (
+          <div className={`grid ${gridCols} gap-2.5`}>
+            {breedCategories.map((item, index) => (
+              <button
+                key={index}
+                className="flex flex-col items-center"
               >
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl" />
-              </div>
-              <span className="text-[11px] text-foreground font-medium text-center mt-1.5 line-clamp-2 leading-tight">{item.name}</span>
-            </button>
-          ))}
-        </div>
+                <div
+                  className="w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center p-2"
+                  style={{ backgroundColor: item.bgColor }}
+                >
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl" />
+                </div>
+                <span className="text-[11px] text-foreground font-medium text-center mt-1.5 line-clamp-2 leading-tight">{item.name}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Featured Products */}
