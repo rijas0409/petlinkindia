@@ -12,6 +12,7 @@ const Shop = () => {
   const navigate = useNavigate();
   const [currentScreen, setCurrentScreen] = useState<ShopScreen>("home");
   const [selectedPet, setSelectedPet] = useState<string>("");
+  const [selectedBreed, setSelectedBreed] = useState<string>("");
   const { addToCart: handleAddToCart } = useCart();
 
   const handleSelectPet = (petId: string) => {
@@ -24,11 +25,13 @@ const Shop = () => {
     setSelectedPet("");
   };
 
-  const handleViewAllProducts = () => {
+  const handleViewAllProducts = (breed?: string) => {
+    setSelectedBreed(breed || "");
     setCurrentScreen("product-listing");
   };
 
   const handleBackFromProducts = () => {
+    setSelectedBreed("");
     setCurrentScreen("pet-shop");
   };
 
@@ -50,6 +53,7 @@ const Shop = () => {
       {currentScreen === "product-listing" && (
         <ProductListingScreen
           petType={selectedPet}
+          initialBreed={selectedBreed}
           onBack={handleBackFromProducts}
           onAddToCart={handleAddToCart}
         />

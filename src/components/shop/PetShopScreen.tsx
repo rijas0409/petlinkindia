@@ -124,10 +124,15 @@ const PET_BREED_CATEGORIES: Record<string, { name: string; image: string; bgColo
   ],
 };
 
+const DOG_BREED_NAMES = [
+  "Golden Retriever", "Labrador Retriever", "German Shepherd", "Beagle",
+  "Pug", "Shih Tzu", "Shih Tzu", "Cocker Spaniel",
+];
+
 interface PetShopScreenProps {
   petType: string;
   onBack: () => void;
-  onViewAllProducts: () => void;
+  onViewAllProducts: (breed?: string) => void;
   onAddToCart: (productId: string) => void;
 }
 
@@ -227,7 +232,19 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
       {/* Breed/Category Grid */}
       <div className="px-4 pb-4">
         {petType === "dog" ? (
-          <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
+          <div className="relative">
+            <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
+            <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
+              {DOG_BREED_NAMES.map((breed, i) => (
+                <button
+                  key={i}
+                  className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
+                  onClick={() => onViewAllProducts(breed)}
+                  aria-label={breed}
+                />
+              ))}
+            </div>
+          </div>
         ) : (
           <div className={`grid ${gridCols} gap-2.5`}>
             {breedCategories.map((item, index) => (
@@ -255,7 +272,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart }: PetS
           <button
             className="flex items-center gap-0.5 text-sm font-medium"
             style={{ color: '#7c3aed' }}
-            onClick={onViewAllProducts}
+            onClick={() => onViewAllProducts()}
           >
             View All <ChevronRight className="w-4 h-4" />
           </button>
