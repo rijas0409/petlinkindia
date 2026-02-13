@@ -14,6 +14,7 @@ const Shop = () => {
   const [selectedPet, setSelectedPet] = useState<string>("");
   const [selectedBreed, setSelectedBreed] = useState<string>("");
   const [initialSearchQuery, setInitialSearchQuery] = useState<string>("");
+  const [initialCategory, setInitialCategory] = useState<string>("");
   const { addToCart: handleAddToCart } = useCart();
 
   const handleSelectPet = (petId: string) => {
@@ -29,6 +30,14 @@ const Shop = () => {
   const handleViewAllProducts = (breed?: string) => {
     setSelectedBreed(breed || "");
     setInitialSearchQuery("");
+    setInitialCategory("");
+    setCurrentScreen("product-listing");
+  };
+
+  const handleViewAllProductsWithCategory = (category: string) => {
+    setSelectedBreed("");
+    setInitialSearchQuery("");
+    setInitialCategory(category);
     setCurrentScreen("product-listing");
   };
 
@@ -42,6 +51,7 @@ const Shop = () => {
   const handleBackFromProducts = () => {
     setSelectedBreed("");
     setInitialSearchQuery("");
+    setInitialCategory("");
     setCurrentScreen("pet-shop");
   };
 
@@ -60,6 +70,7 @@ const Shop = () => {
           petType={selectedPet}
           onBack={handleBackFromPetShop}
           onViewAllProducts={handleViewAllProducts}
+          onViewAllProductsWithCategory={handleViewAllProductsWithCategory}
           onAddToCart={handleAddToCart}
           onSearch={(query) => handleSearchFromShop(query, selectedPet)}
         />
@@ -70,6 +81,7 @@ const Shop = () => {
           petType={selectedPet}
           initialBreed={selectedBreed}
           initialSearch={initialSearchQuery}
+          initialCategory={initialCategory}
           onBack={handleBackFromProducts}
           onAddToCart={handleAddToCart}
         />
