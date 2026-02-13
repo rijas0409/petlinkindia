@@ -162,6 +162,42 @@ const RABBIT_CATEGORY_NAMES = [
   { name: "Prescription Diet", categoryId: "feeders" },
 ];
 
+const MOUSE_CATEGORY_NAMES = [
+  { name: "Food", categoryId: "food" },
+  { name: "Treats", categoryId: "hay" },
+  { name: "Health Care", categoryId: "pharmacy" },
+  { name: "Toys", categoryId: "toys" },
+  { name: "Habitat", categoryId: "feeders" },
+  { name: "Accessories", categoryId: "grooming" },
+];
+
+const HAMSTER_CATEGORY_NAMES = [
+  { name: "Food", categoryId: "food" },
+  { name: "Treats", categoryId: "hay" },
+  { name: "Health Care", categoryId: "pharmacy" },
+  { name: "Toys", categoryId: "toys" },
+  { name: "Habitat", categoryId: "feeders" },
+  { name: "Accessories", categoryId: "grooming" },
+];
+
+const GUINEA_PIG_CATEGORY_NAMES = [
+  { name: "Food", categoryId: "food" },
+  { name: "Treats", categoryId: "hay" },
+  { name: "Pharmacy", categoryId: "pharmacy" },
+  { name: "Toys", categoryId: "toys" },
+  { name: "Bedding & Care", categoryId: "grooming" },
+  { name: "Special Diet", categoryId: "feeders" },
+];
+
+const TURTLE_CATEGORY_NAMES = [
+  { name: "Food", categoryId: "food" },
+  { name: "Habitat", categoryId: "feeders" },
+  { name: "Health Care", categoryId: "pharmacy" },
+  { name: "Toys", categoryId: "toys" },
+  { name: "Bedding & Care", categoryId: "grooming" },
+  { name: "Faattc & Water", categoryId: "hay" },
+];
+
 interface PetShopScreenProps {
   petType: string;
   onBack: () => void;
@@ -303,13 +339,16 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
               </div>
             </div>
           </div>
-        ) : petType === "rabbit" ? (
+        ) : ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType) ? (
           <div className="relative">
-            <img src={rabbitShopBanner} alt="Shop for Rabbits" className="w-full rounded-2xl" />
-            {/* Category overlay on bottom ~65% of the image (the 6 category grid) */}
+            <img 
+              src={petType === "rabbit" ? rabbitShopBanner : petType === "white-mouse" ? shopBannerMouse : petType === "hamster" ? shopBannerHamster : petType === "guinea-pig" ? shopBannerGuineaPig : shopBannerTurtle} 
+              alt={`Shop for ${petName}s`} 
+              className="w-full rounded-2xl" 
+            />
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "65%" }}>
               <div className="grid grid-cols-3 grid-rows-2 w-full h-full">
-                {RABBIT_CATEGORY_NAMES.map((cat, i) => (
+                {(petType === "rabbit" ? RABBIT_CATEGORY_NAMES : petType === "white-mouse" ? MOUSE_CATEGORY_NAMES : petType === "hamster" ? HAMSTER_CATEGORY_NAMES : petType === "guinea-pig" ? GUINEA_PIG_CATEGORY_NAMES : TURTLE_CATEGORY_NAMES).map((cat, i) => (
                   <button
                     key={i}
                     className="w-full h-full hover:bg-black/5 active:bg-black/10 transition-colors"
@@ -379,7 +418,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
               ))}
             </div>
           </div>
-        ) : petType === "fish" ? null : petType === "rabbit" ? null : (
+        ) : petType === "fish" ? null : ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType) ? null : (
           <div className={`grid ${gridCols} gap-2.5`}>
             {breedCategories.map((item, index) => (
               <button
