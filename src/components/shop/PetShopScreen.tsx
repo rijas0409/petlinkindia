@@ -320,19 +320,19 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
       {/* Banner */}
       <div className="px-4 pb-4">
         {petType === "dog" ? (
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
           </div>
         ) : petType === "cat" ? (
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
           </div>
         ) : petType === "birds" ? (
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img src={birdShopBanner} alt="Shop for Birds" className="w-full rounded-2xl" />
           </div>
         ) : petType === "fish" ? (
-          <div className="relative rounded-2xl shadow-md border border-border overflow-hidden">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img src={fishShopBanner} alt="Shop for Fish" className="w-full" />
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
               <div className="grid grid-cols-4 grid-rows-2 w-full h-full">
@@ -348,7 +348,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
             </div>
           </div>
         ) : ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType) ? (
-          <div className="relative rounded-2xl shadow-md border border-border overflow-hidden">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img 
               src={petType === "rabbit" ? rabbitShopBanner : petType === "white-mouse" ? shopBannerMouse : petType === "hamster" ? shopBannerHamster : petType === "guinea-pig" ? shopBannerGuineaPig : shopBannerTurtle} 
               alt={`Shop for ${petName}s`} 
@@ -385,7 +385,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
       {/* Breed/Category Grid */}
       <div className="px-4 pb-4">
         {petType === "dog" ? (
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {DOG_BREED_NAMES.map((breed, i) => (
@@ -399,7 +399,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
             </div>
           </div>
         ) : petType === "cat" ? (
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img src={catBreedsGrid} alt="Cat Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {CAT_BREED_NAMES.map((breed, i) => (
@@ -413,7 +413,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
             </div>
           </div>
         ) : petType === "birds" ? (
-          <div className="relative">
+          <div className="relative rounded-2xl overflow-hidden" style={{ backgroundColor: '#fce7f3' }}>
             <img src={birdBreedsGrid} alt="Bird Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {BIRD_BREED_NAMES.map((breed, i) => (
