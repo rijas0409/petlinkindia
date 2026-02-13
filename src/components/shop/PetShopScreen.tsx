@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ArrowLeft, Heart, ShoppingCart, Search, Plus, ChevronRight, X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -198,6 +199,23 @@ const TURTLE_CATEGORY_NAMES = [
   { name: "Faattc & Water", categoryId: "hay" },
 ];
 
+// Fade-in image component for native feel
+const FadeImage = ({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <>
+      {!loaded && <Skeleton className="absolute inset-0 rounded-2xl z-10" />}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} transition-opacity duration-500 ease-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        style={style}
+        onLoad={() => setLoaded(true)}
+      />
+    </>
+  );
+};
+
 interface PetShopScreenProps {
   petType: string;
   onBack: () => void;
@@ -318,14 +336,20 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
       {/* Banner */}
       <div className="px-4 pb-4">
         {petType === "dog" ? (
-          <img src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
+          <div className="relative">
+            <FadeImage src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
+          </div>
         ) : petType === "cat" ? (
-          <img src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
+          <div className="relative">
+            <FadeImage src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
+          </div>
         ) : petType === "birds" ? (
-          <img src={birdShopBanner} alt="Shop for Birds" className="w-full rounded-2xl" />
+          <div className="relative">
+            <FadeImage src={birdShopBanner} alt="Shop for Birds" className="w-full rounded-2xl" />
+          </div>
         ) : petType === "fish" ? (
           <div className="relative">
-            <img src={fishShopBanner} alt="Shop for Fish" className="w-full rounded-2xl" />
+            <FadeImage src={fishShopBanner} alt="Shop for Fish" className="w-full rounded-2xl" />
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
               <div className="grid grid-cols-4 grid-rows-2 w-full h-full">
                 {FISH_BREED_NAMES.map((breed, i) => (
@@ -341,7 +365,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
           </div>
         ) : ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType) ? (
           <div className="relative">
-            <img 
+            <FadeImage 
               src={petType === "rabbit" ? rabbitShopBanner : petType === "white-mouse" ? shopBannerMouse : petType === "hamster" ? shopBannerHamster : petType === "guinea-pig" ? shopBannerGuineaPig : shopBannerTurtle} 
               alt={`Shop for ${petName}s`} 
               className="w-full rounded-2xl" 
@@ -378,7 +402,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
       <div className="px-4 pb-4">
         {petType === "dog" ? (
           <div className="relative">
-            <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
+            <FadeImage src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {DOG_BREED_NAMES.map((breed, i) => (
                 <button
@@ -392,7 +416,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
           </div>
         ) : petType === "cat" ? (
           <div className="relative">
-            <img src={catBreedsGrid} alt="Cat Breeds" className="w-full rounded-2xl" />
+            <FadeImage src={catBreedsGrid} alt="Cat Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {CAT_BREED_NAMES.map((breed, i) => (
                 <button
@@ -406,7 +430,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
           </div>
         ) : petType === "birds" ? (
           <div className="relative">
-            <img src={birdBreedsGrid} alt="Bird Breeds" className="w-full rounded-2xl" />
+            <FadeImage src={birdBreedsGrid} alt="Bird Breeds" className="w-full rounded-2xl" />
             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
               {BIRD_BREED_NAMES.map((breed, i) => (
                 <button
