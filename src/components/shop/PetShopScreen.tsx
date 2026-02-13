@@ -332,14 +332,14 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
             <img src={birdShopBanner} alt="Shop for Birds" className="w-full rounded-2xl" />
           </div>
         ) : petType === "fish" ? (
-          <div className="relative">
-            <img src={fishShopBanner} alt="Shop for Fish" className="w-full rounded-2xl" />
+          <div className="relative rounded-2xl shadow-md border border-border overflow-hidden">
+            <img src={fishShopBanner} alt="Shop for Fish" className="w-full" />
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
               <div className="grid grid-cols-4 grid-rows-2 w-full h-full">
                 {FISH_BREED_NAMES.map((breed, i) => (
                   <button
                     key={i}
-                    className="w-full h-full hover:bg-black/5 active:bg-black/10 transition-colors"
+                    className="w-full h-full hover:bg-black/5 active:bg-black/15 active:scale-95 transition-all duration-150 rounded-lg"
                     onClick={() => onViewAllProducts(breed)}
                     aria-label={breed}
                   />
@@ -348,18 +348,18 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
             </div>
           </div>
         ) : ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType) ? (
-          <div className="relative">
+          <div className="relative rounded-2xl shadow-md border border-border overflow-hidden">
             <img 
               src={petType === "rabbit" ? rabbitShopBanner : petType === "white-mouse" ? shopBannerMouse : petType === "hamster" ? shopBannerHamster : petType === "guinea-pig" ? shopBannerGuineaPig : shopBannerTurtle} 
               alt={`Shop for ${petName}s`} 
-              className="w-full rounded-2xl" 
+              className="w-full" 
             />
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "65%" }}>
               <div className="grid grid-cols-3 grid-rows-2 w-full h-full">
                 {(petType === "rabbit" ? RABBIT_CATEGORY_NAMES : petType === "white-mouse" ? MOUSE_CATEGORY_NAMES : petType === "hamster" ? HAMSTER_CATEGORY_NAMES : petType === "guinea-pig" ? GUINEA_PIG_CATEGORY_NAMES : TURTLE_CATEGORY_NAMES).map((cat, i) => (
                   <button
                     key={i}
-                    className="w-full h-full hover:bg-black/5 active:bg-black/10 transition-colors"
+                    className="w-full h-full hover:bg-black/5 active:bg-black/15 active:scale-95 transition-all duration-150 rounded-lg"
                     onClick={() => onViewAllProductsWithCategory?.(cat.categoryId)}
                     aria-label={cat.name}
                   />
