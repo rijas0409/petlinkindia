@@ -21,6 +21,8 @@ import catShopBanner from "@/assets/cat-shop-banner.png";
 import catBreedsGrid from "@/assets/cat-breeds-grid.png";
 import birdShopBanner from "@/assets/bird-shop-banner.png";
 import birdBreedsGrid from "@/assets/bird-breeds-grid.png";
+import fishShopBanner from "@/assets/fish-shop-banner.png";
+import fishBreedsGrid from "@/assets/fish-breeds-grid.png";
 
 const BANNER_IMAGES: Record<string, string> = {
   dog: shopBannerDog,
@@ -143,6 +145,11 @@ const CAT_BREED_NAMES = [
 const BIRD_BREED_NAMES = [
   "Parrots", "Budgies", "Cockatiels", "Love Birds",
   "Finches", "Canaries", "Pigeons", "Doves",
+];
+
+const FISH_BREED_NAMES = [
+  "Goldfish", "Betta", "Tropical Fish", "Koi",
+  "Shrimp", "Catfish", "Arowana", "Discus Fish",
 ];
 
 interface PetShopScreenProps {
@@ -269,6 +276,23 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart, onSear
           <img src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
         ) : petType === "birds" ? (
           <img src={birdShopBanner} alt="Shop for Birds" className="w-full rounded-2xl" />
+        ) : petType === "fish" ? (
+          <div className="relative">
+            <img src={fishShopBanner} alt="Shop for Fish" className="w-full rounded-2xl" />
+            {/* Breed overlay on bottom ~55% of the image (the 8 fish grid) */}
+            <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
+              <div className="grid grid-cols-4 grid-rows-2 w-full h-full">
+                {FISH_BREED_NAMES.map((breed, i) => (
+                  <button
+                    key={i}
+                    className="w-full h-full hover:bg-black/5 active:bg-black/10 transition-colors"
+                    onClick={() => onViewAllProducts(breed)}
+                    aria-label={breed}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="rounded-2xl overflow-hidden" style={{ background: bannerGradient }}>
             <div className="flex items-center">
@@ -328,7 +352,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart, onSear
               ))}
             </div>
           </div>
-        ) : (
+        ) : petType === "fish" ? null : (
           <div className={`grid ${gridCols} gap-2.5`}>
             {breedCategories.map((item, index) => (
               <button

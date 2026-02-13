@@ -41,6 +41,12 @@ const BIRD_BREEDS = [
   "Finches", "Canaries", "Pigeons", "Doves",
 ];
 
+const FISH_BREEDS = [
+  "All Breeds",
+  "Goldfish", "Betta", "Tropical Fish", "Koi",
+  "Shrimp", "Catfish", "Arowana", "Discus Fish",
+];
+
 interface ProductListingScreenProps {
   petType: string;
   initialBreed?: string;
@@ -251,8 +257,8 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, onBack, on
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Breed (dog, cat & birds) */}
-            {(petType === "dog" || petType === "cat" || petType === "birds") && (
+            {/* Breed (dog, cat, birds & fish) */}
+            {(petType === "dog" || petType === "cat" || petType === "birds" || petType === "fish") && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -260,11 +266,11 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, onBack, on
                     size="sm"
                     className="rounded-full whitespace-nowrap flex items-center gap-1"
                   >
-                    {selectedBreed !== "All Breeds" ? `${petType === "dog" ? "🐕" : petType === "cat" ? "🐈" : "🐦"} ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
+                    {selectedBreed !== "All Breeds" ? `${petType === "dog" ? "🐕" : petType === "cat" ? "🐈" : petType === "fish" ? "🐟" : "🐦"} ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-xl max-h-60 overflow-y-auto">
-                  {(petType === "dog" ? DOG_BREEDS : petType === "cat" ? CAT_BREEDS : BIRD_BREEDS).map((breed) => (
+                  {(petType === "dog" ? DOG_BREEDS : petType === "cat" ? CAT_BREEDS : petType === "fish" ? FISH_BREEDS : BIRD_BREEDS).map((breed) => (
                     <DropdownMenuItem
                       key={breed}
                       onClick={() => setSelectedBreed(breed)}
