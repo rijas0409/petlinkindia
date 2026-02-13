@@ -23,6 +23,7 @@ import birdShopBanner from "@/assets/bird-shop-banner.png";
 import birdBreedsGrid from "@/assets/bird-breeds-grid.png";
 import fishShopBanner from "@/assets/fish-shop-banner.png";
 import fishBreedsGrid from "@/assets/fish-breeds-grid.png";
+import rabbitShopBanner from "@/assets/rabbit-shop-banner.png";
 
 const BANNER_IMAGES: Record<string, string> = {
   dog: shopBannerDog,
@@ -152,15 +153,25 @@ const FISH_BREED_NAMES = [
   "Shrimp", "Catfish", "Arowana", "Discus Fish",
 ];
 
+const RABBIT_CATEGORY_NAMES = [
+  { name: "Food", categoryId: "food" },
+  { name: "Treats", categoryId: "hay" },
+  { name: "Pharmacy", categoryId: "pharmacy" },
+  { name: "Toys", categoryId: "toys" },
+  { name: "Clothing & Fashion", categoryId: "grooming" },
+  { name: "Prescription Diet", categoryId: "feeders" },
+];
+
 interface PetShopScreenProps {
   petType: string;
   onBack: () => void;
   onViewAllProducts: (breed?: string) => void;
+  onViewAllProductsWithCategory?: (category: string) => void;
   onAddToCart: (productId: string) => void;
   onSearch?: (query: string) => void;
 }
 
-const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart, onSearch }: PetShopScreenProps) => {
+const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWithCategory, onAddToCart, onSearch }: PetShopScreenProps) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -279,7 +290,6 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart, onSear
         ) : petType === "fish" ? (
           <div className="relative">
             <img src={fishShopBanner} alt="Shop for Fish" className="w-full rounded-2xl" />
-            {/* Breed overlay on bottom ~55% of the image (the 8 fish grid) */}
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
               <div className="grid grid-cols-4 grid-rows-2 w-full h-full">
                 {FISH_BREED_NAMES.map((breed, i) => (
@@ -288,6 +298,23 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart, onSear
                     className="w-full h-full hover:bg-black/5 active:bg-black/10 transition-colors"
                     onClick={() => onViewAllProducts(breed)}
                     aria-label={breed}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : petType === "rabbit" ? (
+          <div className="relative">
+            <img src={rabbitShopBanner} alt="Shop for Rabbits" className="w-full rounded-2xl" />
+            {/* Category overlay on bottom ~65% of the image (the 6 category grid) */}
+            <div className="absolute bottom-0 left-0 right-0" style={{ height: "65%" }}>
+              <div className="grid grid-cols-3 grid-rows-2 w-full h-full">
+                {RABBIT_CATEGORY_NAMES.map((cat, i) => (
+                  <button
+                    key={i}
+                    className="w-full h-full hover:bg-black/5 active:bg-black/10 transition-colors"
+                    onClick={() => onViewAllProductsWithCategory?.(cat.categoryId)}
+                    aria-label={cat.name}
                   />
                 ))}
               </div>
@@ -352,7 +379,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onAddToCart, onSear
               ))}
             </div>
           </div>
-        ) : petType === "fish" ? null : (
+        ) : petType === "fish" ? null : petType === "rabbit" ? null : (
           <div className={`grid ${gridCols} gap-2.5`}>
             {breedCategories.map((item, index) => (
               <button

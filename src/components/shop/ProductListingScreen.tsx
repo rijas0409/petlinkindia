@@ -51,17 +51,18 @@ interface ProductListingScreenProps {
   petType: string;
   initialBreed?: string;
   initialSearch?: string;
+  initialCategory?: string;
   onBack: () => void;
   onAddToCart: (productId: string) => void;
 }
 
-const ProductListingScreen = ({ petType, initialBreed, initialSearch, onBack, onAddToCart }: ProductListingScreenProps) => {
+const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCategory, onBack, onAddToCart }: ProductListingScreenProps) => {
   const navigate = useNavigate();
   const categories = PET_CATEGORIES[petType] || PET_CATEGORIES.dog;
   const petName = PET_NAMES[petType] || "Pet";
   const { cartCount } = useCart();
   
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.id || "food");
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || categories[0]?.id || "food");
   const [sortBy, setSortBy] = useState("relevance");
   const [selectedBreed, setSelectedBreed] = useState(initialBreed || "All Breeds");
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
