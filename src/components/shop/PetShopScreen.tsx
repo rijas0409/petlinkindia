@@ -6,136 +6,33 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/contexts/CartContext";
 import { PET_NAMES, generateProducts } from "@/lib/shopData";
 
-import shopBannerDog from "@/assets/shop-banner-dog.png";
-import shopBannerCat from "@/assets/shop-banner-cat.png";
-import shopBannerBird from "@/assets/shop-banner-bird.png";
-import shopBannerFish from "@/assets/shop-banner-fish.png";
-import shopBannerRabbit from "@/assets/shop-banner-rabbit.png";
-import shopBannerHamster from "@/assets/shop-banner-hamster.png";
-import shopBannerMouse from "@/assets/shop-banner-mouse.png";
-import shopBannerGuineaPig from "@/assets/shop-banner-guinea-pig.png";
-import shopBannerTurtle from "@/assets/shop-banner-turtle.png";
-import dogShopBanner from "@/assets/dog-shop-banner.png";
-import dogBreedsGrid from "@/assets/dog-breeds-grid.png";
-import catShopBanner from "@/assets/cat-shop-banner.png";
-import catBreedsGrid from "@/assets/cat-breeds-grid.png";
-import birdShopBanner from "@/assets/bird-shop-banner.png";
-import birdBreedsGrid from "@/assets/bird-breeds-grid.png";
-import fishShopBanner from "@/assets/fish-shop-banner.png";
-import fishBreedsGrid from "@/assets/fish-breeds-grid.png";
-import rabbitShopBanner from "@/assets/rabbit-shop-banner.png";
+// New composite images (banner + breeds/categories in one image)
+import shopDogsImg from "@/assets/shop-dogs.png";
+import shopCatsImg from "@/assets/shop-cats.png";
+import shopBirdsImg from "@/assets/shop-birds.png";
+import shopFishImg from "@/assets/shop-fish.png";
+import shopRabbitsImg from "@/assets/shop-rabbits.png";
+import shopMouseImg from "@/assets/shop-mouse.png";
+import shopHamstersImg from "@/assets/shop-hamsters.png";
+import shopGuineapigsImg from "@/assets/shop-guineapigs.png";
+import shopTurtleImg from "@/assets/shop-turtle.png";
 
-const BANNER_IMAGES: Record<string, string> = {
-  dog: shopBannerDog,
-  cat: shopBannerCat,
-  birds: shopBannerBird,
-  fish: shopBannerFish,
-  rabbit: shopBannerRabbit,
-  hamster: shopBannerHamster,
-  "white-mouse": shopBannerMouse,
-  "guinea-pig": shopBannerGuineaPig,
-  turtle: shopBannerTurtle,
+const SHOP_IMAGES: Record<string, string> = {
+  dog: shopDogsImg,
+  cat: shopCatsImg,
+  birds: shopBirdsImg,
+  fish: shopFishImg,
+  rabbit: shopRabbitsImg,
+  "white-mouse": shopMouseImg,
+  hamster: shopHamstersImg,
+  "guinea-pig": shopGuineapigsImg,
+  turtle: shopTurtleImg,
 };
 
-const BANNER_GRADIENTS: Record<string, string> = {
-  dog: "linear-gradient(135deg, #fce7f3, #fdf2f8, #ffffff)",
-  cat: "linear-gradient(135deg, #fce7f3, #ede9fe, #ffffff)",
-  birds: "linear-gradient(135deg, #ecfdf5, #f0fdf4, #ffffff)",
-  fish: "linear-gradient(135deg, #e0f2fe, #eff6ff, #ffffff)",
-  rabbit: "linear-gradient(135deg, #ecfdf5, #fce7f3, #ffffff)",
-  hamster: "linear-gradient(135deg, #fce7f3, #fff7ed, #ffffff)",
-  "white-mouse": "linear-gradient(135deg, #e0f2fe, #ede9fe, #ffffff)",
-  "guinea-pig": "linear-gradient(135deg, #ecfdf5, #f0fdf4, #ffffff)",
-  turtle: "linear-gradient(135deg, #ccfbf1, #e0f2fe, #ffffff)",
-};
-
-// Pet-specific breed/category cards
-const PET_BREED_CATEGORIES: Record<string, { name: string; image: string; bgColor: string }[]> = {
-  dog: [
-    { name: "Golden Retriever", image: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=200", bgColor: "#fef3c7" },
-    { name: "Labrador Retriever", image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200", bgColor: "#fce7f3" },
-    { name: "German Shepherd", image: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=200", bgColor: "#fce7f3" },
-    { name: "Beagle", image: "https://images.unsplash.com/photo-1505628346881-b72b27e84530?w=200", bgColor: "#ede9fe" },
-    { name: "Pug", image: "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=200", bgColor: "#fef3c7" },
-    { name: "Shih Tzu", image: "https://images.unsplash.com/photo-1583337130417-13104dec14a3?w=200", bgColor: "#fce7f3" },
-    { name: "Husky", image: "https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=200", bgColor: "#ede9fe" },
-    { name: "Cocker Spaniel", image: "https://images.unsplash.com/photo-1537151608828-ea2b11305ee2?w=200", bgColor: "#fef3c7" },
-  ],
-  cat: [
-    { name: "Persian", image: "https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=200", bgColor: "#fef3c7" },
-    { name: "British Shorthair", image: "https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=200", bgColor: "#d1d5db" },
-    { name: "Maine Coon", image: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=200", bgColor: "#fce7f3" },
-    { name: "Siamese", image: "https://images.unsplash.com/photo-1513245543132-31f507417b26?w=200", bgColor: "#ede9fe" },
-    { name: "Bengal", image: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=200", bgColor: "#fef3c7" },
-    { name: "Ragdoll", image: "https://images.unsplash.com/photo-1494256997604-768d1f608cac?w=200", bgColor: "#fce7f3" },
-    { name: "Himalayan", image: "https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=200", bgColor: "#ede9fe" },
-    { name: "Domestic Shorthair", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200", bgColor: "#fef3c7" },
-  ],
-  birds: [
-    { name: "Parrots", image: "https://images.unsplash.com/photo-1544923408-75c5cef46f14?w=200", bgColor: "#d1fae5" },
-    { name: "Budgies", image: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=200", bgColor: "#fce7f3" },
-    { name: "Cockatiels", image: "https://images.unsplash.com/photo-1591198936750-16d8e15edb9e?w=200", bgColor: "#fef3c7" },
-    { name: "Love Birds", image: "https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=200", bgColor: "#ede9fe" },
-    { name: "Finches", image: "https://images.unsplash.com/photo-1444464666168-49d633b86797?w=200", bgColor: "#fef3c7" },
-    { name: "Canaries", image: "https://images.unsplash.com/photo-1522926193341-e9ffd686c60f?w=200", bgColor: "#fce7f3" },
-    { name: "Pigeons", image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200", bgColor: "#d1d5db" },
-    { name: "Doves", image: "https://images.unsplash.com/photo-1557401620-67270b4f9c87?w=200", bgColor: "#ede9fe" },
-  ],
-  fish: [
-    { name: "Goldfish", image: "https://images.unsplash.com/photo-1524704654690-b56c05c78a00?w=200", bgColor: "#fed7aa" },
-    { name: "Betta", image: "https://images.unsplash.com/photo-1520302519878-3286b6a0d47d?w=200", bgColor: "#fecaca" },
-    { name: "Tropical Fish", image: "https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?w=200", bgColor: "#bfdbfe" },
-    { name: "Koi", image: "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=200", bgColor: "#fef3c7" },
-    { name: "Shrimp", image: "https://images.unsplash.com/photo-1565680018093-ebb6d2ea3ef1?w=200", bgColor: "#fce7f3" },
-    { name: "Catfish", image: "https://images.unsplash.com/photo-1535591273668-578e31182c4f?w=200", bgColor: "#d1d5db" },
-    { name: "Arowana", image: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200", bgColor: "#ede9fe" },
-    { name: "Discus Fish", image: "https://images.unsplash.com/photo-1520990652892-927abd5313e7?w=200", bgColor: "#fed7aa" },
-  ],
-  rabbit: [
-    { name: "Food", image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200", bgColor: "#fef3c7" },
-    { name: "Treats", image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200", bgColor: "#d1fae5" },
-    { name: "Pharmacy", image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200", bgColor: "#fce7f3" },
-    { name: "Toys", image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200", bgColor: "#bfdbfe" },
-    { name: "Clothing & Fashion", image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200", bgColor: "#fce7f3" },
-    { name: "Prescription Diet", image: "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200", bgColor: "#ede9fe" },
-  ],
-  hamster: [
-    { name: "Food", image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200", bgColor: "#fef3c7" },
-    { name: "Treats", image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200", bgColor: "#d1fae5" },
-    { name: "Health Care", image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200", bgColor: "#fce7f3" },
-    { name: "Toys", image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200", bgColor: "#bfdbfe" },
-    { name: "Habitat", image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200", bgColor: "#fce7f3" },
-    { name: "Accessories", image: "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=200", bgColor: "#ede9fe" },
-  ],
-  "white-mouse": [
-    { name: "Food", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=200", bgColor: "#fef3c7" },
-    { name: "Treats", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=200", bgColor: "#d1fae5" },
-    { name: "Health Care", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=200", bgColor: "#fce7f3" },
-    { name: "Toys", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=200", bgColor: "#bfdbfe" },
-    { name: "Habitat", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=200", bgColor: "#fce7f3" },
-    { name: "Accessories", image: "https://images.unsplash.com/photo-1548802673-380ab8ebc7b7?w=200", bgColor: "#ede9fe" },
-  ],
-  "guinea-pig": [
-    { name: "Food", image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=200", bgColor: "#fef3c7" },
-    { name: "Treats", image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=200", bgColor: "#d1fae5" },
-    { name: "Health Care", image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=200", bgColor: "#fce7f3" },
-    { name: "Toys", image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=200", bgColor: "#bfdbfe" },
-    { name: "Habitat", image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=200", bgColor: "#fce7f3" },
-    { name: "Accessories", image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=200", bgColor: "#ede9fe" },
-  ],
-  turtle: [
-    { name: "Food", image: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=200", bgColor: "#ccfbf1" },
-    { name: "Pharmacy", image: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=200", bgColor: "#fce7f3" },
-    { name: "Tanks", image: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=200", bgColor: "#bfdbfe" },
-    { name: "Lighting", image: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=200", bgColor: "#fef3c7" },
-    { name: "Decor", image: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=200", bgColor: "#d1fae5" },
-    { name: "Cleaning", image: "https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=200", bgColor: "#ede9fe" },
-  ],
-};
-
+// 8-breed pets: overlay grid is 4x2 on bottom portion
 const DOG_BREED_NAMES = [
   "Golden Retriever", "Labrador Retriever", "German Shepherd", "Beagle",
-  "Pug", "Shih Tzu", "Husky", "Cocker Spaniel",
+  "Pug", "Shih Tzu", "Rottweiler", "Cocker Spaniel",
 ];
 
 const CAT_BREED_NAMES = [
@@ -153,31 +50,32 @@ const FISH_BREED_NAMES = [
   "Shrimp", "Catfish", "Arowana", "Discus Fish",
 ];
 
+// 6-category pets: overlay grid is 3x2 on bottom portion
 const RABBIT_CATEGORY_NAMES = [
   { name: "Food", categoryId: "food" },
   { name: "Treats", categoryId: "hay" },
   { name: "Pharmacy", categoryId: "pharmacy" },
   { name: "Toys", categoryId: "toys" },
-  { name: "Clothing & Fashion", categoryId: "grooming" },
-  { name: "Prescription Diet", categoryId: "feeders" },
+  { name: "Hutches", categoryId: "hutches" },
+  { name: "Grooming", categoryId: "grooming" },
 ];
 
 const MOUSE_CATEGORY_NAMES = [
   { name: "Food", categoryId: "food" },
-  { name: "Treats", categoryId: "hay" },
+  { name: "Treats", categoryId: "treats" },
   { name: "Health Care", categoryId: "pharmacy" },
   { name: "Toys", categoryId: "toys" },
-  { name: "Habitat", categoryId: "feeders" },
-  { name: "Accessories", categoryId: "grooming" },
+  { name: "Habitat", categoryId: "cages" },
+  { name: "Accessories", categoryId: "feeders" },
 ];
 
 const HAMSTER_CATEGORY_NAMES = [
   { name: "Food", categoryId: "food" },
-  { name: "Treats", categoryId: "hay" },
+  { name: "Treats", categoryId: "treats" },
   { name: "Health Care", categoryId: "pharmacy" },
   { name: "Toys", categoryId: "toys" },
-  { name: "Habitat", categoryId: "feeders" },
-  { name: "Accessories", categoryId: "grooming" },
+  { name: "Habitat", categoryId: "tanks" },
+  { name: "Accessories", categoryId: "cleaning" },
 ];
 
 const GUINEA_PIG_CATEGORY_NAMES = [
@@ -185,20 +83,18 @@ const GUINEA_PIG_CATEGORY_NAMES = [
   { name: "Treats", categoryId: "hay" },
   { name: "Pharmacy", categoryId: "pharmacy" },
   { name: "Toys", categoryId: "toys" },
-  { name: "Bedding & Care", categoryId: "grooming" },
-  { name: "Special Diet", categoryId: "feeders" },
+  { name: "Bedding & Care", categoryId: "bedding" },
+  { name: "Grooming", categoryId: "grooming" },
 ];
 
 const TURTLE_CATEGORY_NAMES = [
   { name: "Food", categoryId: "food" },
-  { name: "Habitat", categoryId: "feeders" },
+  { name: "Habitat", categoryId: "tanks" },
   { name: "Health Care", categoryId: "pharmacy" },
-  { name: "Toys", categoryId: "toys" },
-  { name: "Bedding & Care", categoryId: "grooming" },
-  { name: "Faattc & Water", categoryId: "hay" },
+  { name: "Tank Decor", categoryId: "decor" },
+  { name: "Basking Platforms & Docks", categoryId: "basking" },
+  { name: "Cleaning & Maintenance", categoryId: "cleaning" },
 ];
-
-// No FadeImage needed — all assets are bundled locally and load instantly
 
 interface PetShopScreenProps {
   petType: string;
@@ -214,9 +110,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const petName = PET_NAMES[petType] || "Pet";
-  const bannerImage = BANNER_IMAGES[petType] || shopBannerDog;
-  const bannerGradient = BANNER_GRADIENTS[petType] || BANNER_GRADIENTS.dog;
-  const breedCategories = PET_BREED_CATEGORIES[petType] || PET_BREED_CATEGORIES.dog;
+  const shopImage = SHOP_IMAGES[petType] || shopDogsImg;
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
   const { cartCount } = useCart();
 
@@ -243,8 +137,29 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
     });
   };
 
-  // Determine grid cols based on pet type
-  const gridCols = ["dog", "cat", "birds", "fish"].includes(petType) ? "grid-cols-4" : "grid-cols-3";
+  const isBreedPet = ["dog", "cat", "birds", "fish"].includes(petType);
+  const isCategoryPet = ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType);
+
+  const getBreedNames = () => {
+    switch (petType) {
+      case "dog": return DOG_BREED_NAMES;
+      case "cat": return CAT_BREED_NAMES;
+      case "birds": return BIRD_BREED_NAMES;
+      case "fish": return FISH_BREED_NAMES;
+      default: return [];
+    }
+  };
+
+  const getCategoryNames = () => {
+    switch (petType) {
+      case "rabbit": return RABBIT_CATEGORY_NAMES;
+      case "white-mouse": return MOUSE_CATEGORY_NAMES;
+      case "hamster": return HAMSTER_CATEGORY_NAMES;
+      case "guinea-pig": return GUINEA_PIG_CATEGORY_NAMES;
+      case "turtle": return TURTLE_CATEGORY_NAMES;
+      default: return [];
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -317,133 +232,43 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
         )}
       </div>
 
-      {/* Banner */}
+      {/* Single Composite Image with Invisible Overlay CTAs */}
       <div className="px-4 pb-4">
-        {petType === "dog" ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img src={dogShopBanner} alt="Shop for Dogs" className="w-full rounded-2xl" />
-          </div>
-        ) : petType === "cat" ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img src={catShopBanner} alt="Shop for Cats" className="w-full rounded-2xl" />
-          </div>
-        ) : petType === "birds" ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img src={birdShopBanner} alt="Shop for Birds" className="w-full rounded-2xl" />
-          </div>
-        ) : petType === "fish" ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img src={fishShopBanner} alt="Shop for Fish" className="w-full" />
-            <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
+        <div className="relative rounded-2xl overflow-hidden bg-background">
+          <img src={shopImage} alt={`Shop for ${petName}s`} className="w-full rounded-2xl" />
+          
+          {/* Overlay for breed-based pets (8 breeds, bottom ~60%) */}
+          {isBreedPet && (
+            <div className="absolute bottom-0 left-0 right-0" style={{ height: "60%" }}>
               <div className="grid grid-cols-4 grid-rows-2 w-full h-full">
-                {FISH_BREED_NAMES.map((breed, i) => (
+                {getBreedNames().map((breed, i) => (
                   <button
                     key={i}
-                    className="w-full h-full hover:bg-black/5 active:bg-black/15 active:scale-95 transition-all duration-150 rounded-lg"
+                    className="w-full h-full hover:bg-black/5 active:bg-black/10 active:scale-95 transition-all duration-150"
                     onClick={() => onViewAllProducts(breed)}
                     aria-label={breed}
                   />
                 ))}
               </div>
             </div>
-          </div>
-        ) : ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType) ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img 
-              src={petType === "rabbit" ? rabbitShopBanner : petType === "white-mouse" ? shopBannerMouse : petType === "hamster" ? shopBannerHamster : petType === "guinea-pig" ? shopBannerGuineaPig : shopBannerTurtle} 
-              alt={`Shop for ${petName}s`} 
-              className="w-full" 
-            />
-            <div className="absolute bottom-0 left-0 right-0" style={{ height: "65%" }}>
+          )}
+
+          {/* Overlay for category-based pets (6 categories, bottom ~55%) */}
+          {isCategoryPet && (
+            <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
               <div className="grid grid-cols-3 grid-rows-2 w-full h-full">
-                {(petType === "rabbit" ? RABBIT_CATEGORY_NAMES : petType === "white-mouse" ? MOUSE_CATEGORY_NAMES : petType === "hamster" ? HAMSTER_CATEGORY_NAMES : petType === "guinea-pig" ? GUINEA_PIG_CATEGORY_NAMES : TURTLE_CATEGORY_NAMES).map((cat, i) => (
+                {getCategoryNames().map((cat, i) => (
                   <button
                     key={i}
-                    className="w-full h-full hover:bg-black/5 active:bg-black/15 active:scale-95 transition-all duration-150 rounded-lg"
+                    className="w-full h-full hover:bg-black/5 active:bg-black/10 active:scale-95 transition-all duration-150"
                     onClick={() => onViewAllProductsWithCategory?.(cat.categoryId)}
                     aria-label={cat.name}
                   />
                 ))}
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl overflow-hidden" style={{ background: bannerGradient }}>
-            <div className="flex items-center">
-              <div className="flex-1 p-5">
-                <h3 className="text-foreground text-xl font-bold leading-tight">Shop for {petName}s</h3>
-                <p className="text-muted-foreground text-xs mt-1">Find everything your {petName.toLowerCase()}<br />needs in one place.</p>
-              </div>
-              <div className="w-40 h-32">
-                <img src={bannerImage} alt={`Shop for ${petName}s`} className="w-full h-full object-contain" />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Breed/Category Grid */}
-      <div className="px-4 pb-4">
-        {petType === "dog" ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img src={dogBreedsGrid} alt="Dog Breeds" className="w-full rounded-2xl" />
-            <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
-              {DOG_BREED_NAMES.map((breed, i) => (
-                <button
-                  key={i}
-                  className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
-                  onClick={() => onViewAllProducts(breed)}
-                  aria-label={breed}
-                />
-              ))}
-            </div>
-          </div>
-        ) : petType === "cat" ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img src={catBreedsGrid} alt="Cat Breeds" className="w-full rounded-2xl" />
-            <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
-              {CAT_BREED_NAMES.map((breed, i) => (
-                <button
-                  key={i}
-                  className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
-                  onClick={() => onViewAllProducts(breed)}
-                  aria-label={breed}
-                />
-              ))}
-            </div>
-          </div>
-        ) : petType === "birds" ? (
-          <div className="relative rounded-2xl overflow-hidden bg-background">
-            <img src={birdBreedsGrid} alt="Bird Breeds" className="w-full rounded-2xl" />
-            <div className="absolute inset-0 grid grid-cols-4 grid-rows-2">
-              {BIRD_BREED_NAMES.map((breed, i) => (
-                <button
-                  key={i}
-                  className="w-full h-full rounded-2xl hover:bg-black/5 active:bg-black/10 transition-colors"
-                  onClick={() => onViewAllProducts(breed)}
-                  aria-label={breed}
-                />
-              ))}
-            </div>
-          </div>
-        ) : petType === "fish" ? null : ["rabbit", "white-mouse", "hamster", "guinea-pig", "turtle"].includes(petType) ? null : (
-          <div className={`grid ${gridCols} gap-2.5`}>
-            {breedCategories.map((item, index) => (
-              <button
-                key={index}
-                className="flex flex-col items-center"
-              >
-                <div
-                  className="w-full aspect-square rounded-2xl overflow-hidden flex items-center justify-center p-2"
-                  style={{ backgroundColor: item.bgColor }}
-                >
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl" />
-                </div>
-                <span className="text-[11px] text-foreground font-medium text-center mt-1.5 line-clamp-2 leading-tight">{item.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Featured Products */}

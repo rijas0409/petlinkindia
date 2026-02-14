@@ -23,29 +23,35 @@ import { toast } from "sonner";
 import { useWishlist } from "@/hooks/useWishlist";
 import { PET_CATEGORIES, PET_NAMES, generateProducts, SORT_OPTIONS, BRAND_OPTIONS, QUICK_FILTERS } from "@/lib/shopData";
 
-const DOG_BREEDS = [
-  "All Breeds",
-  "Golden Retriever", "Labrador Retriever", "German Shepherd", "Beagle",
-  "Pug", "Shih Tzu", "Husky", "Cocker Spaniel",
-];
+const BREED_OPTIONS: Record<string, string[]> = {
+  dog: [
+    "All Breeds",
+    "Golden Retriever", "Labrador Retriever", "German Shepherd", "Beagle",
+    "Pug", "Shih Tzu", "Rottweiler", "Cocker Spaniel",
+  ],
+  cat: [
+    "All Breeds",
+    "Persian", "British Shorthair", "Maine Coon", "Siamese",
+    "Bengal", "Ragdoll", "Himalayan", "Domestic Shorthair",
+  ],
+  birds: [
+    "All Breeds",
+    "Parrots", "Budgies", "Cockatiels", "Love Birds",
+    "Finches", "Canaries", "Pigeons", "Doves",
+  ],
+  fish: [
+    "All Breeds",
+    "Goldfish", "Betta", "Tropical Fish", "Koi",
+    "Shrimp", "Catfish", "Arowana", "Discus Fish",
+  ],
+};
 
-const CAT_BREEDS = [
-  "All Breeds",
-  "Persian", "British Shorthair", "Maine Coon", "Siamese",
-  "Bengal", "Ragdoll", "Himalayan", "Domestic Shorthair",
-];
-
-const BIRD_BREEDS = [
-  "All Breeds",
-  "Parrots", "Budgies", "Cockatiels", "Love Birds",
-  "Finches", "Canaries", "Pigeons", "Doves",
-];
-
-const FISH_BREEDS = [
-  "All Breeds",
-  "Goldfish", "Betta", "Tropical Fish", "Koi",
-  "Shrimp", "Catfish", "Arowana", "Discus Fish",
-];
+const BREED_EMOJI: Record<string, string> = {
+  dog: "🐕",
+  cat: "🐈",
+  birds: "🐦",
+  fish: "🐟",
+};
 
 interface ProductListingScreenProps {
   petType: string;
@@ -74,6 +80,9 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
   
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
 
+  const hasBreedFilter = !!BREED_OPTIONS[petType];
+  const breedList = BREED_OPTIONS[petType] || [];
+
   // Generate products based on selected pet type and category
   const allProducts = useMemo(() => {
     return generateProducts(petType, selectedCategory);
@@ -90,6 +99,14 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
         (p) =>
           p.name.toLowerCase().includes(query) ||
           p.brand.toLowerCase().includes(query)
+      );
+    }
+
+    // Breed filter - since products are mock data, filter by name containing breed
+    if (hasBreedFilter && selectedBreed !== "All Breeds") {
+      products = products.filter(
+        (p) => p.name.toLowerCase().includes(selectedBreed.toLowerCase()) ||
+               p.brand.toLowerCase().includes(selectedBreed.toLowerCase())
       );
     }
 
@@ -126,12 +143,11 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
         products.sort((a, b) => b.discount - a.discount);
         break;
       default:
-        // Relevance - sponsored first
         products.sort((a, b) => (b.isSponsored ? 1 : 0) - (a.isSponsored ? 1 : 0));
     }
 
     return products;
-  }, [allProducts, searchQuery, selectedBrand, priceRange, activeQuickFilters, sortBy]);
+  }, [allProducts, searchQuery, selectedBreed, hasBreedFilter, selectedBrand, priceRange, activeQuickFilters, sortBy]);
 
   const toggleQuickFilter = (filterId: string) => {
     setActiveQuickFilters((prev) =>
@@ -258,8 +274,8 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Breed (dog, cat, birds & fish) */}
-            {(petType === "dog" || petType === "cat" || petType === "birds" || petType === "fish") && (
+            {/* Breed Filter (before Brand) - only for dog, cat, birds, fish */}
+            {hasBreedFilter && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -267,11 +283,11 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
                     size="sm"
                     className="rounded-full whitespace-nowrap flex items-center gap-1"
                   >
-                    {selectedBreed !== "All Breeds" ? `${petType === "dog" ? "🐕" : petType === "cat" ? "🐈" : petType === "fish" ? "🐟" : "🐦"} ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
+                    {selectedBreed !== "All Breeds" ? `${BREED_EMOJI[petType] || "🐾"} ${selectedBreed}` : "Breed"} <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="rounded-xl max-h-60 overflow-y-auto">
-                  {(petType === "dog" ? DOG_BREEDS : petType === "cat" ? CAT_BREEDS : petType === "fish" ? FISH_BREEDS : BIRD_BREEDS).map((breed) => (
+                  {breedList.map((breed) => (
                     <DropdownMenuItem
                       key={breed}
                       onClick={() => setSelectedBreed(breed)}
