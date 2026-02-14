@@ -127,7 +127,7 @@ const PromoCarousel = () => {
 
 interface ShopHomeScreenProps {
   onSelectPet: (petId: string) => void;
-  onAddToCart: (productId: string) => void;
+  onAddToCart: (product: { id: string; name: string; price: number; image: string }) => void;
   onSearch?: (query: string) => void;
 }
 
@@ -325,7 +325,7 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
                     size="icon"
                     className="w-7 h-7 rounded-full ml-auto"
                     style={{ backgroundColor: '#ec4899' }}
-                    onClick={() => onAddToCart(product.id)}
+                    onClick={() => onAddToCart({ id: product.id, name: product.name, price: product.price, image: product.image })}
                   >
                     <Plus className="w-4 h-4 text-white" />
                   </Button>
