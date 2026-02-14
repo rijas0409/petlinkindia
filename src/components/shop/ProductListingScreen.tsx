@@ -59,7 +59,7 @@ interface ProductListingScreenProps {
   initialSearch?: string;
   initialCategory?: string;
   onBack: () => void;
-  onAddToCart: (productId: string) => void;
+  onAddToCart: (product: { id: string; name: string; price: number; image: string }) => void;
 }
 
 const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCategory, onBack, onAddToCart }: ProductListingScreenProps) => {
@@ -158,7 +158,7 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
   };
 
   const handleAddToCart = (product: any) => {
-    onAddToCart(product.id);
+    onAddToCart({ id: product.id, name: product.name, price: product.price, image: product.image });
     toast.success(`${product.name} added to cart!`);
   };
 
