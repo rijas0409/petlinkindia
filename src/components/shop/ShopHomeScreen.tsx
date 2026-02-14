@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus, X, Check } from "lucide-react";
+import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus, X, Check, Flame, Clock, Percent, TrendingUp, TrendingDown, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -142,12 +142,12 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
   const [showSortMenu, setShowSortMenu] = useState(false);
 
   const BEST_SELLER_SORT_OPTIONS = [
-    { id: "popularity", name: "Popularity" },
-    { id: "latest", name: "Latest" },
-    { id: "discount", name: "Discount" },
-    { id: "price-high", name: "Price: High to Low" },
-    { id: "price-low", name: "Price: Low to High" },
-    { id: "rating", name: "Customer Rating" },
+    { id: "popularity", name: "Popularity", icon: Flame },
+    { id: "latest", name: "Latest", icon: Clock },
+    { id: "discount", name: "Discount", icon: Percent },
+    { id: "price-high", name: "Price: High to Low", icon: TrendingUp },
+    { id: "price-low", name: "Price: Low to High", icon: TrendingDown },
+    { id: "rating", name: "Customer Rating", icon: Star },
   ];
 
   // Generate best sellers ONCE using useMemo with empty deps - stable across re-renders
@@ -323,13 +323,14 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
                 {BEST_SELLER_SORT_OPTIONS.map((opt) => (
                   <button
                     key={opt.id}
-                    className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between ${
+                    className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 ${
                       sortOption === opt.id ? "text-primary font-medium bg-primary/5" : "text-foreground"
                     }`}
                     onClick={() => { setSortOption(opt.id); setShowSortMenu(false); }}
                   >
-                    {opt.name}
-                    {sortOption === opt.id && <Check className="w-4 h-4 text-primary" />}
+                    <opt.icon className="w-4 h-4 flex-shrink-0" />
+                    <span className="flex-1">{opt.name}</span>
+                    {sortOption === opt.id && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
                   </button>
                 ))}
               </div>
