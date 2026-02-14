@@ -113,6 +113,12 @@ export const PET_NAMES: Record<string, string> = {
   "white-mouse": "Mouse",
 };
 
+// Simple seeded random for stable product generation
+function seededRandom(seed: number) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
 // Generate mock products for a given pet type and category
 export const generateProducts = (petType: string, category: string) => {
   const brands = ["PetLife", "Royal Canin", "Pedigree", "Whiskas", "Drools", "Farmina", "Orijen", "Acana", "Hills", "Purina"];
@@ -128,11 +134,17 @@ export const generateProducts = (petType: string, category: string) => {
 
   const names = categoryNames[category] || categoryNames.default;
   
+  // Create a seed from petType and category strings
+  let baseSeed = 0;
+  for (let c = 0; c < petType.length; c++) baseSeed += petType.charCodeAt(c);
+  for (let c = 0; c < category.length; c++) baseSeed += category.charCodeAt(c) * 7;
+
   for (let i = 0; i < 12; i++) {
-    const originalPrice = Math.floor(Math.random() * 2000) + 200;
-    const discount = Math.floor(Math.random() * 40) + 5;
+    const seed = baseSeed * 100 + i;
+    const originalPrice = Math.floor(seededRandom(seed) * 2000) + 200;
+    const discount = Math.floor(seededRandom(seed + 1) * 40) + 5;
     const price = Math.floor(originalPrice * (1 - discount / 100));
-    const isSponsored = Math.random() > 0.8;
+    const isSponsored = seededRandom(seed + 2) > 0.8;
     
     products.push({
       id: `${petType}-${category}-${i}`,
@@ -143,7 +155,7 @@ export const generateProducts = (petType: string, category: string) => {
       discount,
       image: `https://images.unsplash.com/photo-${1560807707 + i * 10}-2aa5df59d8?w=400`,
       isSponsored,
-      deliveryTime: Math.floor(Math.random() * 30) + 15,
+      deliveryTime: Math.floor(seededRandom(seed + 3) * 30) + 15,
       petType,
       category,
     });
