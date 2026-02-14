@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus, X } from "lucide-react";
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus, X, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -138,8 +138,20 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Generate best sellers from all 9 pet types mixed together
-  const bestSellers = (() => {
+  const [sortOption, setSortOption] = useState("popularity");
+  const [showSortMenu, setShowSortMenu] = useState(false);
+
+  const BEST_SELLER_SORT_OPTIONS = [
+    { id: "popularity", name: "Popularity" },
+    { id: "latest", name: "Latest" },
+    { id: "discount", name: "Discount" },
+    { id: "price-high", name: "Price: High to Low" },
+    { id: "price-low", name: "Price: Low to High" },
+    { id: "rating", name: "Customer Rating" },
+  ];
+
+  // Generate best sellers ONCE using useMemo with empty deps - stable across re-renders
+  const bestSellers = useMemo(() => {
     const allPetTypes = ["dog", "cat", "birds", "fish", "rabbit", "hamster", "guinea-pig", "turtle", "white-mouse"];
     const allProducts: any[] = [];
     
@@ -147,18 +159,35 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
       const categories = ["food", "treats", "toys"];
       categories.forEach((cat) => {
         const products = generateProducts(pet, cat);
-        // Pick top 1-2 products per pet (simulating "best selling" by highest discount)
         const sorted = [...products].sort((a, b) => b.discount - a.discount);
         allProducts.push(...sorted.slice(0, 1));
       });
     });
 
-    // Sort by discount (simulating sales popularity) and pick top 8
     return allProducts
       .sort((a, b) => b.discount - a.discount)
-      .slice(0, 8)
-      .map((p, i) => ({ ...p, id: `best-seller-${i}` }));
-  })();
+      .slice(0, 8);
+  }, []);
+
+  // Apply sorting to stable best sellers
+  const sortedBestSellers = useMemo(() => {
+    const items = [...bestSellers];
+    switch (sortOption) {
+      case "price-low":
+        return items.sort((a, b) => a.price - b.price);
+      case "price-high":
+        return items.sort((a, b) => b.price - a.price);
+      case "discount":
+        return items.sort((a, b) => b.discount - a.discount);
+      case "latest":
+        return items.sort((a, b) => b.id.localeCompare(a.id));
+      case "rating":
+        return items.sort((a, b) => b.discount - a.discount); // simulated rating
+      case "popularity":
+      default:
+        return items.sort((a, b) => b.discount - a.discount);
+    }
+  }, [bestSellers, sortOption]);
 
   const handleToggleWishlist = async (product: any) => {
     await toggleProductWishlist({
@@ -282,12 +311,33 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
       <div className="px-4 pb-24">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-foreground">Best Sellers</h2>
-          <button className="flex items-center gap-1 text-sm text-muted-foreground">
-            Sort by <ChevronDown className="w-3 h-3" />
-          </button>
+          <div className="relative">
+            <button
+              className="flex items-center gap-1 text-sm text-muted-foreground"
+              onClick={() => setShowSortMenu(!showSortMenu)}
+            >
+              Sort by <ChevronDown className="w-3 h-3" />
+            </button>
+            {showSortMenu && (
+              <div className="absolute right-0 top-8 z-50 bg-card border border-border rounded-xl shadow-lg py-1 w-48">
+                {BEST_SELLER_SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between ${
+                      sortOption === opt.id ? "text-primary font-medium bg-primary/5" : "text-foreground"
+                    }`}
+                    onClick={() => { setSortOption(opt.id); setShowSortMenu(false); }}
+                  >
+                    {opt.name}
+                    {sortOption === opt.id && <Check className="w-4 h-4 text-primary" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {bestSellers.map((product) => (
+          {sortedBestSellers.map((product) => (
             <div key={product.id} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border">
               <div className="relative aspect-square bg-muted" style={{ backgroundColor: '#fce7f3' }}>
                 <img
