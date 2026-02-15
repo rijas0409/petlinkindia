@@ -38,10 +38,10 @@ const AIInsightsCard = ({ breed, category, ageMonths }: AIInsightsCardProps) => 
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[hsl(345,80%,68%)] to-[hsl(270,60%,75%)] flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-white" />
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[hsl(345,80%,68%)] to-[hsl(270,60%,75%)] flex items-center justify-center">
+            <span className="text-white text-sm font-bold">+</span>
           </div>
-          <span className="font-bold text-foreground">Sruvo AI Insights</span>
+          <span className="font-bold text-foreground text-[15px]">Sruvo AI Insights</span>
         </div>
         <div className="flex bg-muted rounded-full p-0.5">
           <button
