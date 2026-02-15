@@ -130,7 +130,7 @@ const PetDetails = () => {
   if (pet.verification_status === "verified") badges.push({ label: "VERIFIED", color: "hsl(145, 60%, 45%)" });
 
   return (
-    <div className="min-h-screen bg-background pb-36">
+    <div className="min-h-screen bg-background pb-40">
       <PetImageHeader
         images={images}
         isInWishlist={isInWishlist}
@@ -152,31 +152,31 @@ const PetDetails = () => {
         isFeatured={pet.is_featured}
       />
 
-      <div className="border-t border-border" />
+      <div className="my-2" />
 
       <AIInsightsCard breed={pet.breed} category={pet.category} ageMonths={pet.age_months} />
 
-      <div className="border-t border-border mt-4" />
+      <div className="my-2" />
 
       <KeyDetailsSection vaccinated={pet.vaccinated} city={pet.city} state={pet.state} isVerified={pet.verification_status === "verified"} />
 
-      <div className="border-t border-border" />
+      <div className="border-t border-border mx-4" />
 
       <HealthSafetySection vaccinated={pet.vaccinated} medicalHistory={pet.medical_history} ageMonths={pet.age_months} />
 
-      <div className="border-t border-border" />
+      <div className="border-t border-border mx-4" />
 
       <RecommendedProducts category={pet.category} />
 
-      <div className="border-t border-border" />
+      <div className="my-2" />
 
       <DeliveryDetailsCard city={pet.city} state={pet.state} />
 
-      <div className="border-t border-border mt-4" />
+      <div className="my-2" />
 
       <PoliciesSection />
 
-      <div className="border-t border-border" />
+      <div className="border-t border-border mx-4" />
 
       <SellerInfoCard seller={pet.profiles || null} />
 

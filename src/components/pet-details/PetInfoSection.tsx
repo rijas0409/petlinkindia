@@ -32,7 +32,7 @@ const PetInfoSection = ({ breed, name, price, originalPrice, ageMonths, gender, 
       {/* Price + Name */}
       <div className="flex items-start justify-between">
         <div className="space-y-1 flex-1">
-          <h1 className="text-2xl font-bold leading-tight text-foreground">{breed}</h1>
+          <h1 className="text-[26px] font-extrabold leading-tight text-foreground">{breed}</h1>
           <p className="text-sm text-muted-foreground capitalize">{name}</p>
         </div>
         <div className="text-right">
