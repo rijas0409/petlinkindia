@@ -12,29 +12,28 @@ const RecommendedProducts = ({ category }: RecommendedProductsProps) => {
   ];
 
   return (
-    <div className="px-4 py-4">
-      <div className="flex items-center gap-1.5 mb-3">
-        <Sparkles className="w-4 h-4 text-primary" />
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">AI CURATED</span>
+    <div className="px-5 py-4">
+      <div className="flex items-center gap-1.5 mb-2">
+        <Sparkles className="w-3.5 h-3.5 text-[#A855F7]" />
+        <span className="text-[9px] font-bold text-[#999] uppercase tracking-widest">AI CURATED</span>
       </div>
-      <h3 className="font-bold text-lg text-foreground mb-3">Recommended for this Pet</h3>
+      <h3 className="font-bold text-[17px] text-[#151B32] mb-3">Recommended for this Pet</h3>
 
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
         {products.map((p, i) => (
-          <div key={i} className="min-w-[140px] max-w-[140px] bg-card rounded-2xl border border-border overflow-hidden shadow-sm flex-shrink-0">
-            <div className="aspect-square bg-muted flex items-center justify-center text-4xl">
+          <div key={i} className="min-w-[140px] max-w-[140px] bg-white rounded-2xl border border-[#ECECEC] overflow-hidden shadow-sm flex-shrink-0">
+            <div className="aspect-square bg-[#F5F5F7] flex items-center justify-center text-4xl relative">
               {p.image}
+              <button className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-[#A855F7] flex items-center justify-center shadow">
+                <Plus className="w-3.5 h-3.5 text-white" />
+              </button>
             </div>
             <div className="p-2.5">
-              <p className="text-xs font-medium text-foreground line-clamp-2 leading-tight">{p.name}</p>
-              <p className="text-sm font-bold text-foreground mt-1">{p.price}</p>
+              <p className="text-[11px] font-semibold text-[#151B32] line-clamp-2 leading-tight">{p.name}</p>
+              <p className="text-[13px] font-bold text-[#F472D0] mt-1">{p.price}</p>
             </div>
           </div>
         ))}
-        {/* Add more card */}
-        <div className="min-w-[140px] max-w-[140px] bg-muted/50 rounded-2xl border border-dashed border-border flex items-center justify-center flex-shrink-0">
-          <Plus className="w-6 h-6 text-muted-foreground" />
-        </div>
       </div>
     </div>
   );
