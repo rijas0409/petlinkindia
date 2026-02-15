@@ -1,4 +1,4 @@
-import { ShoppingBag } from "lucide-react";
+import { ShoppingCart, Plus } from "lucide-react";
 
 interface BottomCTAProps {
   price: number;
@@ -13,21 +13,22 @@ const BottomCTA = ({ price, onBuyNow }: BottomCTAProps) => {
   return (
     <div className="fixed bottom-14 left-0 right-0 z-50 bg-white border-t border-[#ECECEC] px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:bottom-0">
       <div className="flex items-center gap-3 max-w-lg mx-auto">
-        {/* Small bag icon */}
-        <div className="w-10 h-10 rounded-xl bg-[#F5F5F7] flex items-center justify-center flex-shrink-0">
-          <ShoppingBag className="w-5 h-5 text-[#151B32]" />
+        {/* Cart with plus icon */}
+        <div className="w-[52px] h-[52px] rounded-xl bg-[#F5F5F7] flex items-center justify-center flex-shrink-0 relative">
+          <ShoppingCart className="w-5 h-5 text-[#151B32]" />
+          <Plus className="w-3 h-3 text-[#151B32] absolute top-2 right-2" strokeWidth={3} />
         </div>
 
-        {/* EMI option */}
-        <div className="flex-1 py-2 px-3 rounded-xl border border-[#ECECEC] bg-white">
-          <p className="text-[12px] font-bold text-[#151B32]">Buy with EMI</p>
-          <p className="text-[10px] text-[#888]">from {formatPrice(emiPrice)}/mo</p>
+        {/* EMI option - same height as Buy Now */}
+        <div className="flex-1 h-[52px] rounded-2xl border border-[#ECECEC] bg-white flex flex-col items-center justify-center">
+          <p className="text-[12px] font-bold text-[#151B32] leading-tight">Buy with EMI</p>
+          <p className="text-[10px] text-[#888] leading-tight">from {formatPrice(emiPrice)}/mo</p>
         </div>
 
-        {/* Buy Now */}
+        {/* Buy Now - same height as EMI */}
         <button
           onClick={onBuyNow}
-          className="py-3 px-6 rounded-2xl text-white font-bold text-[13px] text-center flex-shrink-0"
+          className="h-[52px] px-6 rounded-2xl text-white font-bold text-[13px] text-center flex-shrink-0"
           style={{ background: "linear-gradient(135deg, #FF4BCD, #A855F7)" }}
         >
           Buy Now
