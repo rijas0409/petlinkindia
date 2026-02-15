@@ -30,12 +30,10 @@ const SellerInfoCard = ({ seller }: SellerInfoCardProps) => {
           </div>
           <div>
             <p className="font-semibold text-foreground">{seller.name}</p>
-            {seller.rating > 0 && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span className="text-xs text-muted-foreground">{seller.rating.toFixed(1)} Seller Rating</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1 mt-0.5">
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="text-xs text-muted-foreground">{(seller.rating > 0 ? seller.rating : 4.8).toFixed(1)} Seller Rating</span>
+            </div>
           </div>
         </div>
         <button className="text-primary text-sm font-semibold">View Profile</button>

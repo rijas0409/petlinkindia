@@ -78,7 +78,17 @@ const PetDetails = () => {
         .eq("id", id)
         .single();
       if (error) throw error;
-      setPet(data);
+      
+      // If profiles is null (RLS restriction for anon users), fetch via RPC
+      let petData = data;
+      if (!data.profiles && data.owner_id) {
+        const { data: sellerData } = await supabase.rpc("get_public_seller_info", { _seller_id: data.owner_id });
+        if (sellerData && sellerData.length > 0) {
+          petData = { ...data, profiles: sellerData[0] };
+        }
+      }
+      
+      setPet(petData);
       await supabase.from("pets").update({ views: (data.views || 0) + 1 }).eq("id", id);
     } catch {
       toast.error("Failed to load pet details");
@@ -130,7 +140,7 @@ const PetDetails = () => {
   if (pet.verification_status === "verified") badges.push({ label: "VERIFIED", color: "hsl(145, 60%, 45%)" });
 
   return (
-    <div className="min-h-screen bg-background pb-40">
+    <div className="min-h-screen bg-background pb-48">
       <PetImageHeader
         images={images}
         isInWishlist={isInWishlist}
