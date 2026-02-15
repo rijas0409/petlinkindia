@@ -1,27 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  Heart,
-  Share2,
-  MapPin,
-  ShieldCheck,
-  Calendar,
-  Syringe,
-  MessageCircle,
-  Phone,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Loader2,
-} from "lucide-react";
-import BottomNavigation from "@/components/BottomNavigation";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
+import PetImageHeader from "@/components/pet-details/PetImageHeader";
+import PetInfoSection from "@/components/pet-details/PetInfoSection";
+import AIInsightsCard from "@/components/pet-details/AIInsightsCard";
+import KeyDetailsSection from "@/components/pet-details/KeyDetailsSection";
+import HealthSafetySection from "@/components/pet-details/HealthSafetySection";
+import RecommendedProducts from "@/components/pet-details/RecommendedProducts";
+import DeliveryDetailsCard from "@/components/pet-details/DeliveryDetailsCard";
+import PoliciesSection from "@/components/pet-details/PoliciesSection";
+import SellerInfoCard from "@/components/pet-details/SellerInfoCard";
+import BottomCTA from "@/components/pet-details/BottomCTA";
+import BottomNavigation from "@/components/BottomNavigation";
 
 interface Pet {
   id: string;
@@ -60,9 +54,8 @@ const PetDetails = () => {
   const navigate = useNavigate();
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [user, setUser] = useState<any>(null);
-  const { wishlistPets, togglePetWishlist, isPetInWishlist } = useWishlist();
+  const { togglePetWishlist, isPetInWishlist } = useWishlist();
 
   const isInWishlist = isPetInWishlist(id || "");
 
@@ -78,28 +71,16 @@ const PetDetails = () => {
 
   const fetchPet = async () => {
     if (!id) return;
-    
     try {
       const { data, error } = await supabase
         .from("pets")
-        .select(`
-          *,
-          profiles:owner_id (id, name, profile_photo, rating, is_breeder_verified)
-        `)
+        .select(`*, profiles:owner_id (id, name, profile_photo, rating, is_breeder_verified)`)
         .eq("id", id)
         .single();
-
       if (error) throw error;
-      
       setPet(data);
-
-      // Increment views
-      await supabase
-        .from("pets")
-        .update({ views: (data.views || 0) + 1 })
-        .eq("id", id);
-
-    } catch (error: any) {
+      await supabase.from("pets").update({ views: (data.views || 0) + 1 }).eq("id", id);
+    } catch {
       toast.error("Failed to load pet details");
       navigate("/buyer-dashboard");
     } finally {
@@ -109,52 +90,21 @@ const PetDetails = () => {
 
   const handleShare = async () => {
     try {
-      await navigator.share({
-        title: `${pet?.breed} for sale`,
-        text: `Check out this ${pet?.breed} on PetLink!`,
-        url: window.location.href,
-      });
+      await navigator.share({ title: `${pet?.breed} for sale`, text: `Check out this ${pet?.breed}!`, url: window.location.href });
     } catch {
-      // Fallback to copy link
       navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard!");
+      toast.success("Link copied!");
     }
-  };
-
-  const handleContact = () => {
-    if (!user) {
-      toast.info("Please login to contact the seller");
-      navigate("/auth");
-      return;
-    }
-    toast.info("Chat feature coming soon!");
   };
 
   const handleWishlistToggle = () => {
-    if (!user) {
-      toast.info("Please login to add to wishlist");
-      navigate("/auth");
-      return;
-    }
-    if (pet) {
-      togglePetWishlist(pet.id);
-    }
+    if (!user) { toast.info("Please login to add to wishlist"); navigate("/auth"); return; }
+    if (pet) togglePetWishlist(pet.id);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
-
-  const formatAge = (months: number) => {
-    const years = Math.floor(months / 12);
-    const remainingMonths = months % 12;
-    if (years === 0) return `${remainingMonths} months`;
-    if (remainingMonths === 0) return `${years} year${years > 1 ? "s" : ""}`;
-    return `${years}y ${remainingMonths}m`;
+  const handleBuyNow = () => {
+    if (!user) { toast.info("Please login to purchase"); navigate("/auth"); return; }
+    toast.info("Purchase flow coming soon!");
   };
 
   if (loading) {
@@ -175,282 +125,62 @@ const PetDetails = () => {
   }
 
   const images = pet.images || [];
+  const badges: { label: string; color: string }[] = [];
+  if (pet.is_featured) badges.push({ label: "CHAMPION BLOODLINE", color: "hsl(345, 80%, 68%)" });
+  if (pet.verification_status === "verified") badges.push({ label: "VERIFIED", color: "hsl(145, 60%, 45%)" });
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={handleWishlistToggle}
-            >
-              <Heart
-                className={`w-5 h-5 ${isInWishlist ? "fill-destructive text-destructive" : ""}`}
-              />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-              onClick={handleShare}
-            >
-              <Share2 className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background pb-36">
+      <PetImageHeader
+        images={images}
+        isInWishlist={isInWishlist}
+        onBack={() => navigate(-1)}
+        onShare={handleShare}
+        onWishlistToggle={handleWishlistToggle}
+        badges={badges}
+      />
 
-      {/* Image Gallery */}
-      <div className="relative aspect-square bg-muted">
-        {images.length > 0 ? (
-          <>
-            <img
-              src={images[currentImageIndex]}
-              alt={pet.name}
-              className="w-full h-full object-cover"
-            />
-            {images.length > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80"
-                  onClick={() =>
-                    setCurrentImageIndex((i) => (i - 1 + images.length) % images.length)
-                  }
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80"
-                  onClick={() =>
-                    setCurrentImageIndex((i) => (i + 1) % images.length)
-                  }
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </Button>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {images.map((_, index) => (
-                    <button
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-colors ${
-                        index === currentImageIndex
-                          ? "bg-primary"
-                          : "bg-background/60"
-                      }`}
-                      onClick={() => setCurrentImageIndex(index)}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-            No images available
-          </div>
-        )}
+      <PetInfoSection
+        breed={pet.breed}
+        name={pet.name}
+        price={pet.price}
+        ageMonths={pet.age_months}
+        gender={pet.gender}
+        color={pet.color}
+        vaccinated={pet.vaccinated}
+        verificationStatus={pet.verification_status}
+        isFeatured={pet.is_featured}
+      />
 
-        {/* Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
-          {pet.verification_status === "verified" && (
-            <Badge className="bg-success text-white border-0 rounded-full">
-              <ShieldCheck className="w-3 h-3 mr-1" />
-              Verified
-            </Badge>
-          )}
-          {pet.is_featured && (
-            <Badge className="bg-gradient-primary text-white border-0 rounded-full">
-              Featured
-            </Badge>
-          )}
-        </div>
-      </div>
+      <div className="border-t border-border" />
 
-      {/* Pet Details */}
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Title & Price */}
-        <div>
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <h1 className="text-2xl font-bold">{pet.breed}</h1>
-              <p className="text-muted-foreground capitalize">
-                {pet.name} • {pet.gender} • {formatAge(pet.age_months)}
-              </p>
-            </div>
-            <p className="text-2xl font-bold text-primary">
-              {formatPrice(pet.price)}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="w-4 h-4" />
-            <span>{pet.city}, {pet.state}</span>
-          </div>
-        </div>
+      <AIInsightsCard breed={pet.breed} category={pet.category} ageMonths={pet.age_months} />
 
-        {/* Quick Info */}
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-3 text-center">
-              <p className="text-xs text-muted-foreground">Category</p>
-              <p className="font-medium capitalize">{pet.category}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-3 text-center">
-              <p className="text-xs text-muted-foreground">Color</p>
-              <p className="font-medium capitalize">{pet.color || "N/A"}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-3 text-center">
-              <p className="text-xs text-muted-foreground">Vaccinated</p>
-              <p className="font-medium">{pet.vaccinated ? "Yes" : "No"}</p>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="border-t border-border mt-4" />
 
-        {/* Health Info */}
-        {(pet.vaccinated || pet.microchip) && (
-          <Card className="border-0 shadow-card">
-            <CardContent className="p-4 space-y-3">
-              <h3 className="font-semibold flex items-center gap-2">
-                <Syringe className="w-4 h-4 text-primary" />
-                Health Information
-              </h3>
-              {pet.vaccinated && (
-                <div className="flex items-center gap-2 text-success">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span className="text-sm">Vaccinated</span>
-                </div>
-              )}
-              {pet.microchip && (
-                <div className="text-sm text-muted-foreground">
-                  <span className="font-medium">Microchip:</span> {pet.microchip}
-                </div>
-              )}
-              {pet.medical_history && (
-                <div className="text-sm text-muted-foreground">
-                  <span className="font-medium">Medical History:</span>{" "}
-                  {pet.medical_history}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+      <KeyDetailsSection vaccinated={pet.vaccinated} city={pet.city} state={pet.state} isVerified={pet.verification_status === "verified"} />
 
-        {/* Description */}
-        {pet.description && (
-          <Card className="border-0 shadow-card">
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-2">About</h3>
-              <p className="text-muted-foreground text-sm">{pet.description}</p>
-            </CardContent>
-          </Card>
-        )}
+      <div className="border-t border-border" />
 
-        {/* Seller Info */}
-        {pet.profiles && (
-          <Card className="border-0 shadow-card">
-            <CardContent className="p-4">
-              <h3 className="font-semibold mb-3">Seller Information</h3>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-secondary flex items-center justify-center overflow-hidden">
-                  {pet.profiles.profile_photo ? (
-                    <img
-                      src={pet.profiles.profile_photo}
-                      alt={pet.profiles.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-lg font-semibold">
-                      {pet.profiles.name?.[0]?.toUpperCase() || "S"}
-                    </span>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">{pet.profiles.name}</p>
-                    {pet.profiles.is_breeder_verified && (
-                      <Badge variant="secondary" className="text-xs">
-                        Verified Breeder
-                      </Badge>
-                    )}
-                  </div>
-                  {pet.profiles.rating > 0 && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span>{pet.profiles.rating.toFixed(1)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      <HealthSafetySection vaccinated={pet.vaccinated} medicalHistory={pet.medical_history} ageMonths={pet.age_months} />
 
-        {/* Additional Details */}
-        <Card className="border-0 shadow-card">
-          <CardContent className="p-4">
-            <h3 className="font-semibold mb-3">Additional Details</h3>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <p className="text-muted-foreground">Listed</p>
-                <p className="font-medium">
-                  {new Date(pet.created_at).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Views</p>
-                <p className="font-medium">{pet.views || 0}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Location</p>
-                <p className="font-medium">{pet.location}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="border-t border-border" />
 
-      {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-16 left-0 right-0 bg-card border-t border-border p-4">
-        <div className="container mx-auto flex gap-3">
-          <Button
-            variant="outline"
-            className="flex-1 rounded-2xl"
-            onClick={handleContact}
-          >
-            <MessageCircle className="w-4 h-4 mr-2" />
-            Chat
-          </Button>
-          <Button
-            className="flex-1 rounded-2xl bg-gradient-primary"
-            onClick={handleContact}
-          >
-            <Phone className="w-4 h-4 mr-2" />
-            Contact Seller
-          </Button>
-        </div>
-      </div>
+      <RecommendedProducts category={pet.category} />
+
+      <div className="border-t border-border" />
+
+      <DeliveryDetailsCard city={pet.city} state={pet.state} />
+
+      <div className="border-t border-border mt-4" />
+
+      <PoliciesSection />
+
+      <div className="border-t border-border" />
+
+      <SellerInfoCard seller={pet.profiles || null} />
+
+      <BottomCTA price={pet.price} onBuyNow={handleBuyNow} />
 
       <BottomNavigation variant="buyer" />
     </div>
