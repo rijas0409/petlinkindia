@@ -79,7 +79,6 @@ const PetDetails = () => {
         .single();
       if (error) throw error;
       
-      // If profiles is null (RLS restriction for anon users), fetch via RPC
       let petData = data;
       if (!data.profiles && data.owner_id) {
         const { data: sellerData } = await supabase.rpc("get_public_seller_info", { _seller_id: data.owner_id });
@@ -135,19 +134,15 @@ const PetDetails = () => {
   }
 
   const images = pet.images || [];
-  const badges: { label: string; color: string }[] = [];
-  if (pet.is_featured) badges.push({ label: "CHAMPION BLOODLINE", color: "hsl(345, 80%, 68%)" });
-  if (pet.verification_status === "verified") badges.push({ label: "VERIFIED", color: "hsl(145, 60%, 45%)" });
 
   return (
-    <div className="min-h-screen bg-background pb-48">
+    <div className="min-h-screen bg-[#F5F5F7] pb-36">
       <PetImageHeader
         images={images}
         isInWishlist={isInWishlist}
         onBack={() => navigate(-1)}
         onShare={handleShare}
         onWishlistToggle={handleWishlistToggle}
-        badges={badges}
       />
 
       <PetInfoSection
@@ -162,36 +157,25 @@ const PetDetails = () => {
         isFeatured={pet.is_featured}
       />
 
-      <div className="my-2" />
+      <div className="bg-white">
+        <div className="py-3">
+          <AIInsightsCard breed={pet.breed} category={pet.category} ageMonths={pet.age_months} />
+        </div>
 
-      <AIInsightsCard breed={pet.breed} category={pet.category} ageMonths={pet.age_months} />
+        <KeyDetailsSection vaccinated={pet.vaccinated} city={pet.city} state={pet.state} isVerified={pet.verification_status === "verified"} />
 
-      <div className="my-2" />
+        <HealthSafetySection vaccinated={pet.vaccinated} medicalHistory={pet.medical_history} ageMonths={pet.age_months} />
 
-      <KeyDetailsSection vaccinated={pet.vaccinated} city={pet.city} state={pet.state} isVerified={pet.verification_status === "verified"} />
+        <RecommendedProducts category={pet.category} />
 
-      <div className="border-t border-border mx-4" />
+        <DeliveryDetailsCard city={pet.city} state={pet.state} />
 
-      <HealthSafetySection vaccinated={pet.vaccinated} medicalHistory={pet.medical_history} ageMonths={pet.age_months} />
+        <PoliciesSection />
 
-      <div className="border-t border-border mx-4" />
-
-      <RecommendedProducts category={pet.category} />
-
-      <div className="my-2" />
-
-      <DeliveryDetailsCard city={pet.city} state={pet.state} />
-
-      <div className="my-2" />
-
-      <PoliciesSection />
-
-      <div className="border-t border-border mx-4" />
-
-      <SellerInfoCard seller={pet.profiles || null} />
+        <SellerInfoCard seller={pet.profiles || null} />
+      </div>
 
       <BottomCTA price={pet.price} onBuyNow={handleBuyNow} />
-
       <BottomNavigation variant="buyer" />
     </div>
   );

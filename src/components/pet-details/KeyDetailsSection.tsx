@@ -13,34 +13,40 @@ const KeyDetailsSection = ({ vaccinated, city, state, isVerified }: KeyDetailsSe
       icon: ShieldCheck,
       title: "Health Guaranteed",
       subtitle: "2-year congenital health warranty",
-      color: "hsl(145, 60%, 50%)",
+      bgColor: "#D1FAE5",
+      iconColor: "#10B981",
     },
     {
       icon: Syringe,
       title: "Up to Date",
       subtitle: "All shots & deworming complete",
-      color: "hsl(200, 70%, 55%)",
+      bgColor: "#FFE4EF",
+      iconColor: "#F472D0",
     },
     {
       icon: MapPin,
       title: "Origin",
-      subtitle: `Certified Breeder in ${city}, ${state}`,
-      color: "hsl(270, 60%, 60%)",
+      subtitle: `Certified Breeder in ${city}`,
+      bgColor: "#E0E7FF",
+      iconColor: "#818CF8",
     },
   ];
 
   return (
-    <div className="px-4 py-4">
-      <h3 className="font-bold text-lg text-foreground mb-3">Key Details</h3>
-      <div className="space-y-3">
+    <div className="px-5 py-4">
+      <h3 className="font-bold text-[17px] text-[#151B32] mb-3">Key Details</h3>
+      <div className="space-y-3.5">
         {details.map((d, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: `${d.color}18` }}>
-              <d.icon className="w-4 h-4" style={{ color: d.color }} />
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: d.bgColor }}
+            >
+              <d.icon className="w-4 h-4" style={{ color: d.iconColor }} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">{d.title}</p>
-              <p className="text-xs text-muted-foreground">{d.subtitle}</p>
+              <p className="text-[13px] font-bold text-[#151B32]">{d.title}</p>
+              <p className="text-[11px] text-[#888]">{d.subtitle}</p>
             </div>
           </div>
         ))}

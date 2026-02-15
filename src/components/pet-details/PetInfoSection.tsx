@@ -11,9 +11,10 @@ interface PetInfoSectionProps {
   vaccinated: boolean;
   verificationStatus: string;
   isFeatured: boolean;
+  bloodline?: string;
 }
 
-const PetInfoSection = ({ breed, name, price, originalPrice, ageMonths, gender, color, vaccinated, verificationStatus, isFeatured }: PetInfoSectionProps) => {
+const PetInfoSection = ({ breed, name, price, originalPrice, ageMonths, gender, color, vaccinated, verificationStatus, isFeatured, bloodline }: PetInfoSectionProps) => {
   const formatPrice = (p: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(p);
 
@@ -26,54 +27,65 @@ const PetInfoSection = ({ breed, name, price, originalPrice, ageMonths, gender, 
   };
 
   const sizeLabel = ageMonths < 6 ? "Small" : ageMonths < 18 ? "Medium" : "Large";
+  const displayBloodline = bloodline || "CHAMPION BLOODLINE";
 
   return (
-    <div className="px-4 pt-5 pb-3 space-y-4">
-      {/* Price + Name */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-1 flex-1">
-          <h1 className="text-[26px] font-extrabold leading-tight text-foreground">{breed}</h1>
-          <p className="text-sm text-muted-foreground capitalize">{name}</p>
+    <div className="bg-white rounded-t-3xl -mt-6 relative z-10 px-5 pt-5 pb-3">
+      {/* Champion Bloodline badge + Price */}
+      <div className="flex items-start justify-between mb-1">
+        <div>
+          {isFeatured && (
+            <span className="inline-block px-3 py-1 rounded-full border border-[#10B981] text-[#10B981] text-[10px] font-bold uppercase tracking-wider mb-2">
+              {displayBloodline}
+            </span>
+          )}
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold bg-gradient-to-r from-[hsl(345,80%,68%)] to-[hsl(270,60%,75%)] bg-clip-text text-transparent">
+          <p className="text-[24px] font-bold text-[#F472D0]">
             {formatPrice(price)}
           </p>
           {originalPrice && originalPrice > price && (
-            <p className="text-sm text-muted-foreground line-through">{formatPrice(originalPrice)}</p>
+            <p className="text-xs text-[#999] line-through">{formatPrice(originalPrice)}</p>
           )}
         </div>
       </div>
 
+      {/* Breed name */}
+      <h1 className="text-[26px] font-extrabold leading-tight text-[#151B32] mb-1">
+        {breed.split(" ").length > 1 ? (
+          <>
+            {breed.split(" ")[0]}<br />
+            {breed.split(" ").slice(1).join(" ")} Puppy
+          </>
+        ) : (
+          <>{breed} Puppy</>
+        )}
+      </h1>
+
       {/* Status badges */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 mt-2 mb-4">
         {vaccinated && (
-          <Badge className="bg-[hsl(145,60%,92%)] text-[hsl(145,60%,35%)] border-0 rounded-md text-xs font-semibold px-2.5 py-1">
+          <span className="px-2.5 py-1 rounded-md border border-[#10B981] text-[#10B981] text-[10px] font-bold uppercase">
             VACCINATED
-          </Badge>
+          </span>
         )}
         {verificationStatus === "verified" && (
-          <Badge className="bg-[hsl(220,20%,92%)] text-[hsl(220,20%,35%)] border-0 rounded-md text-xs font-semibold px-2.5 py-1">
+          <span className="px-2.5 py-1 rounded-md border border-[#60A5FA] text-[#60A5FA] text-[10px] font-bold uppercase">
             KCI REGISTERED
-          </Badge>
-        )}
-        {isFeatured && (
-          <Badge className="bg-[hsl(270,60%,92%)] text-[hsl(270,60%,45%)] border-0 rounded-md text-xs font-semibold px-2.5 py-1">
-            FEATURED
-          </Badge>
+          </span>
         )}
       </div>
 
-      {/* Age / Gender / Size chips */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Age / Gender / Size pills */}
+      <div className="grid grid-cols-3 gap-2.5">
         {[
           { label: "AGE", value: formatAge(ageMonths) },
           { label: "GENDER", value: gender },
           { label: "SIZE", value: sizeLabel },
         ].map((item) => (
-          <div key={item.label} className="bg-muted rounded-xl py-2.5 px-3 text-center">
-            <p className="text-[10px] font-medium text-muted-foreground tracking-wider uppercase">{item.label}</p>
-            <p className="text-sm font-semibold text-foreground capitalize mt-0.5">{item.value}</p>
+          <div key={item.label} className="bg-[#F5F5F7] rounded-xl py-2.5 px-3 text-center border border-[#ECECEC]">
+            <p className="text-[9px] font-medium text-[#999] tracking-widest uppercase">{item.label}</p>
+            <p className="text-[13px] font-semibold text-[#151B32] capitalize mt-0.5">{item.value}</p>
           </div>
         ))}
       </div>

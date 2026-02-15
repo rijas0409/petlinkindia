@@ -7,45 +7,46 @@ interface PetImageHeaderProps {
   onBack: () => void;
   onShare: () => void;
   onWishlistToggle: () => void;
-  badges: { label: string; color: string }[];
 }
 
-const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggle, badges }: PetImageHeaderProps) => {
+const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggle }: PetImageHeaderProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   return (
-    <div className="relative w-full aspect-[4/5] bg-muted">
+    <div className="relative w-full bg-[#F0F0F0]" style={{ minHeight: "280px", aspectRatio: "1/1" }}>
       {images.length > 0 ? (
         <img src={images[currentIndex]} alt="Pet" className="w-full h-full object-cover" />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-muted-foreground">No images</div>
+        <div className="w-full h-full flex items-center justify-center text-muted-foreground" style={{ minHeight: "280px" }}>
+          No images
+        </div>
       )}
 
-      {/* Floating top icons */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
+      {/* Top nav icons */}
+      <div className="absolute top-10 left-4 right-4 flex items-center justify-between z-10">
         <button
           onClick={onBack}
-          className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-md"
+          className="w-10 h-10 rounded-full bg-[#E8E8E8]/90 backdrop-blur-sm flex items-center justify-center"
         >
-          <ArrowLeft className="w-5 h-5 text-foreground" />
+          <ArrowLeft className="w-5 h-5 text-[#444]" />
         </button>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onShare}
-            className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-md"
-          >
-            <Share2 className="w-5 h-5 text-foreground" />
-          </button>
+        <div className="flex items-center gap-2.5">
           <button
             onClick={onWishlistToggle}
-            className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-md"
+            className="w-10 h-10 rounded-full bg-[#E8E8E8]/90 backdrop-blur-sm flex items-center justify-center"
           >
-            <Heart className={`w-5 h-5 ${isInWishlist ? "fill-primary text-primary" : "text-foreground"}`} />
+            <Heart className={`w-5 h-5 ${isInWishlist ? "fill-[#F472D0] text-[#F472D0]" : "text-[#F472D0] fill-[#F472D0]"}`} />
+          </button>
+          <button
+            onClick={onShare}
+            className="w-10 h-10 rounded-full bg-[#E8E8E8]/90 backdrop-blur-sm flex items-center justify-center"
+          >
+            <Share2 className="w-5 h-5 text-[#444]" />
           </button>
         </div>
       </div>
 
-      {/* Image navigation arrows */}
+      {/* Navigation arrows */}
       {images.length > 1 && (
         <>
           <button
@@ -65,28 +66,13 @@ const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggl
 
       {/* Dot indicators */}
       {images.length > 1 && (
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
           {images.map((_, i) => (
             <button
               key={i}
-              className={`w-2 h-2 rounded-full transition-colors ${i === currentIndex ? "bg-primary" : "bg-white/60"}`}
+              className={`w-2 h-2 rounded-full transition-colors ${i === currentIndex ? "bg-[#FF4BCD]" : "bg-white/60"}`}
               onClick={() => setCurrentIndex(i)}
             />
-          ))}
-        </div>
-      )}
-
-      {/* Bottom badges */}
-      {badges.length > 0 && (
-        <div className="absolute bottom-4 left-4 flex gap-2">
-          {badges.map((b, i) => (
-            <span
-              key={i}
-              className="px-3 py-1 rounded-full text-xs font-semibold text-white"
-              style={{ background: b.color }}
-            >
-              {b.label}
-            </span>
           ))}
         </div>
       )}
