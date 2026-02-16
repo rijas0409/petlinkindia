@@ -50,17 +50,15 @@ const PetInfoSection = ({ breed, name, price, originalPrice, ageMonths, gender, 
         </div>
       </div>
 
-      {/* Breed name */}
-      <h1 className="text-[26px] font-extrabold leading-tight text-[#151B32] mb-1">
-        {breed.split(" ").length > 1 ? (
-          <>
-            {breed.split(" ")[0]}<br />
-            {breed.split(" ").slice(1).join(" ")} Puppy
-          </>
-        ) : (
-          <>{breed} Puppy</>
-        )}
+      {/* Pet name */}
+      <h1 className="text-[26px] font-extrabold leading-tight text-[#151B32] mb-0.5">
+        {name}
       </h1>
+
+      {/* Breed name */}
+      <p className="text-[16px] font-semibold text-[#888] mb-1">
+        {breed}
+      </p>
 
       {/* Status badges */}
       <div className="flex flex-wrap gap-2 mt-2 mb-4">
