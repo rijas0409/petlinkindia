@@ -14,8 +14,8 @@ const BottomCTA = ({ price, onBuyNow }: BottomCTAProps) => {
     <div className="fixed bottom-14 left-0 right-0 z-50 bg-white border-t border-[#ECECEC] px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:bottom-0">
       <div className="flex items-center gap-3 max-w-lg mx-auto">
         {/* Cart plus icon */}
-        <div className="w-[52px] h-[52px] rounded-xl bg-[#F5F5F7] flex items-center justify-center flex-shrink-0">
-          <img src={cartPlusIcon} alt="Add to cart" className="w-[109px] h-[109px] object-contain" style={{ imageRendering: 'crisp-edges' }} />
+        <div className="w-[52px] h-[52px] rounded-xl bg-[#F5F5F7] flex items-center justify-center flex-shrink-0 overflow-visible relative">
+          <img src={cartPlusIcon} alt="Add to cart" className="w-[109px] h-[109px] object-contain absolute" style={{ imageRendering: 'crisp-edges' }} />
         </div>
 
         {/* EMI option - same height as Buy Now */}
