@@ -13,45 +13,58 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const prompt = `You are a veterinary expert AI. Generate accurate, breed-specific pet care insights for:
+    const prompt = `You are a veterinary information assistant. Generate accurate, breed-specific pet care insights.
+
+Pet details:
 - Breed: ${breed}
 - Category: ${category}
 - Age: ${ageMonths} months
 - Gender: ${gender}
+
+CRITICAL RULES:
+- Professional, calm, informative tone only.
+- No marketing language, no exaggeration, no emojis, no storytelling, no filler words.
+- No repetition across sections.
+- No speculative claims, no guarantees.
+- Fact-based and concise only.
+- Use cautious phrasing where uncertainty exists: "commonly seen," "may require," "typically."
+- No breed praise language. No emotional persuasion.
+- No unwanted, illegal, or 18+ wording.
+- IMPORTANT: Vary your wording significantly each time. Do not produce identical phrasing across requests for the same breed. Rephrase sentences, reorder points, and use synonyms naturally so no two outputs are word-for-word the same.
 
 Return a JSON object with this EXACT structure (no markdown, no code blocks, just raw JSON):
 {
   "quick": {
     "nutrition": {
       "title": "Nutrition Focus",
-      "text": "2-3 sentences about nutrition needs specific to this breed and age"
+      "text": "EXACTLY 2 sentences. Sentence 1: core dietary trait or requirement. Sentence 2: practical feeding implication. Keep within 2 mobile lines."
     },
     "activity": {
       "title": "Activity Level",
-      "text": "2-3 sentences about activity/exercise needs specific to this breed and age"
+      "text": "EXACTLY 2 sentences. Sentence 1: core activity trait. Sentence 2: practical exercise implication. Keep within 2 mobile lines."
     },
     "lifespan": {
       "title": "Avg Lifespan",
-      "text": "2-3 sentences about typical lifespan and longevity tips for this breed"
+      "text": "EXACTLY 2 sentences. Sentence 1: typical lifespan range. Sentence 2: key longevity factor. Keep within 2 mobile lines."
     }
   },
   "deep": {
     "health": {
       "title": "Health & Genetics",
-      "text": "4-6 sentences about breed-specific health concerns, genetic predispositions, recommended screenings"
+      "text": "EXACTLY 4 sentences max. Do NOT repeat Quick Facts content. Sentence 1: primary health concern. Sentence 2: context or explanation. Sentence 3: care or management approach. Sentence 4: preventive or monitoring recommendation."
     },
     "training": {
       "title": "Training & Temperament",
-      "text": "4-6 sentences about temperament, trainability, socialization needs"
+      "text": "EXACTLY 4 sentences max. Do NOT repeat Quick Facts content. Sentence 1: primary temperament trait. Sentence 2: context. Sentence 3: training approach. Sentence 4: socialization note."
     },
     "grooming": {
       "title": "Grooming & Care",
-      "text": "4-6 sentences about coat care, grooming frequency, seasonal needs"
+      "text": "EXACTLY 4 sentences max. Do NOT repeat Quick Facts content. Sentence 1: coat or care type. Sentence 2: grooming frequency. Sentence 3: seasonal or special needs. Sentence 4: maintenance recommendation."
     }
   }
 }
 
-Be accurate, specific to the breed, and consider the age. Do NOT use generic advice.`;
+Be accurate and specific to the breed and age. No generic advice.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
