@@ -113,12 +113,26 @@ const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIIn
       }}
     >
       {/* Header Row */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-4">
-        <div className="flex items-center gap-2">
-          <img src={sruvoStar} alt="" className="w-[69px] h-[69px] object-contain" />
-          <span className="font-extrabold text-[#151B32] text-[20px] leading-tight">
-            Sruvo AI<br />Insights
-          </span>
+      <div className="flex items-center justify-between px-5 sm:px-6 pt-7 sm:pt-6 pb-4">
+        <div className="flex items-center gap-1.5">
+          <div className="relative flex-shrink-0 flex items-start">
+            <img
+              src={sruvoStar}
+              alt=""
+              className="w-[79px] h-[79px] sm:w-[69px] sm:h-[69px] object-contain drop-shadow-[0_0_8px_rgba(139,92,246,0.35)]"
+              style={{
+                filter: "drop-shadow(0 0 6px rgba(236,72,153,0.2))",
+              }}
+            />
+          </div>
+          <div className="flex flex-col leading-snug">
+            <span className="font-semibold text-[#151B32] text-[18px] sm:text-[20px] tracking-tight">
+              Sruvo AI
+            </span>
+            <span className="font-extrabold text-[#151B32] text-[20px] sm:text-[21px] tracking-tight -mt-0.5">
+              Insights
+            </span>
+          </div>
         </div>
         <div className="flex bg-[#F3F4F6] rounded-full p-1">
           <button
