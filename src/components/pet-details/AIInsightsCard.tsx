@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Utensils, Activity, Heart, HeartPulse, Brain, Sparkles, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import sruvoStar from "@/assets/sruvo-star.png";
 
 interface AIInsightsCardProps {
   breed: string;
@@ -114,7 +115,7 @@ const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIIn
       {/* Header Row */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <div className="flex items-center gap-2">
-          <span className="text-[#7C3AED] text-lg">✦</span>
+          <img src={sruvoStar} alt="" className="w-[20px] h-[20px] object-contain" />
           <span className="font-extrabold text-[#151B32] text-[20px] leading-tight">
             Sruvo AI<br />Insights
           </span>
