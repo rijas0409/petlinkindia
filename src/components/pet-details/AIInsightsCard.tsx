@@ -115,7 +115,7 @@ const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIIn
       {/* Header Row */}
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <div className="flex items-center gap-2">
-          <img src={sruvoStar} alt="" className="w-[20px] h-[20px] object-contain" />
+          <img src={sruvoStar} alt="" className="w-[28px] h-[28px] object-contain" />
           <span className="font-extrabold text-[#151B32] text-[20px] leading-tight">
             Sruvo AI<br />Insights
           </span>
