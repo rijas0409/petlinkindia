@@ -1,104 +1,201 @@
-import { useState } from "react";
-import { Utensils, Activity, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Utensils, Activity, Heart, HeartPulse, Brain, Sparkles, ArrowRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AIInsightsCardProps {
   breed: string;
   category: string;
   ageMonths: number;
+  gender?: string;
 }
 
-const AIInsightsCard = ({ breed, category, ageMonths }: AIInsightsCardProps) => {
-  const [activeTab, setActiveTab] = useState<"insights" | "quick" | "deep">("insights");
+interface InsightsData {
+  quick: {
+    nutrition: { title: string; text: string };
+    activity: { title: string; text: string };
+    lifespan: { title: string; text: string };
+  };
+  deep: {
+    health: { title: string; text: string };
+    training: { title: string; text: string };
+    grooming: { title: string; text: string };
+  };
+}
 
-  const isYoung = ageMonths < 12;
+const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIInsightsCardProps) => {
+  const [activeTab, setActiveTab] = useState<"quick" | "deep">("quick");
+  const [insights, setInsights] = useState<InsightsData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const quickFacts = [
-    {
-      icon: Utensils,
-      title: "Nutrition Focus",
-      desc: `High-protein ${isYoung ? "puppy" : "adult"} kibble. Small kibble size recommended for dental health.`,
-      bgColor: "#FFE4EF",
-      iconColor: "#E8457C",
-    },
-    {
-      icon: Activity,
-      title: "Activity Level",
-      desc: `Moderate energy. ${isYoung ? "20-30" : "30-60"} mins of daily play is sufficient for this breed.`,
-      bgColor: "#E0F0FF",
-      iconColor: "#4A90D9",
-    },
-    {
-      icon: Heart,
-      title: "Avg Lifespan",
-      desc: `Pomeranians typically live 12-16 years with proper veterinary care.`,
-      bgColor: "#FFE4E4",
-      iconColor: "#E84545",
-    },
-  ];
+  useEffect(() => {
+    const fetchInsights = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("pet-ai-insights", {
+          body: { breed, category, ageMonths, gender },
+        });
+        if (error) throw error;
+        setInsights(data);
+      } catch (e) {
+        console.error("Failed to fetch AI insights:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchInsights();
+  }, [breed, category, ageMonths, gender]);
+
+  const quickFacts = insights
+    ? [
+        {
+          icon: Utensils,
+          title: insights.quick.nutrition.title,
+          desc: insights.quick.nutrition.text,
+          bgColor: "#F3EEFF",
+          iconColor: "#7C3AED",
+        },
+        {
+          icon: Activity,
+          title: insights.quick.activity.title,
+          desc: insights.quick.activity.text,
+          bgColor: "#EEF4FF",
+          iconColor: "#3B82F6",
+        },
+        {
+          icon: Heart,
+          title: insights.quick.lifespan.title,
+          desc: insights.quick.lifespan.text,
+          bgColor: "#FFF1F2",
+          iconColor: "#F43F5E",
+        },
+      ]
+    : [];
+
+  const deepDive = insights
+    ? [
+        {
+          icon: HeartPulse,
+          title: insights.deep.health.title,
+          desc: insights.deep.health.text,
+          bgColor: "#F0FDF4",
+          iconColor: "#3B82F6",
+        },
+        {
+          icon: Brain,
+          title: insights.deep.training.title,
+          desc: insights.deep.training.text,
+          bgColor: "#EEF4FF",
+          iconColor: "#3B82F6",
+        },
+        {
+          icon: Sparkles,
+          title: insights.deep.grooming.title,
+          desc: insights.deep.grooming.text,
+          bgColor: "#FFF1F2",
+          iconColor: "#F472B6",
+        },
+      ]
+    : [];
+
+  const items = activeTab === "quick" ? quickFacts : deepDive;
 
   return (
-    <div className="mx-4 rounded-2xl border border-[#F9D4E8] bg-white overflow-hidden">
-      {/* Tab header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+    <div
+      className="mx-4 rounded-3xl bg-[#F9FAFB] overflow-hidden"
+      style={{
+        border: "1.5px solid transparent",
+        backgroundImage:
+          "linear-gradient(#F9FAFB, #F9FAFB), linear-gradient(135deg, #C4B5FD, #F9A8D4, #C4B5FD)",
+        backgroundOrigin: "border-box",
+        backgroundClip: "padding-box, border-box",
+        boxShadow: "0 4px 24px -4px rgba(139,92,246,0.08)",
+      }}
+    >
+      {/* Header Row */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#FF4BCD] to-[#A855F7] flex items-center justify-center">
-            <span className="text-white text-sm font-bold">+</span>
-          </div>
-          <span className="font-bold text-[#151B32] text-[15px]">Sruvo AI Insights</span>
+          <span className="text-[#7C3AED] text-lg">✦</span>
+          <span className="font-extrabold text-[#151B32] text-[20px] leading-tight">
+            Sruvo AI<br />Insights
+          </span>
         </div>
-        <div className="flex bg-[#F3F3F5] rounded-full p-0.5">
+        <div className="flex bg-[#F3F4F6] rounded-full p-1">
           <button
             onClick={() => setActiveTab("quick")}
-            className={`px-3 py-1 text-[10px] font-semibold rounded-full transition-colors ${
-              activeTab === "quick" ? "bg-white text-[#151B32] shadow-sm" : "text-[#999]"
+            className={`px-4 py-2 text-[12px] font-semibold rounded-full transition-all duration-300 ${
+              activeTab === "quick"
+                ? "bg-white text-[#151B32] shadow-sm"
+                : "text-[#9CA3AF]"
             }`}
           >
-            Quick Facts
+            Quick<br />Facts
           </button>
           <button
             onClick={() => setActiveTab("deep")}
-            className={`px-3 py-1 text-[10px] font-semibold rounded-full transition-colors ${
-              activeTab === "deep" ? "bg-[#4A6CF7] text-white shadow-sm" : "text-[#999]"
+            className={`px-4 py-2 text-[12px] font-semibold rounded-full transition-all duration-300 ${
+              activeTab === "deep"
+                ? "bg-white text-[#151B32] shadow-sm"
+                : "text-[#9CA3AF]"
             }`}
           >
-            Deep Dive
+            Deep<br />Dive
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-4 pb-4 space-y-4">
-        {activeTab !== "deep" ? (
-          quickFacts.map((fact, i) => (
-            <div key={i} className="flex gap-3">
-              <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{ backgroundColor: fact.bgColor }}
-              >
-                <fact.icon className="w-4 h-4" style={{ color: fact.iconColor }} />
+      <div className="px-6 pb-2">
+        {loading ? (
+          <div className="space-y-5 py-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-4 animate-pulse">
+                <div className="w-12 h-12 rounded-full bg-[#E5E7EB] flex-shrink-0" />
+                <div className="flex-1 space-y-2 pt-1">
+                  <div className="h-4 bg-[#E5E7EB] rounded w-1/3" />
+                  <div className="h-3 bg-[#E5E7EB] rounded w-full" />
+                  <div className="h-3 bg-[#E5E7EB] rounded w-4/5" />
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-[13px] text-[#151B32]">{fact.title}</p>
-                <p className="text-[11px] text-[#888] leading-relaxed mt-0.5">{fact.desc}</p>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
-          <div className="space-y-3">
-            <p className="text-xs text-[#888] leading-relaxed">
-              {breed} is known for its friendly, reliable, and devoted temperament. This breed requires regular grooming and moderate exercise.
-              They are excellent family pets and are highly trainable.
-            </p>
-            <p className="text-xs text-[#888] leading-relaxed">
-              Common health considerations include hip dysplasia, eye conditions, and cardiac issues. Regular vet checkups are recommended every 6 months.
-            </p>
+          <div
+            key={activeTab}
+            className="space-y-5 py-2"
+            style={{ animation: "fadeIn 0.3s ease-in-out" }}
+          >
+            {items.map((item, i) => (
+              <div key={i} className="flex gap-4">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: item.bgColor }}
+                >
+                  <item.icon className="w-5 h-5" style={{ color: item.iconColor }} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-[15px] text-[#151B32] mb-1">{item.title}</p>
+                  <p className="text-[13px] text-[#6B7280] leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         )}
+      </div>
 
-        <button className="text-[#FF4BCD] text-[13px] font-bold flex items-center gap-1">
-          Get Personalised Care Plan →
+      {/* Bottom CTA */}
+      <div className="px-6 pb-6 pt-3">
+        <button className="w-full py-3.5 rounded-2xl bg-[#EDE9FE] text-[#7C3AED] font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#DDD6FE] transition-colors">
+          Get Personalised Care Plan
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };

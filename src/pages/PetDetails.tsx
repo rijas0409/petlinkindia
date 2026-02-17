@@ -159,7 +159,7 @@ const PetDetails = () => {
 
       <div className="bg-white">
         <div className="py-3">
-          <AIInsightsCard breed={pet.breed} category={pet.category} ageMonths={pet.age_months} />
+          <AIInsightsCard breed={pet.breed} category={pet.category} ageMonths={pet.age_months} gender={pet.gender} />
         </div>
 
         <KeyDetailsSection vaccinated={pet.vaccinated} city={pet.city} state={pet.state} isVerified={pet.verification_status === "verified"} />
