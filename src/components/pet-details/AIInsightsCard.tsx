@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Utensils, Activity, Heart, HeartPulse, Brain, Sparkles, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import sruvoStar from "@/assets/sruvo-star.png";
+import rjStar from "@/assets/rj-star.png";
 
 interface AIInsightsCardProps {
   breed: string;
@@ -117,9 +117,9 @@ const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIIn
         <div className="flex items-center gap-1.5">
           <div className="relative flex-shrink-0 flex items-start">
             <img
-              src={sruvoStar}
+              src={rjStar}
               alt=""
-              className="w-[79px] h-[79px] sm:w-[69px] sm:h-[69px] object-contain drop-shadow-[0_0_8px_rgba(139,92,246,0.35)]"
+              className="w-[49px] h-[49px] object-contain drop-shadow-[0_0_8px_rgba(139,92,246,0.35)]"
               style={{
                 filter: "drop-shadow(0 0 6px rgba(236,72,153,0.2))",
               }}

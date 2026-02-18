@@ -297,6 +297,50 @@ export type Database = {
           },
         ]
       }
+      pet_vaccinations: {
+        Row: {
+          certificate_name: string | null
+          certificate_url: string | null
+          created_at: string
+          date_administered: string
+          dose_number: string
+          id: string
+          next_due_date: string | null
+          pet_id: string
+          vaccine_type: string
+        }
+        Insert: {
+          certificate_name?: string | null
+          certificate_url?: string | null
+          created_at?: string
+          date_administered: string
+          dose_number: string
+          id?: string
+          next_due_date?: string | null
+          pet_id: string
+          vaccine_type: string
+        }
+        Update: {
+          certificate_name?: string | null
+          certificate_url?: string | null
+          created_at?: string
+          date_administered?: string
+          dose_number?: string
+          id?: string
+          next_due_date?: string | null
+          pet_id?: string
+          vaccine_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pet_vaccinations_pet_id_fkey"
+            columns: ["pet_id"]
+            isOneToOne: false
+            referencedRelation: "pets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pets: {
         Row: {
           age_months: number
