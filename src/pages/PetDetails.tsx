@@ -164,7 +164,7 @@ const PetDetails = () => {
 
         <KeyDetailsSection vaccinated={pet.vaccinated} city={pet.city} state={pet.state} isVerified={pet.verification_status === "verified"} />
 
-        <HealthSafetySection vaccinated={pet.vaccinated} medicalHistory={pet.medical_history} ageMonths={pet.age_months} />
+        <HealthSafetySection petId={pet.id} vaccinated={pet.vaccinated} />
 
         <RecommendedProducts category={pet.category} />
 

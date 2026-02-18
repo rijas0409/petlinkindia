@@ -15,6 +15,8 @@ import {
   CheckCircle, Eye, Video, Camera
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import AddVaccineModal, { type VaccineEntry } from "@/components/pet-details/AddVaccineModal";
+import VaccinationTable from "@/components/pet-details/VaccinationTable";
 
 type PetCategory = Database["public"]["Enums"]["pet_category"];
 type PetGender = Database["public"]["Enums"]["pet_gender"];
@@ -43,6 +45,8 @@ const AddPet = () => {
   const [livePetPhoto, setLivePetPhoto] = useState<{ file: File; preview: string } | null>(null);
   const [documents, setDocuments] = useState<File[]>([]);
   const [vaccinationDocs, setVaccinationDocs] = useState<File[]>([]);
+  const [vaccineEntries, setVaccineEntries] = useState<VaccineEntry[]>([]);
+  const [showVaccineModal, setShowVaccineModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -234,8 +238,8 @@ const AddPet = () => {
         }
         return true;
       case 5:
-        if (formData.vaccinated && vaccinationDocs.length === 0) {
-          toast.error("Please upload vaccination documents or uncheck 'Pet is vaccinated'");
+        if (formData.vaccinated && vaccineEntries.length === 0) {
+          toast.error("Please add at least one vaccination entry or uncheck 'Pet is vaccinated'");
           return false;
         }
         return true;
@@ -317,7 +321,27 @@ const AddPet = () => {
         }
       }
 
-      // Upload vaccination documents
+      // Upload vaccination entries to pet_vaccinations table
+      if (vaccineEntries.length > 0 && pet) {
+        for (const entry of vaccineEntries) {
+          let certUrl: string | null = null;
+          if (entry.certificateFile) {
+            const certPaths = await uploadFiles([entry.certificateFile], userId, 'vaccination');
+            certUrl = certPaths[0] || null;
+          }
+          await supabase.from("pet_vaccinations" as any).insert({
+            pet_id: pet.id,
+            vaccine_type: entry.vaccineType,
+            dose_number: entry.doseNumber,
+            date_administered: entry.dateAdministered.toISOString().split('T')[0],
+            next_due_date: entry.nextDueDate ? entry.nextDueDate.toISOString().split('T')[0] : null,
+            certificate_url: certUrl,
+            certificate_name: entry.certificateName,
+          });
+        }
+      }
+
+      // Upload vaccination documents (legacy)
       if (vaccinationDocs.length > 0 && pet) {
         const vacDocUrls = await uploadFiles(vaccinationDocs, userId, 'vaccination');
         for (const url of vacDocUrls) {
@@ -745,7 +769,7 @@ const AddPet = () => {
                     checked={formData.vaccinated}
                     onCheckedChange={(checked) => {
                       setFormData({ ...formData, vaccinated: checked as boolean });
-                      if (!checked) setVaccinationDocs([]);
+                      if (!checked) { setVaccinationDocs([]); setVaccineEntries([]); }
                     }}
                   />
                   <div className="flex-1">
@@ -760,45 +784,17 @@ const AddPet = () => {
                 </div>
 
                 {formData.vaccinated && (
-                  <div className="space-y-2 animate-fade-in">
-                    <Label className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-primary" />
-                      Vaccination Documents *
-                    </Label>
-                    <div className="border-2 border-dashed border-border rounded-2xl p-4">
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        multiple
-                        onChange={handleVaccinationDocUpload}
-                        className="hidden"
-                        id="vaccination-upload"
-                      />
-                      <label htmlFor="vaccination-upload" className="cursor-pointer block text-center">
-                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                        <p className="text-sm text-muted-foreground">
-                          Click to upload vaccination certificates
-                        </p>
-                      </label>
-                    </div>
-                    {vaccinationDocs.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {vaccinationDocs.map((doc, index) => (
-                          <div key={index} className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2">
-                            <FileText className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm truncate max-w-[150px]">{doc.name}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeVaccinationDoc(index)}
-                              className="w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <>
+                    <VaccinationTable
+                      entries={vaccineEntries}
+                      onAddClick={() => setShowVaccineModal(true)}
+                    />
+                    <AddVaccineModal
+                      open={showVaccineModal}
+                      onOpenChange={setShowVaccineModal}
+                      onAdd={(entry) => setVaccineEntries((prev) => [...prev, entry])}
+                    />
+                  </>
                 )}
 
                 <div className="space-y-2">
