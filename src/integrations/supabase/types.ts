@@ -344,6 +344,9 @@ export type Database = {
       pets: {
         Row: {
           age_months: number
+          age_type: string | null
+          birth_date: string | null
+          bloodline: string | null
           breed: string
           category: Database["public"]["Enums"]["pet_category"]
           city: string
@@ -363,6 +366,8 @@ export type Database = {
           price: number
           priority_fee_paid: boolean | null
           priority_verification: boolean | null
+          registered_with: string | null
+          size: string | null
           state: string
           updated_at: string | null
           vaccinated: boolean | null
@@ -371,9 +376,13 @@ export type Database = {
             | null
           videos: string[] | null
           views: number | null
+          weight_kg: number | null
         }
         Insert: {
           age_months: number
+          age_type?: string | null
+          birth_date?: string | null
+          bloodline?: string | null
           breed: string
           category: Database["public"]["Enums"]["pet_category"]
           city: string
@@ -393,6 +402,8 @@ export type Database = {
           price: number
           priority_fee_paid?: boolean | null
           priority_verification?: boolean | null
+          registered_with?: string | null
+          size?: string | null
           state: string
           updated_at?: string | null
           vaccinated?: boolean | null
@@ -401,9 +412,13 @@ export type Database = {
             | null
           videos?: string[] | null
           views?: number | null
+          weight_kg?: number | null
         }
         Update: {
           age_months?: number
+          age_type?: string | null
+          birth_date?: string | null
+          bloodline?: string | null
           breed?: string
           category?: Database["public"]["Enums"]["pet_category"]
           city?: string
@@ -423,6 +438,8 @@ export type Database = {
           price?: number
           priority_fee_paid?: boolean | null
           priority_verification?: boolean | null
+          registered_with?: string | null
+          size?: string | null
           state?: string
           updated_at?: string | null
           vaccinated?: boolean | null
@@ -431,6 +448,7 @@ export type Database = {
             | null
           videos?: string[] | null
           views?: number | null
+          weight_kg?: number | null
         }
         Relationships: [
           {

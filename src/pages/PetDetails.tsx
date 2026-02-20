@@ -40,6 +40,12 @@ interface Pet {
   views: number;
   created_at: string;
   owner_id: string;
+  bloodline?: string | null;
+  registered_with?: string | null;
+  birth_date?: string | null;
+  age_type?: string | null;
+  size?: string | null;
+  weight_kg?: number | null;
   profiles?: {
     id: string;
     name: string;
@@ -87,7 +93,7 @@ const PetDetails = () => {
         }
       }
       
-      setPet(petData);
+      setPet(petData as unknown as Pet);
       await supabase.from("pets").update({ views: (data.views || 0) + 1 }).eq("id", id);
     } catch {
       toast.error("Failed to load pet details");
@@ -155,6 +161,12 @@ const PetDetails = () => {
         vaccinated={pet.vaccinated}
         verificationStatus={pet.verification_status}
         isFeatured={pet.is_featured}
+        bloodline={pet.bloodline || undefined}
+        registeredWith={pet.registered_with || undefined}
+        birthDate={pet.birth_date}
+        ageType={pet.age_type}
+        size={pet.size}
+        createdAt={pet.created_at}
       />
 
       <div className="bg-white">
@@ -166,7 +178,7 @@ const PetDetails = () => {
 
         <HealthSafetySection petId={pet.id} vaccinated={pet.vaccinated} />
 
-        <RecommendedProducts category={pet.category} />
+        <RecommendedProducts category={pet.category} breed={pet.breed} ageMonths={pet.age_months} size={pet.size || undefined} />
 
         <DeliveryDetailsCard city={pet.city} state={pet.state} />
 
