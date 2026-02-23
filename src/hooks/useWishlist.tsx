@@ -70,6 +70,18 @@ export const useWishlist = () => {
       return;
     }
 
+    // Verify profile exists before attempting wishlist operation
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .single();
+
+    if (!profile) {
+      toast.error("Please complete your profile first");
+      return;
+    }
+
     const isInWishlist = isPetInWishlist(petId);
 
     try {

@@ -178,7 +178,21 @@ const RecommendedProducts = ({ category, breed, ageMonths, size }: RecommendedPr
     );
   }
 
-  if (products.length === 0) return null;
+  if (products.length === 0) {
+    return (
+      <div className="px-5 py-4">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Sparkles className="w-3.5 h-3.5 text-[#A855F7]" />
+          <span className="text-[9px] font-bold text-[#999] uppercase tracking-widest">AI CURATED</span>
+        </div>
+        <h3 className="font-bold text-[17px] text-[#151B32] mb-3">Recommended for this Pet</h3>
+        <div className="rounded-2xl border border-[#ECECEC] bg-[#F9FAFB] p-6 text-center">
+          <p className="text-sm text-[#999]">No product recommendations available yet.</p>
+          <p className="text-xs text-[#BBB] mt-1">Products from the shop will appear here once listed.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-5 py-4">
