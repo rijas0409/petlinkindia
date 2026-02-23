@@ -465,6 +465,7 @@ export type Database = {
           aadhaar_file: string | null
           address: string | null
           breeder_license: string | null
+          business_name: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
@@ -474,6 +475,7 @@ export type Database = {
           is_breeder_verified: boolean | null
           is_onboarding_complete: boolean | null
           name: string
+          pan_card_file: string | null
           phone: string | null
           priority_fee_paid: boolean | null
           profile_photo: string | null
@@ -486,6 +488,7 @@ export type Database = {
           aadhaar_file?: string | null
           address?: string | null
           breeder_license?: string | null
+          business_name?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -495,6 +498,7 @@ export type Database = {
           is_breeder_verified?: boolean | null
           is_onboarding_complete?: boolean | null
           name: string
+          pan_card_file?: string | null
           phone?: string | null
           priority_fee_paid?: boolean | null
           profile_photo?: string | null
@@ -507,6 +511,7 @@ export type Database = {
           aadhaar_file?: string | null
           address?: string | null
           breeder_license?: string | null
+          business_name?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -516,6 +521,7 @@ export type Database = {
           is_breeder_verified?: boolean | null
           is_onboarding_complete?: boolean | null
           name?: string
+          pan_card_file?: string | null
           phone?: string | null
           priority_fee_paid?: boolean | null
           profile_photo?: string | null
