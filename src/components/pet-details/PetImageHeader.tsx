@@ -31,11 +31,12 @@ const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggl
           <ArrowLeft className="w-5 h-5 text-[#444]" />
         </button>
         <div className="flex items-center gap-2.5">
+          {/* Task F2: Use same heart icon style as home page header */}
           <button
             onClick={onWishlistToggle}
             className="w-10 h-10 rounded-full bg-[#E8E8E8]/90 backdrop-blur-sm flex items-center justify-center"
           >
-            <Heart className={`w-5 h-5 ${isInWishlist ? "fill-[#F472D0] text-[#F472D0]" : "text-[#F472D0] fill-[#F472D0]"}`} />
+            <Heart className={`w-5 h-5 ${isInWishlist ? "fill-destructive text-destructive" : "text-[#444]"}`} />
           </button>
           <button
             onClick={onShare}

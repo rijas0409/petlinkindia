@@ -2,8 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, ShieldCheck } from "lucide-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useWishlist } from "@/hooks/useWishlist";
 
 interface PetCardProps {
   pet: any;
@@ -11,11 +11,13 @@ interface PetCardProps {
 
 const PetCard = ({ pet }: PetCardProps) => {
   const navigate = useNavigate();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { togglePetWishlist, isPetInWishlist } = useWishlist();
 
-  const handleFavorite = (e: React.MouseEvent) => {
+  const isFavorite = isPetInWishlist(pet.id);
+
+  const handleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
+    await togglePetWishlist(pet.id);
   };
 
   const handleView = (e: React.MouseEvent) => {

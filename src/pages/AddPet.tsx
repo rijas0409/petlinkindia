@@ -74,6 +74,7 @@ const AddPet = () => {
   const [vaccinationDocs, setVaccinationDocs] = useState<File[]>([]);
   const [vaccineEntries, setVaccineEntries] = useState<VaccineEntry[]>([]);
   const [showVaccineModal, setShowVaccineModal] = useState(false);
+  const [bloodlineDocFiles, setBloodlineDocFiles] = useState<File[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -83,6 +84,7 @@ const AddPet = () => {
     ageMonths: "",
     color: "",
     price: "",
+    originalPrice: "",
     description: "",
     location: "",
     city: "",
@@ -172,7 +174,7 @@ const AddPet = () => {
     for (const file of files) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/${type}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const bucket = type === 'document' || type === 'vaccination' ? 'pet-documents' : 'pet-media';
+      const bucket = type === 'document' || type === 'vaccination' || type === 'bloodline' ? 'pet-documents' : 'pet-media';
       const { error } = await supabase.storage.from(bucket).upload(fileName, file);
       if (error) { console.error("Upload error:", error); throw error; }
       if (bucket === 'pet-documents') {
@@ -185,7 +187,6 @@ const AddPet = () => {
     return paths;
   };
 
-  // Calculate age_months from birth_date or approximate age
   const getAgeMonths = (): number => {
     if (formData.ageType === "exact" && formData.birthDate) {
       const now = new Date();
@@ -230,7 +231,7 @@ const AddPet = () => {
         return true;
       }
       case 3:
-        if (!formData.price || parseFloat(formData.price) <= 0) { toast.error("Please enter a valid price"); return false; }
+        if (!formData.price || parseFloat(formData.price) <= 0) { toast.error("Please enter a valid selling price"); return false; }
         return true;
       case 4:
         if (!formData.state || !formData.city || !formData.location) { toast.error("Please fill in all location fields"); return false; }
@@ -312,6 +313,16 @@ const AddPet = () => {
         }
       }
 
+      // Upload bloodline documents
+      if (bloodlineDocFiles.length > 0 && pet) {
+        const bloodlineUrls = await uploadFiles(bloodlineDocFiles, userId, 'bloodline');
+        for (const url of bloodlineUrls) {
+          await supabase.from("pet_documents").insert({
+            pet_id: pet.id, document_type: 'bloodline_certificate', file_url: url, verified: false,
+          });
+        }
+      }
+
       if (vaccineEntries.length > 0 && pet) {
         for (const entry of vaccineEntries) {
           let certUrl: string | null = null;
@@ -319,7 +330,7 @@ const AddPet = () => {
             const certPaths = await uploadFiles([entry.certificateFile], userId, 'vaccination');
             certUrl = certPaths[0] || null;
           }
-          await supabase.from("pet_vaccinations" as any).insert({
+          await (supabase as any).from("pet_vaccinations").insert({
             pet_id: pet.id,
             vaccine_type: entry.vaccineType,
             dose_number: entry.doseNumber,
@@ -373,6 +384,12 @@ const AddPet = () => {
   const showBloodlineRegistration = formData.category === "dog" || formData.category === "cat";
   const bloodlineOptions = formData.category === "dog" ? DOG_BLOODLINES : CAT_BLOODLINES;
   const registrationOptions = formData.category === "dog" ? DOG_REGISTRATIONS : CAT_REGISTRATIONS;
+
+  // Get registration board short name for bloodline doc upload label
+  const getRegistrationShortName = () => {
+    if (!formData.registeredWith) return "";
+    return formData.registeredWith.replace(" Registered", "").replace("Not Registered", "");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -529,17 +546,15 @@ const AddPet = () => {
               </div>
             )}
 
-            {/* Step 2: Basic Info */}
+            {/* Step 2: Basic Info - Restructured Layout (Task A) */}
             {currentStep === 2 && (
               <div className="space-y-4">
+                {/* ROW 1: Pet Name + Category */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* 1. Pet Name */}
                   <div className="space-y-2">
                     <Label htmlFor="name">Pet Name *</Label>
                     <Input id="name" placeholder="Max" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="rounded-2xl" />
                   </div>
-
-                  {/* 2. Category */}
                   <div className="space-y-2">
                     <Label htmlFor="category">Category *</Label>
                     <Select value={formData.category} onValueChange={(value: PetCategory) => setFormData({ ...formData, category: value, bloodline: "", registeredWith: "" })}>
@@ -549,40 +564,14 @@ const AddPet = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
-                  {/* 3. Breed */}
+                {/* ROW 2: Breed + Gender */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="breed">Breed *</Label>
                     <Input id="breed" placeholder="Golden Retriever" value={formData.breed} onChange={(e) => setFormData({ ...formData, breed: e.target.value })} className="rounded-2xl" />
                   </div>
-
-                  {/* 4. Bloodline - only for dog/cat */}
-                  {showBloodlineRegistration && (
-                    <div className="space-y-2">
-                      <Label>Bloodline *</Label>
-                      <Select value={formData.bloodline} onValueChange={(value) => setFormData({ ...formData, bloodline: value })}>
-                        <SelectTrigger className="rounded-2xl"><SelectValue placeholder="Select bloodline" /></SelectTrigger>
-                        <SelectContent>
-                          {bloodlineOptions.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* 5. Registered With - only for dog/cat */}
-                  {showBloodlineRegistration && (
-                    <div className="space-y-2">
-                      <Label>Registered With *</Label>
-                      <Select value={formData.registeredWith} onValueChange={(value) => setFormData({ ...formData, registeredWith: value })}>
-                        <SelectTrigger className="rounded-2xl"><SelectValue placeholder="Select registration" /></SelectTrigger>
-                        <SelectContent>
-                          {registrationOptions.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  {/* 6. Gender */}
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender *</Label>
                     <Select value={formData.gender} onValueChange={(value: PetGender) => setFormData({ ...formData, gender: value })}>
@@ -595,76 +584,96 @@ const AddPet = () => {
                   </div>
                 </div>
 
-                {/* 7. Age - Toggle System */}
-                <div className="space-y-3">
-                  <Label>Age *</Label>
-                  <div className="flex rounded-xl border border-border overflow-hidden w-fit">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, ageType: "exact", ageMonths: "" })}
-                      className={cn(
-                        "px-5 py-2 text-sm font-medium transition-all",
-                        formData.ageType === "exact" ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      )}
-                    >
-                      Exact Age
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, ageType: "approximate", birthDate: null })}
-                      className={cn(
-                        "px-5 py-2 text-sm font-medium transition-all",
-                        formData.ageType === "approximate" ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      )}
-                    >
-                      Approximate Age
-                    </button>
-                  </div>
-
-                  {formData.ageType === "exact" ? (
+                {/* Bloodline + Registered With (only for dog/cat) */}
+                {showBloodlineRegistration && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Date of Birth *</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className={cn("w-full justify-start text-left font-normal rounded-2xl", !formData.birthDate && "text-muted-foreground")}>
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formData.birthDate ? format(formData.birthDate, "PPP") : <span>Pick a date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={formData.birthDate || undefined}
-                            onSelect={(date) => setFormData({ ...formData, birthDate: date || null })}
-                            disabled={(date) => date > new Date() || date < new Date("2010-01-01")}
-                            initialFocus
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {formData.birthDate && (
-                        <p className="text-xs text-muted-foreground">
-                          Born: {format(formData.birthDate, "dd MMM yyyy")}
-                        </p>
-                      )}
+                      <Label>Bloodline *</Label>
+                      <Select value={formData.bloodline} onValueChange={(value) => setFormData({ ...formData, bloodline: value })}>
+                        <SelectTrigger className="rounded-2xl"><SelectValue placeholder="Select bloodline" /></SelectTrigger>
+                        <SelectContent>
+                          {bloodlineOptions.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  ) : (
                     <div className="space-y-2">
-                      <Label htmlFor="approxAge">Age in Months *</Label>
+                      <Label>Registered With *</Label>
+                      <Select value={formData.registeredWith} onValueChange={(value) => setFormData({ ...formData, registeredWith: value })}>
+                        <SelectTrigger className="rounded-2xl"><SelectValue placeholder="Select registration" /></SelectTrigger>
+                        <SelectContent>
+                          {registrationOptions.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {/* ROW 3: Age + Size */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Age with toggle */}
+                  <div className="space-y-3">
+                    <Label>Age *</Label>
+                    <div className="flex rounded-xl border border-border overflow-hidden w-fit">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, ageType: "exact", ageMonths: "" })}
+                        className={cn(
+                          "px-4 py-1.5 text-sm font-medium transition-all",
+                          formData.ageType === "exact" ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        )}
+                      >
+                        Exact Age
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, ageType: "approximate", birthDate: null })}
+                        className={cn(
+                          "px-4 py-1.5 text-sm font-medium transition-all",
+                          formData.ageType === "approximate" ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        )}
+                      >
+                        Approximate Age
+                      </button>
+                    </div>
+
+                    {formData.ageType === "exact" ? (
+                      <div className="space-y-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className={cn("w-full justify-start text-left font-normal rounded-2xl", !formData.birthDate && "text-muted-foreground")}>
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {formData.birthDate ? format(formData.birthDate, "PPP") : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={formData.birthDate || undefined}
+                              onSelect={(date) => setFormData({ ...formData, birthDate: date || null })}
+                              disabled={(date) => date > new Date() || date < new Date("2010-01-01")}
+                              initialFocus
+                              className={cn("p-3 pointer-events-auto")}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        {formData.birthDate && (
+                          <p className="text-xs text-muted-foreground">
+                            Born: {format(formData.birthDate, "dd MMM yyyy")}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
                       <Input
-                        id="approxAge"
                         type="number"
                         placeholder="9"
                         value={formData.ageMonths}
                         onChange={(e) => setFormData({ ...formData, ageMonths: e.target.value })}
                         className="rounded-2xl"
                       />
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                {/* 8. Size + 9. Weight in grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Size */}
                   <div className="space-y-2">
                     <Label>Size *</Label>
                     <Select value={formData.size} onValueChange={(value) => setFormData({ ...formData, size: value })}>
@@ -674,6 +683,10 @@ const AddPet = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                {/* ROW 4: Weight + Color */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="weight">Weight (kg) *</Label>
                     <Input
@@ -686,15 +699,13 @@ const AddPet = () => {
                       className="rounded-2xl"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="color">Color</Label>
+                    <Input id="color" placeholder="Golden" value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} className="rounded-2xl" />
+                  </div>
                 </div>
 
-                {/* 10. Color */}
-                <div className="space-y-2">
-                  <Label htmlFor="color">Color</Label>
-                  <Input id="color" placeholder="Golden" value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} className="rounded-2xl" />
-                </div>
-
-                {/* 11. Description */}
+                {/* ROW 5: Description (full width) */}
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
                   <Textarea id="description" placeholder="Tell buyers about your pet's personality, habits, and any special traits..." value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={4} className="rounded-2xl" />
@@ -702,17 +713,26 @@ const AddPet = () => {
               </div>
             )}
 
-            {/* Step 3: Pricing */}
+            {/* Step 3: Pricing - Task H: Split into Original + Selling Price */}
             {currentStep === 3 && (
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹) *</Label>
-                  <div className="relative">
-                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input id="price" type="number" placeholder="15000" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="rounded-2xl pl-10 text-lg" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="originalPrice">Original Price (₹)</Label>
+                    <div className="relative">
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input id="originalPrice" type="number" placeholder="20000" value={formData.originalPrice} onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })} className="rounded-2xl pl-10" />
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">Set a competitive price based on breed, age, and market rates</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Selling Price (₹) *</Label>
+                    <div className="relative">
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input id="price" type="number" placeholder="15000" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="rounded-2xl pl-10" />
+                    </div>
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground">Set a competitive price based on breed, age, and market rates</p>
               </div>
             )}
 
@@ -737,7 +757,7 @@ const AddPet = () => {
               </div>
             )}
 
-            {/* Step 5: Health */}
+            {/* Step 5: Health - Task C: Add Bloodline Documents */}
             {currentStep === 5 && (
               <div className="space-y-4">
                 <div className="flex items-center space-x-3 p-4 bg-muted/50 rounded-2xl">
@@ -761,6 +781,40 @@ const AddPet = () => {
                     <VaccinationTable entries={vaccineEntries} onAddClick={() => setShowVaccineModal(true)} />
                     <AddVaccineModal open={showVaccineModal} onOpenChange={setShowVaccineModal} onAdd={(entry) => setVaccineEntries((prev) => [...prev, entry])} />
                   </>
+                )}
+
+                {/* Bloodline Documents - only for dog/cat with registration */}
+                {showBloodlineRegistration && formData.registeredWith && formData.registeredWith !== "Not Registered" && (
+                  <div className="space-y-2 animate-fade-in">
+                    <Label className="flex items-center gap-2 text-base font-semibold">
+                      <FileText className="w-4 h-4 text-primary" />
+                      Bloodline Documents
+                    </Label>
+                    <div className="border-2 border-dashed border-border rounded-2xl p-4">
+                      <input type="file" accept="image/*,.pdf" multiple onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        const valid = files.filter(f => { if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name} too large`); return false; } return true; });
+                        setBloodlineDocFiles(prev => [...prev, ...valid]);
+                      }} className="hidden" id="bloodline-doc-upload" />
+                      <label htmlFor="bloodline-doc-upload" className="cursor-pointer block text-center">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">Click to upload {getRegistrationShortName()} certificates</p>
+                      </label>
+                    </div>
+                    {bloodlineDocFiles.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {bloodlineDocFiles.map((doc, i) => (
+                          <div key={i} className="flex items-center gap-2 bg-muted rounded-xl px-3 py-2">
+                            <FileText className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm truncate max-w-[150px]">{doc.name}</span>
+                            <button type="button" onClick={() => setBloodlineDocFiles(prev => prev.filter((_, idx) => idx !== i))} className="w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 <div className="space-y-2">
@@ -840,7 +894,10 @@ const AddPet = () => {
                     </div>
                     <div><span className="text-muted-foreground">Size:</span><span className="ml-2 font-medium">{formData.size}</span></div>
                     <div><span className="text-muted-foreground">Weight:</span><span className="ml-2 font-medium">{formData.weightKg} kg</span></div>
-                    <div><span className="text-muted-foreground">Price:</span><span className="ml-2 font-medium text-primary">₹{parseInt(formData.price).toLocaleString('en-IN')}</span></div>
+                    <div><span className="text-muted-foreground">Selling Price:</span><span className="ml-2 font-medium text-primary">₹{parseInt(formData.price).toLocaleString('en-IN')}</span></div>
+                    {formData.originalPrice && (
+                      <div><span className="text-muted-foreground">Original Price:</span><span className="ml-2 font-medium">₹{parseInt(formData.originalPrice).toLocaleString('en-IN')}</span></div>
+                    )}
                     <div><span className="text-muted-foreground">Location:</span><span className="ml-2 font-medium">{formData.city}, {formData.state}</span></div>
                     <div><span className="text-muted-foreground">Vaccinated:</span><span className="ml-2 font-medium">{formData.vaccinated ? 'Yes' : 'No'}</span></div>
                     <div><span className="text-muted-foreground">Media:</span><span className="ml-2 font-medium">{imageCount} photos, {videoCount} videos</span></div>
