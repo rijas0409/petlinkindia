@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -10,7 +10,6 @@ import {
   Shield, Truck, Loader2, ChevronRight, Plus
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
-import sruvoStar from "@/assets/sruvo-star.png";
 
 interface Product {
   id: string; name: string; brand: string; description: string | null;
@@ -42,9 +41,24 @@ const ProductProfile = () => {
   const { toggleProductWishlist, isProductInWishlist } = useWishlist();
   const { addToCart } = useCart();
 
+  // Swipe refs
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const swiping = useRef(false);
+
   const isWishlisted = isProductInWishlist(id || "");
 
   useEffect(() => { fetchProduct(); }, [id]);
+
+  // Preload all images
+  useEffect(() => {
+    if (product?.images) {
+      product.images.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    }
+  }, [product?.images]);
 
   const fetchProduct = async () => {
     if (!id) return;
@@ -52,6 +66,8 @@ const ProductProfile = () => {
       const { data, error } = await supabase.from("shop_products").select("*").eq("id", id).single();
       if (error) throw error;
       setProduct(data as any);
+      setCurrentImageIndex(0);
+      setSelectedVariant(0);
       await supabase.from("shop_products").update({ views: ((data as any).views || 0) + 1 }).eq("id", id);
       fetchSimilar(data.pet_type, data.category, id);
       fetchAiInsights(data as any);
@@ -121,32 +137,67 @@ const ProductProfile = () => {
     navigate("/cart");
   };
 
+  // Touch swipe handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    swiping.current = true;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!swiping.current || !product?.images) return;
+    swiping.current = false;
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+    if (Math.abs(diff) < threshold) return;
+    const total = product.images.length;
+    if (diff > 0) {
+      setCurrentImageIndex(prev => (prev + 1) % total);
+    } else {
+      setCurrentImageIndex(prev => (prev - 1 + total) % total);
+    }
+  }, [product?.images]);
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
 
   const images = product.images || [];
   const variantList: any[] = Array.isArray(product.variants) ? product.variants : [];
-  const highlightsList = product.highlights || [];
   const ingredientsList = product.ingredients || [];
   const feedingGuide: any[] = Array.isArray(product.feeding_guide) ? product.feeding_guide : [];
 
-  // Build highlight key-value pairs
+  // Parse highlights as key-value pairs
   const highlightPairs: { label: string; value: string }[] = [];
-  highlightsList.forEach((h, i) => {
-    const labels = ["Flavour", "Box Contents", "Pack Size", "Pet Type"];
-    highlightPairs.push({ label: labels[i] || `Feature ${i + 1}`, value: h });
+  (product.highlights || []).forEach(h => {
+    const sep = h.indexOf(":");
+    if (sep > 0) {
+      highlightPairs.push({ label: h.slice(0, sep).trim(), value: h.slice(sep + 1).trim() });
+    } else {
+      highlightPairs.push({ label: "Feature", value: h });
+    }
   });
-  if (product.pet_type && !highlightsList.some(h => h.toLowerCase().includes(product.pet_type))) {
-    highlightPairs.push({ label: "Pet Type", value: product.pet_type.charAt(0).toUpperCase() + product.pet_type.slice(1) });
-  }
 
   return (
     <div className="min-h-screen bg-white pb-36">
-      {/* ── 1) Image Section ── */}
-      <div className="relative bg-[#F8F7FC]" style={{ paddingTop: "90%" }}>
+      {/* ── 1) Image Section with Swipe ── */}
+      <div className="relative bg-[#F8F7FC]" style={{ paddingTop: "90%" }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="absolute inset-0 flex items-center justify-center p-6">
           {images.length > 0 ? (
-            <img src={images[currentImageIndex]} alt={product.name} className="max-w-full max-h-full object-contain" />
+            <img
+              key={currentImageIndex}
+              src={images[currentImageIndex]}
+              alt={product.name}
+              className="max-w-full max-h-full object-contain"
+              loading="eager"
+              decoding="async"
+            />
           ) : (
             <div className="text-6xl">📦</div>
           )}
@@ -178,23 +229,16 @@ const ProductProfile = () => {
 
       {/* ── 2) Product Info ── */}
       <div className="px-5 pt-5 pb-4">
-        {/* Tag chips */}
         <div className="flex gap-2 mb-4">
           <span className="px-3 py-1 rounded-md text-[11px] font-bold border border-[#D8B4FE] text-[#9333EA] tracking-wide">PREMIUM GRADE</span>
           <span className="px-3 py-1 rounded-md text-[11px] font-bold border border-[#D8B4FE] text-[#9333EA] tracking-wide">VET RECOMMENDED</span>
         </div>
-
-        {/* Name */}
         <h1 className="text-[22px] font-bold text-[#111827] leading-tight">{product.name}</h1>
-
-        {/* Rating */}
         <div className="flex items-center gap-1.5 mt-1.5">
           <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
           <span className="text-[14px] font-bold text-[#111827]">4.6</span>
           <span className="text-[13px] text-[#9CA3AF]">(4.9k)</span>
         </div>
-
-        {/* Price */}
         <div className="flex items-baseline gap-2.5 mt-3">
           <span className="text-[26px] font-extrabold text-[#111827]">₹{product.price}</span>
           {product.original_price && product.original_price > product.price && (
@@ -204,21 +248,21 @@ const ProductProfile = () => {
             <span className="text-[13px] font-bold text-[#9333EA]">{product.discount}% OFF</span>
           )}
         </div>
-
-        {/* Quantity */}
         {product.weight && <p className="text-[14px] text-[#6B7280] mt-1">Quantity: {product.weight}</p>}
 
-        {/* Variant cards */}
+        {/* ── A) Pack/Variant Cards ── */}
         {variantList.length > 0 && (
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide">
             {variantList.map((v: any, i: number) => {
               const isSelected = i === selectedVariant;
               return (
                 <button key={i} onClick={() => setSelectedVariant(i)}
-                  className={`flex-1 rounded-2xl border-2 py-3 px-3 text-center transition-all ${isSelected ? "border-[#A855F7] bg-[#F5F3FF]" : "border-[#E5E7EB] bg-white"}`}>
-                  <p className={`text-[14px] font-bold ${isSelected ? "text-[#111827]" : "text-[#6B7280]"}`}>{v.value || v.type}</p>
-                  {v.discount && <p className={`text-[11px] ${isSelected ? "text-[#9333EA]" : "text-[#9CA3AF]"}`}>{v.discount}</p>}
-                  {v.price && <p className={`text-[14px] font-bold mt-0.5 ${isSelected ? "text-[#111827]" : "text-[#6B7280]"}`}>₹{v.price}</p>}
+                  className={`flex-shrink-0 min-w-[120px] rounded-2xl border-2 py-3 px-4 text-center transition-all ${isSelected ? "border-[#A855F7] bg-[#F5F3FF]" : "border-[#E5E7EB] bg-white"}`}>
+                  <p className={`text-[14px] font-bold ${isSelected ? "text-[#111827]" : "text-[#6B7280]"}`}>
+                    {v.label || v.value || v.packSize || v.type}
+                  </p>
+                  {v.discount && <p className={`text-[11px] font-semibold ${isSelected ? "text-[#9333EA]" : "text-[#9CA3AF]"}`}>{v.discount}</p>}
+                  {v.price && <p className={`text-[15px] font-extrabold mt-0.5 ${isSelected ? "text-[#111827]" : "text-[#6B7280]"}`}>₹{v.price}</p>}
                   {v.originalPrice && <p className="text-[11px] text-[#9CA3AF] line-through">₹{v.originalPrice}</p>}
                 </button>
               );
@@ -227,7 +271,7 @@ const ProductProfile = () => {
         )}
       </div>
 
-      {/* ── 3) Sruvo AI Insights ── */}
+      {/* ── 3) Sruvo AI Insights (Product-Specific) ── */}
       <div className="px-5 py-4">
         <div className="rounded-3xl overflow-hidden" style={{
           border: "1.5px solid transparent",
@@ -236,55 +280,70 @@ const ProductProfile = () => {
           backgroundClip: "padding-box, border-box",
           boxShadow: "0 4px 24px -4px rgba(139,92,246,0.08)",
         }}>
-          {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <div className="flex items-center gap-2">
-              <img src={rjStar} alt="" className="w-8 h-8 object-contain" style={{ filter: "drop-shadow(0 0 6px rgba(139,92,246,0.3))" }} />
-              <span className="font-bold text-[16px] text-[#111827]">Sruvo AI Insights</span>
+              <img src={rjStar} alt="" className="w-[49px] h-[49px] object-contain" style={{ filter: "drop-shadow(0 0 6px rgba(139,92,246,0.3))" }} />
+              <div className="flex flex-col leading-snug">
+                <span className="font-semibold text-[18px] text-[#151B32] tracking-tight">Sruvo AI</span>
+                <span className="font-extrabold text-[20px] text-[#151B32] tracking-tight -mt-0.5">Insights</span>
+              </div>
             </div>
             <div className="flex bg-[#F3F4F6] rounded-full p-0.5">
               <button onClick={() => setActiveTab("quick")}
                 className={`px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all ${activeTab === "quick" ? "bg-white text-[#111827] shadow-sm" : "text-[#9CA3AF]"}`}>
-                Quick Facts
+                Quick<br/>Facts
               </button>
               <button onClick={() => setActiveTab("deep")}
                 className={`px-3.5 py-1.5 text-[11px] font-semibold rounded-full transition-all ${activeTab === "deep" ? "bg-white text-[#111827] shadow-sm" : "text-[#9CA3AF]"}`}>
-                Deep Dive
+                Deep<br/>Dive
               </button>
             </div>
           </div>
-
-          {/* Content */}
           <div className="px-5 pb-5">
             {aiLoading ? (
-              <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-[#A855F7]" /></div>
+              <div className="space-y-5 py-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex gap-4 animate-pulse">
+                    <div className="w-12 h-12 rounded-full bg-[#E5E7EB] flex-shrink-0" />
+                    <div className="flex-1 space-y-2 pt-1">
+                      <div className="h-4 bg-[#E5E7EB] rounded w-1/3" />
+                      <div className="h-3 bg-[#E5E7EB] rounded w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : aiInsights ? (
               activeTab === "quick" ? (
-                <div className="flex gap-2.5">
+                <div className="space-y-5 py-2" style={{ animation: "fadeIn 0.3s ease-in-out" }}>
                   {[
-                    { label: "NUTRITION", title: aiInsights.quick?.nutrition?.title || "High Protein", bg: "#F3EEFF", color: "#7C3AED" },
-                    { label: "ENERGY", title: aiInsights.quick?.activity?.title || "Growth Plus", bg: "#EEF4FF", color: "#3B82F6" },
-                    { label: "LIFESPAN", title: aiInsights.quick?.lifespan?.title || "+2.4 Years", bg: "#FFF1F2", color: "#F43F5E" },
+                    { icon: "🍗", title: aiInsights.quick?.nutrition?.title, desc: aiInsights.quick?.nutrition?.text, bg: "#F3EEFF", color: "#7C3AED" },
+                    { icon: "⚡", title: aiInsights.quick?.activity?.title, desc: aiInsights.quick?.activity?.text, bg: "#EEF4FF", color: "#3B82F6" },
+                    { icon: "💚", title: aiInsights.quick?.lifespan?.title, desc: aiInsights.quick?.lifespan?.text, bg: "#FFF1F2", color: "#F43F5E" },
                   ].map((item, i) => (
-                    <div key={i} className="flex-1 rounded-2xl py-3 px-2 text-center" style={{ backgroundColor: item.bg }}>
-                      <p className="text-[8px] font-bold text-[#9CA3AF] uppercase tracking-widest">{item.label}</p>
-                      <p className="text-[12px] font-bold mt-1" style={{ color: item.color }}>{item.title}</p>
+                    <div key={i} className="flex gap-4">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ backgroundColor: item.bg }}>
+                        {item.icon}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-[15px] text-[#151B32] mb-1">{item.title}</p>
+                        <p className="text-[13px] text-[#6B7280] leading-relaxed">{item.desc}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="space-y-3" style={{ animation: "fadeIn 0.3s ease-in-out" }}>
+                <div className="space-y-5 py-2" style={{ animation: "fadeIn 0.3s ease-in-out" }}>
                   {[aiInsights.deep?.health, aiInsights.deep?.training, aiInsights.deep?.grooming].filter(Boolean).map((d: any, i: number) => (
                     <div key={i}>
-                      <p className="font-bold text-[13px] text-[#111827]">{d.title}</p>
-                      <p className="text-[12px] text-[#6B7280] leading-relaxed mt-0.5">{d.text}</p>
+                      <p className="font-bold text-[14px] text-[#111827]">{d.title}</p>
+                      <p className="text-[13px] text-[#6B7280] leading-relaxed mt-1">{d.text}</p>
                     </div>
                   ))}
                 </div>
               )
             ) : (
               <div className="flex gap-2.5">
-                {["NUTRITION", "ENERGY", "LIFESPAN"].map((label, i) => (
+                {["NUTRITION", "ENERGY", "WELLNESS"].map((label, i) => (
                   <div key={i} className="flex-1 rounded-2xl py-3 px-2 text-center bg-[#F3F4F6]">
                     <p className="text-[8px] font-bold text-[#9CA3AF] uppercase tracking-widest">{label}</p>
                     <p className="text-[12px] font-bold mt-1 text-[#D1D5DB]">—</p>
@@ -419,11 +478,12 @@ const ProductProfile = () => {
           <h3 className="text-[16px] font-bold text-[#111827] mb-3">Similar Products</h3>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {similarProducts.map((sp) => (
-              <div key={sp.id} onClick={() => navigate(`/product/${sp.id}`)}
+              <div key={sp.id} onClick={() => { navigate(`/product/${sp.id}`); window.scrollTo(0, 0); }}
                 className="flex-shrink-0 w-[160px] rounded-2xl border border-[#E5E7EB] overflow-hidden bg-white cursor-pointer">
                 <div className="relative bg-[#F9FAFB] aspect-square flex items-center justify-center p-3">
-                  {sp.images?.[0] ? <img src={sp.images[0]} className="max-w-full max-h-full object-contain" /> : <div className="text-3xl">📦</div>}
-                  <button className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center shadow-sm">
+                  {sp.images?.[0] ? <img src={sp.images[0]} className="max-w-full max-h-full object-contain" loading="lazy" /> : <div className="text-3xl">📦</div>}
+                  <button className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center shadow-sm"
+                    onClick={(e) => { e.stopPropagation(); addToCart({ id: sp.id, name: sp.name, price: sp.price, image: sp.images?.[0] || "" }); toast.success("Added!"); }}>
                     <Plus className="w-3.5 h-3.5 text-[#6B7280]" />
                   </button>
                 </div>
