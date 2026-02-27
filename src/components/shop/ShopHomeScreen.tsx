@@ -296,7 +296,7 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
             {sortedBestSellers.map((product) => {
               const imgUrl = product.images?.[0] || "";
               return (
-                <div key={product.id} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border">
+                <div key={product.id} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
                   <div className="relative aspect-square bg-muted" style={{ backgroundColor: '#fce7f3' }}>
                     {imgUrl ? (
                       <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />

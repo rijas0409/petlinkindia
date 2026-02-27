@@ -627,81 +627,162 @@ export type Database = {
       }
       shop_products: {
         Row: {
+          batch_number: string | null
           brand: string
+          brand_authorization: string | null
+          breed_applicable: string[] | null
           category: string
+          country_of_origin: string | null
           created_at: string
+          delivery_scope: string | null
           description: string | null
           discount: number | null
+          dispatch_city: string | null
+          expiry_date: string | null
+          feeding_guide: Json | null
+          fssai_certificate: string | null
+          gst_certificate: string | null
+          gst_inclusive: boolean | null
+          handling_time: string | null
+          highlights: string[] | null
           id: string
           images: string[] | null
+          ingredients: string[] | null
           is_active: boolean | null
+          is_draft: boolean | null
+          low_stock_alert: boolean | null
           name: string
           original_price: number | null
           pet_type: string
           price: number
           priority_fee_paid: boolean | null
           priority_verification: boolean | null
+          return_policy: string | null
           seller_id: string
+          shipping_charges: number | null
+          shipping_free: boolean | null
+          sku: string | null
           stock: number
+          storage_instructions: string | null
+          tags: string[] | null
+          tax_percentage: number | null
           total_sold: number | null
+          trade_license: string | null
+          unit: string | null
           updated_at: string
           variants: Json | null
           verification_status:
             | Database["public"]["Enums"]["verification_status"]
             | null
+          videos: string[] | null
           views: number | null
+          warranty: string | null
           weight: string | null
         }
         Insert: {
+          batch_number?: string | null
           brand?: string
+          brand_authorization?: string | null
+          breed_applicable?: string[] | null
           category: string
+          country_of_origin?: string | null
           created_at?: string
+          delivery_scope?: string | null
           description?: string | null
           discount?: number | null
+          dispatch_city?: string | null
+          expiry_date?: string | null
+          feeding_guide?: Json | null
+          fssai_certificate?: string | null
+          gst_certificate?: string | null
+          gst_inclusive?: boolean | null
+          handling_time?: string | null
+          highlights?: string[] | null
           id?: string
           images?: string[] | null
+          ingredients?: string[] | null
           is_active?: boolean | null
+          is_draft?: boolean | null
+          low_stock_alert?: boolean | null
           name: string
           original_price?: number | null
           pet_type: string
           price: number
           priority_fee_paid?: boolean | null
           priority_verification?: boolean | null
+          return_policy?: string | null
           seller_id: string
+          shipping_charges?: number | null
+          shipping_free?: boolean | null
+          sku?: string | null
           stock?: number
+          storage_instructions?: string | null
+          tags?: string[] | null
+          tax_percentage?: number | null
           total_sold?: number | null
+          trade_license?: string | null
+          unit?: string | null
           updated_at?: string
           variants?: Json | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
             | null
+          videos?: string[] | null
           views?: number | null
+          warranty?: string | null
           weight?: string | null
         }
         Update: {
+          batch_number?: string | null
           brand?: string
+          brand_authorization?: string | null
+          breed_applicable?: string[] | null
           category?: string
+          country_of_origin?: string | null
           created_at?: string
+          delivery_scope?: string | null
           description?: string | null
           discount?: number | null
+          dispatch_city?: string | null
+          expiry_date?: string | null
+          feeding_guide?: Json | null
+          fssai_certificate?: string | null
+          gst_certificate?: string | null
+          gst_inclusive?: boolean | null
+          handling_time?: string | null
+          highlights?: string[] | null
           id?: string
           images?: string[] | null
+          ingredients?: string[] | null
           is_active?: boolean | null
+          is_draft?: boolean | null
+          low_stock_alert?: boolean | null
           name?: string
           original_price?: number | null
           pet_type?: string
           price?: number
           priority_fee_paid?: boolean | null
           priority_verification?: boolean | null
+          return_policy?: string | null
           seller_id?: string
+          shipping_charges?: number | null
+          shipping_free?: boolean | null
+          sku?: string | null
           stock?: number
+          storage_instructions?: string | null
+          tags?: string[] | null
+          tax_percentage?: number | null
           total_sold?: number | null
+          trade_license?: string | null
+          unit?: string | null
           updated_at?: string
           variants?: Json | null
           verification_status?:
             | Database["public"]["Enums"]["verification_status"]
             | null
+          videos?: string[] | null
           views?: number | null
+          warranty?: string | null
           weight?: string | null
         }
         Relationships: [

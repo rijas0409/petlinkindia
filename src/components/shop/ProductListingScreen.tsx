@@ -224,7 +224,7 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
               {filteredProducts.map(product => {
                 const imgUrl = product.images?.[0] || "";
                 return (
-                  <div key={product.id} className="bg-card rounded-xl overflow-hidden shadow-sm border border-border">
+                  <div key={product.id} className="bg-card rounded-xl overflow-hidden shadow-sm border border-border cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
                     <div className="relative aspect-square bg-muted">
                       {imgUrl ? <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-4xl">🛒</div>}
                       {product.discount && product.discount > 0 && (
