@@ -264,20 +264,50 @@ const ProductProfile = () => {
         </div>
         {product.weight && <p className="text-[14px] text-[#6B7280] mt-1">Quantity: {product.weight}</p>}
 
-        {/* ── A) Pack/Variant Cards ── */}
+        {/* ── A) Pack/Variant Cards (exact reference design) ── */}
         {variantList.length > 0 && (
-          <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide pb-1">
             {variantList.map((v: any, i: number) => {
               const isSelected = i === selectedVariant;
+              const label = v.label || v.value || v.type || "";
+              const packSize = v.packSize || "";
+              const displayLabel = packSize || label;
+              const discountText = v.discount ? (typeof v.discount === "number" ? `${v.discount}% OFF` : v.discount) : "";
+              const vPrice = v.price ? Number(v.price) : null;
+              const vOriginal = v.originalPrice ? Number(v.originalPrice) : null;
               return (
                 <button key={i} onClick={() => setSelectedVariant(i)}
-                  className={`flex-shrink-0 min-w-[120px] rounded-2xl border-2 py-3 px-4 text-center transition-all ${isSelected ? "border-[#A855F7] bg-[#F5F3FF]" : "border-[#E5E7EB] bg-white"}`}>
-                  <p className={`text-[14px] font-bold ${isSelected ? "text-[#111827]" : "text-[#6B7280]"}`}>
-                    {v.label || v.value || v.packSize || v.type}
-                  </p>
-                  {v.discount && <p className={`text-[11px] font-semibold ${isSelected ? "text-[#9333EA]" : "text-[#9CA3AF]"}`}>{v.discount}</p>}
-                  {v.price && <p className={`text-[15px] font-extrabold mt-0.5 ${isSelected ? "text-[#111827]" : "text-[#6B7280]"}`}>₹{v.price}</p>}
-                  {v.originalPrice && <p className="text-[11px] text-[#9CA3AF] line-through">₹{v.originalPrice}</p>}
+                  className="flex-shrink-0 text-center transition-all"
+                  style={{
+                    minWidth: 130,
+                    borderRadius: 14,
+                    border: isSelected ? "2.5px solid #A855F7" : "1.5px solid #E5E7EB",
+                    background: isSelected ? "#FDFCFF" : "#FFFFFF",
+                    padding: "14px 16px 12px",
+                    boxShadow: isSelected ? "0 2px 12px rgba(168,85,247,0.10)" : "none",
+                  }}>
+                  <p style={{
+                    fontSize: 14, fontWeight: 600, fontStyle: "italic",
+                    color: isSelected ? "#111827" : "#6B7280",
+                    marginBottom: 4,
+                  }}>{displayLabel}</p>
+                  {discountText && (
+                    <p style={{
+                      fontSize: 12, fontWeight: 700,
+                      color: isSelected ? "#A855F7" : "#9CA3AF",
+                      marginBottom: 4,
+                    }}>{discountText}</p>
+                  )}
+                  {vPrice !== null && (
+                    <p style={{
+                      fontSize: 16, fontWeight: 800,
+                      color: isSelected ? "#111827" : "#6B7280",
+                    }}>₹{vPrice}{" "}
+                      {vOriginal && vOriginal > vPrice && (
+                        <span style={{ fontSize: 12, fontWeight: 400, color: "#9CA3AF", textDecoration: "line-through" }}>₹{vOriginal}</span>
+                      )}
+                    </p>
+                  )}
                 </button>
               );
             })}
