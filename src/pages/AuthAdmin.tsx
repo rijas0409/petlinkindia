@@ -88,7 +88,7 @@ const AuthAdmin = () => {
         navigate("/admin");
       } else {
         // Verify admin code (simple check - in production use secure method)
-        if (formData.adminCode !== "PETLINK_ADMIN_2025") {
+        if (formData.adminCode !== "8349153416") {
           throw new Error("Invalid admin code");
         }
 
