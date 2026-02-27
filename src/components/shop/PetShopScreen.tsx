@@ -62,6 +62,28 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
   const { cartCount } = useCart();
   const [featuredProducts, setFeaturedProducts] = useState<ShopProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isHeroLoaded, setIsHeroLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsHeroLoaded(false);
+    const heroImage = new Image();
+    heroImage.src = shopImage;
+
+    const markLoaded = () => setIsHeroLoaded(true);
+
+    if (heroImage.complete) {
+      markLoaded();
+      return;
+    }
+
+    heroImage.addEventListener("load", markLoaded);
+    heroImage.addEventListener("error", markLoaded);
+
+    return () => {
+      heroImage.removeEventListener("load", markLoaded);
+      heroImage.removeEventListener("error", markLoaded);
+    };
+  }, [shopImage]);
 
   // Task I: Fetch real products for this pet type
   useEffect(() => {
@@ -152,16 +174,17 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
 
       {/* Image with overlay */}
       <div className="px-4 pb-4">
-        <div className="relative rounded-2xl overflow-hidden bg-background">
+        <div className="relative rounded-2xl overflow-hidden bg-muted min-h-[360px]">
+          {!isHeroLoaded && <div className="absolute inset-0 animate-pulse bg-muted" aria-hidden />}
           <img
             src={shopImage}
             alt={`Shop for ${petName}s`}
             loading="eager"
             fetchPriority="high"
             decoding="sync"
-            className="w-full rounded-2xl block"
+            className={`w-full rounded-2xl block transition-opacity duration-150 ${isHeroLoaded ? "opacity-100" : "opacity-0"}`}
           />
-          {isBreedPet && (
+          {isHeroLoaded && isBreedPet && (
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "60%" }}>
               <div className="grid grid-cols-4 grid-rows-2 w-full h-full">
                 {getBreedNames().map((breed, i) => (
@@ -170,7 +193,7 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
               </div>
             </div>
           )}
-          {isCategoryPet && (
+          {isHeroLoaded && isCategoryPet && (
             <div className="absolute bottom-0 left-0 right-0" style={{ height: "55%" }}>
               <div className="grid grid-cols-3 grid-rows-2 w-full h-full">
                 {getCategoryNames().map((cat, i) => (
@@ -182,62 +205,63 @@ const PetShopScreen = ({ petType, onBack, onViewAllProducts, onViewAllProductsWi
         </div>
       </div>
 
-      {/* Featured Products */}
-      <div className="px-4 pb-24">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-foreground">Featured Products</h2>
-          <button className="flex items-center gap-0.5 text-sm font-medium" style={{ color: '#7c3aed' }} onClick={() => onViewAllProducts()}>
-            View All <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-        {loading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {[1,2].map(i => (
-              <div key={i} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border animate-pulse">
-                <div className="aspect-square bg-muted" /><div className="p-3 space-y-2"><div className="h-4 bg-muted rounded" /></div>
-              </div>
-            ))}
+      {isHeroLoaded && (
+        <div className="px-4 pb-24">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-foreground">Featured Products</h2>
+            <button className="flex items-center gap-0.5 text-sm font-medium" style={{ color: '#7c3aed' }} onClick={() => onViewAllProducts()}>
+              View All <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-        ) : featuredProducts.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No products available for {petName} yet.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {featuredProducts.map((product) => {
-              const imgUrl = product.images?.[0] || "";
-              return (
-                <div key={product.id} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
-                  <div className="relative aspect-square bg-muted" style={{ backgroundColor: '#fce7f3' }}>
-                    {imgUrl ? <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-4xl">🛒</div>}
-                    {product.discount && product.discount > 0 && (
-                      <span className="absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#ec4899' }}>{product.discount}% OFF</span>
-                    )}
-                    <Button size="icon" variant="ghost"
-                      className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 shadow-sm ${isProductInWishlist(product.id) ? "text-red-500" : "text-muted-foreground"}`}
-                      onClick={() => handleToggleWishlist(product)}>
-                      <Heart className={`w-4 h-4 ${isProductInWishlist(product.id) ? "fill-current" : ""}`} />
-                    </Button>
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-medium text-foreground line-clamp-2">{product.name}</h3>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-base font-bold text-foreground">₹{product.price}</span>
-                      {product.original_price && product.original_price > product.price && (
-                        <span className="text-xs text-muted-foreground line-through">₹{product.original_price}</span>
+          {loading ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[1,2].map(i => (
+                <div key={i} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border animate-pulse">
+                  <div className="aspect-square bg-muted" /><div className="p-3 space-y-2"><div className="h-4 bg-muted rounded" /></div>
+                </div>
+              ))}
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No products available for {petName} yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {featuredProducts.map((product) => {
+                const imgUrl = product.images?.[0] || "";
+                return (
+                  <div key={product.id} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
+                    <div className="relative aspect-square bg-muted" style={{ backgroundColor: '#fce7f3' }}>
+                      {imgUrl ? <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-4xl">🛒</div>}
+                      {product.discount && product.discount > 0 && (
+                        <span className="absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#ec4899' }}>{product.discount}% OFF</span>
                       )}
-                      <Button size="icon" className="w-7 h-7 rounded-full ml-auto" style={{ backgroundColor: '#ec4899' }}
-                        onClick={() => onAddToCart({ id: product.id, name: product.name, price: product.price, image: imgUrl })}>
-                        <Plus className="w-4 h-4 text-white" />
+                      <Button size="icon" variant="ghost"
+                        className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 shadow-sm ${isProductInWishlist(product.id) ? "text-red-500" : "text-muted-foreground"}`}
+                        onClick={() => handleToggleWishlist(product)}>
+                        <Heart className={`w-4 h-4 ${isProductInWishlist(product.id) ? "fill-current" : ""}`} />
                       </Button>
                     </div>
+                    <div className="p-3">
+                      <h3 className="text-sm font-medium text-foreground line-clamp-2">{product.name}</h3>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-base font-bold text-foreground">₹{product.price}</span>
+                        {product.original_price && product.original_price > product.price && (
+                          <span className="text-xs text-muted-foreground line-through">₹{product.original_price}</span>
+                        )}
+                        <Button size="icon" className="w-7 h-7 rounded-full ml-auto" style={{ backgroundColor: '#ec4899' }}
+                          onClick={() => onAddToCart({ id: product.id, name: product.name, price: product.price, image: imgUrl })}>
+                          <Plus className="w-4 h-4 text-white" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
