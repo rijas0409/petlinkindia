@@ -80,6 +80,7 @@ const ProductProfile = () => {
   };
 
   const fetchSimilar = async (petType: string, category: string, excludeId: string) => {
+    // Try same category first
     const { data } = await supabase
       .from("shop_products")
       .select("id, name, price, original_price, discount, images, pet_type, handling_time")
@@ -89,7 +90,20 @@ const ProductProfile = () => {
       .eq("verification_status", "verified")
       .neq("id", excludeId)
       .limit(6);
-    setSimilarProducts(data || []);
+    if (data && data.length >= 2) {
+      setSimilarProducts(data);
+    } else {
+      // Fallback: same pet_type, any category
+      const { data: fallback } = await supabase
+        .from("shop_products")
+        .select("id, name, price, original_price, discount, images, pet_type, handling_time")
+        .eq("pet_type", petType)
+        .eq("is_active", true)
+        .eq("verification_status", "verified")
+        .neq("id", excludeId)
+        .limit(6);
+      setSimilarProducts(fallback || data || []);
+    }
   };
 
   const fetchAiInsights = async (prod: Product) => {
