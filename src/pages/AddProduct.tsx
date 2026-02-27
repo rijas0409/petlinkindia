@@ -21,6 +21,8 @@ const ALL_PET_TYPES = Object.keys(PET_NAMES);
 const DOG_BREEDS = ["Golden Retriever", "Labrador", "Pomeranian", "German Shepherd", "Beagle", "Pug", "Rottweiler", "Shih Tzu", "Husky", "Doberman", "All Breeds"];
 const CAT_BREEDS = ["Persian", "Siamese", "Maine Coon", "Ragdoll", "Bengal", "British Shorthair", "Sphynx", "All Breeds"];
 
+const HIGHLIGHT_TYPES = ["Flavour", "Box Content", "Pack Size", "Suitability", "Nutrients", "Benefits", "Custom"];
+
 const STEPS = [
   { id: 1, title: "Media", icon: ImageIcon, description: "Upload photos & videos" },
   { id: 2, title: "Basic Info", icon: FileText, description: "Product details" },
@@ -32,7 +34,15 @@ const STEPS = [
   { id: 8, title: "Preview", icon: Eye, description: "Review & submit" },
 ];
 
-interface VariantItem { type: string; value: string; }
+interface VariantItem {
+  label: string;
+  packSize: string;
+  price: string;
+  originalPrice: string;
+  discount: string;
+}
+
+interface HighlightItem { type: string; customType: string; value: string; }
 interface FeedingRow { weight: string; serving: string; }
 
 interface ProductMediaFile {
@@ -47,7 +57,7 @@ const AddProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  // Step 1 - Media (unified like AddPet)
+  // Step 1 - Media
   const [media, setMedia] = useState<ProductMediaFile[]>([]);
 
   // Step 2 - Basic Info
@@ -59,7 +69,9 @@ const AddProduct = () => {
   const [sku, setSku] = useState("");
   const [countryOfOrigin, setCountryOfOrigin] = useState("India");
   const [description, setDescription] = useState("");
-  const [highlights, setHighlights] = useState<string[]>([""]);
+  const [highlights, setHighlights] = useState<HighlightItem[]>([{ type: "Flavour", customType: "", value: "" }]);
+  const [ingredients, setIngredients] = useState<string[]>([""]);
+  const [feedingGuide, setFeedingGuide] = useState<FeedingRow[]>([]);
 
   // Step 3 - Pricing
   const [sellingPrice, setSellingPrice] = useState("");
@@ -94,10 +106,6 @@ const AddProduct = () => {
   const [returnPolicy, setReturnPolicy] = useState("");
   const [warranty, setWarranty] = useState("");
 
-  // Step 8 - Preview extras
-  const [feedingGuide, setFeedingGuide] = useState<FeedingRow[]>([]);
-  const [ingredients, setIngredients] = useState<string[]>([""]);
-
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -112,32 +120,25 @@ const AddProduct = () => {
     const imageCount = media.filter(m => m.type === 'image').length;
     const videoCount = media.filter(m => m.type === 'video').length;
     const newMedia: ProductMediaFile[] = [];
-
     for (const file of files) {
       const isVideo = file.type.startsWith('video/');
       const isImage = file.type.startsWith('image/');
-      if (!isVideo && !isImage) { toast.error(`${file.name} is not a valid image or video`); continue; }
-      if (isImage && imageCount + newMedia.filter(m => m.type === 'image').length >= 20) { toast.error("Maximum 20 images allowed"); continue; }
-      if (isVideo && videoCount + newMedia.filter(m => m.type === 'video').length >= 2) { toast.error("Maximum 2 videos allowed"); continue; }
+      if (!isVideo && !isImage) { toast.error(`${file.name} is not valid`); continue; }
+      if (isImage && imageCount + newMedia.filter(m => m.type === 'image').length >= 20) { toast.error("Max 20 images"); continue; }
+      if (isVideo && videoCount + newMedia.filter(m => m.type === 'video').length >= 2) { toast.error("Max 2 videos"); continue; }
       const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
-      if (file.size > maxSize) { toast.error(`${file.name} is too large. Max ${isVideo ? '50MB' : '10MB'}`); continue; }
-      const preview = URL.createObjectURL(file);
-      newMedia.push({ file, preview, type: isVideo ? 'video' : 'image' });
+      if (file.size > maxSize) { toast.error(`${file.name} too large`); continue; }
+      newMedia.push({ file, preview: URL.createObjectURL(file), type: isVideo ? 'video' : 'image' });
     }
     setMedia(prev => [...prev, ...newMedia]);
   };
 
   const removeMedia = (index: number) => {
-    setMedia(prev => {
-      const item = prev[index];
-      URL.revokeObjectURL(item.preview);
-      return prev.filter((_, i) => i !== index);
-    });
+    setMedia(prev => { URL.revokeObjectURL(prev[index].preview); return prev.filter((_, i) => i !== index); });
   };
 
   const imageCount = media.filter(m => m.type === 'image').length;
   const videoCount = media.filter(m => m.type === 'video').length;
-
   const discount = mrp && sellingPrice ? Math.round(((parseFloat(mrp) - parseFloat(sellingPrice)) / parseFloat(mrp)) * 100) : 0;
   const categories = petType ? (PET_CATEGORIES[petType] || []) : [];
   const breedOptions = petType === "dog" ? DOG_BREEDS : petType === "cat" ? CAT_BREEDS : [];
@@ -164,6 +165,27 @@ const AddProduct = () => {
     return data.publicUrl;
   };
 
+  // Build highlights as "Type: Value" strings
+  const buildHighlightsArray = () => {
+    return highlights
+      .filter(h => h.value.trim())
+      .map(h => {
+        const label = h.type === "Custom" ? (h.customType.trim() || "Custom") : h.type;
+        return `${label}: ${h.value.trim()}`;
+      });
+  };
+
+  // Build variants for DB
+  const buildVariantsArray = () => {
+    return variants.filter(v => v.label.trim()).map(v => ({
+      label: v.label,
+      packSize: v.packSize,
+      price: v.price ? parseFloat(v.price) : null,
+      originalPrice: v.originalPrice ? parseFloat(v.originalPrice) : null,
+      discount: v.discount || null,
+    }));
+  };
+
   const handleSubmit = async (isDraft = false) => {
     if (!isDraft && !validateStep(currentStep)) return;
     if (!user) return;
@@ -185,9 +207,9 @@ const AddProduct = () => {
         name, brand, pet_type: petType, category, sku: sku || null,
         country_of_origin: countryOfOrigin || null,
         description: description || null,
-        highlights: highlights.filter(h => h.trim()),
+        highlights: buildHighlightsArray(),
         ingredients: ingredients.filter(i => i.trim()),
-        feeding_guide: feedingGuide.length > 0 ? feedingGuide : [],
+        feeding_guide: feedingGuide.filter(r => r.weight.trim() || r.serving.trim()),
         price: parseFloat(sellingPrice),
         original_price: mrp ? parseFloat(mrp) : parseFloat(sellingPrice),
         discount: discount > 0 ? discount : 0,
@@ -195,7 +217,7 @@ const AddProduct = () => {
         tax_percentage: taxPercentage ? parseFloat(taxPercentage) : 0,
         stock: parseInt(stock) || 0,
         weight: weight || null, unit,
-        variants: variants.length > 0 ? variants : [],
+        variants: buildVariantsArray(),
         low_stock_alert: lowStockAlert,
         dispatch_city: dispatchCity || null,
         handling_time: handlingTime || null,
@@ -214,9 +236,9 @@ const AddProduct = () => {
         images: imageUrls,
         videos: videoUrls,
         breed_applicable: breedApplicable,
-        tags: highlights.filter(h => h.trim()),
+        tags: buildHighlightsArray(),
         is_draft: isDraft,
-        verification_status: isDraft ? "pending" : "pending",
+        verification_status: "pending",
       } as any);
 
       if (error) throw error;
@@ -229,21 +251,27 @@ const AddProduct = () => {
     }
   };
 
-  const addHighlight = () => setHighlights(prev => [...prev, ""]);
-  const updateHighlight = (i: number, v: string) => setHighlights(prev => prev.map((h, idx) => idx === i ? v : h));
+  // Highlight handlers
+  const addHighlight = () => setHighlights(prev => [...prev, { type: "Flavour", customType: "", value: "" }]);
+  const updateHighlightType = (i: number, type: string) => setHighlights(prev => prev.map((h, idx) => idx === i ? { ...h, type, customType: type === "Custom" ? h.customType : "" } : h));
+  const updateHighlightCustomType = (i: number, v: string) => setHighlights(prev => prev.map((h, idx) => idx === i ? { ...h, customType: v } : h));
+  const updateHighlightValue = (i: number, v: string) => setHighlights(prev => prev.map((h, idx) => idx === i ? { ...h, value: v } : h));
   const removeHighlight = (i: number) => setHighlights(prev => prev.filter((_, idx) => idx !== i));
 
+  // Ingredient handlers
   const addIngredient = () => setIngredients(prev => [...prev, ""]);
   const updateIngredient = (i: number, v: string) => setIngredients(prev => prev.map((ing, idx) => idx === i ? v : ing));
   const removeIngredient = (i: number) => setIngredients(prev => prev.filter((_, idx) => idx !== i));
 
+  // Feeding Guide handlers
   const addFeedingRow = () => setFeedingGuide(prev => [...prev, { weight: "", serving: "" }]);
   const updateFeedingRow = (i: number, field: "weight" | "serving", v: string) =>
     setFeedingGuide(prev => prev.map((r, idx) => idx === i ? { ...r, [field]: v } : r));
   const removeFeedingRow = (i: number) => setFeedingGuide(prev => prev.filter((_, idx) => idx !== i));
 
-  const addVariant = () => setVariants(prev => [...prev, { type: "size", value: "" }]);
-  const updateVariant = (i: number, field: "type" | "value", v: string) =>
+  // Variant handlers (pack builder)
+  const addVariant = () => setVariants(prev => [...prev, { label: "", packSize: "", price: "", originalPrice: "", discount: "" }]);
+  const updateVariantField = (i: number, field: keyof VariantItem, v: string) =>
     setVariants(prev => prev.map((vr, idx) => idx === i ? { ...vr, [field]: v } : vr));
   const removeVariant = (i: number) => setVariants(prev => prev.filter((_, idx) => idx !== i));
 
@@ -284,9 +312,6 @@ const AddProduct = () => {
             <span>{imageCount}/20 photos</span>
             <span>{videoCount}/2 videos</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Upload up to 20 photos (max 10MB each) and 2 videos (max 50MB each)
-          </p>
         </div>
       );
 
@@ -338,16 +363,77 @@ const AddProduct = () => {
               <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{description.length}/2000</span>
             </div>
           </div>
+
+          {/* ── C) Highlight with Dropdown ── */}
           <div>
             <Label className="text-sm font-semibold">Product Highlights</Label>
-            <div className="space-y-2 mt-1.5">
+            <p className="text-xs text-muted-foreground mb-2">Select highlight type then enter value</p>
+            <div className="space-y-3 mt-1.5">
               {highlights.map((h, i) => (
-                <div key={i} className="flex gap-2">
-                  <Input value={h} onChange={e => updateHighlight(i, e.target.value)} placeholder={`Highlight ${i + 1}`} className="rounded-2xl" />
-                  {highlights.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeHighlight(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>}
+                <div key={i} className="space-y-1.5 p-3 rounded-2xl bg-muted/30 border border-border">
+                  <div className="flex gap-2 items-center">
+                    <Select value={h.type} onValueChange={v => updateHighlightType(i, v)}>
+                      <SelectTrigger className="rounded-xl w-36 h-9 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {HIGHLIGHT_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    {h.type === "Custom" && (
+                      <Input value={h.customType} onChange={e => updateHighlightCustomType(i, e.target.value)}
+                        placeholder="Custom label" className="rounded-xl h-9 text-xs flex-1" />
+                    )}
+                    {highlights.length > 1 && (
+                      <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => removeHighlight(i)}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
+                  <Input value={h.value} onChange={e => updateHighlightValue(i, e.target.value)}
+                    placeholder={`Enter ${h.type === "Custom" ? (h.customType || "custom") : h.type.toLowerCase()} value`}
+                    className="rounded-xl h-9 text-sm" />
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addHighlight} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+              <Button variant="outline" size="sm" onClick={addHighlight} className="rounded-2xl">
+                <Plus className="w-4 h-4 mr-1" /> Add Highlight
+              </Button>
+            </div>
+          </div>
+
+          {/* ── D) Ingredients in Basic Info ── */}
+          <div>
+            <Label className="text-sm font-semibold">Ingredients</Label>
+            <p className="text-xs text-muted-foreground mb-2">List all ingredients of your product</p>
+            <div className="space-y-2 mt-1.5">
+              {ingredients.map((ing, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input value={ing} onChange={e => updateIngredient(i, e.target.value)} placeholder={`Ingredient ${i + 1}`} className="rounded-2xl" />
+                  {ingredients.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeIngredient(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>}
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={addIngredient} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+            </div>
+          </div>
+
+          {/* ── D) Feeding Guide in Basic Info ── */}
+          <div>
+            <Label className="text-sm font-semibold">How to Make (Feeding Guide)</Label>
+            <p className="text-xs text-muted-foreground mb-2">Add weight range and daily serving details</p>
+            <div className="space-y-2 mt-1.5">
+              {feedingGuide.length > 0 && (
+                <div className="flex gap-2 text-xs font-semibold text-muted-foreground px-1">
+                  <span className="flex-1">Weight Range</span>
+                  <span className="flex-1">Daily Serving</span>
+                  <span className="w-9" />
+                </div>
+              )}
+              {feedingGuide.map((row, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input value={row.weight} onChange={e => updateFeedingRow(i, "weight", e.target.value)} placeholder="e.g. 2-5 kg" className="rounded-2xl flex-1" />
+                  <Input value={row.serving} onChange={e => updateFeedingRow(i, "serving", e.target.value)} placeholder="e.g. 50-80g" className="rounded-2xl flex-1" />
+                  <Button variant="ghost" size="icon" onClick={() => removeFeedingRow(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={addFeedingRow} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add Row</Button>
             </div>
           </div>
         </div>
@@ -396,22 +482,45 @@ const AddProduct = () => {
               </Select>
             </div>
           </div>
+
+          {/* ── B) Pack/Variant Builder ── */}
           <div>
-            <Label className="text-sm font-semibold">Variants</Label>
-            <div className="space-y-2 mt-2">
+            <Label className="text-sm font-semibold">Packs / Variants</Label>
+            <p className="text-xs text-muted-foreground mb-2">Create pack options (e.g. "3 kg", "3 × 3 kg") with pricing</p>
+            <div className="space-y-3 mt-2">
               {variants.map((v, i) => (
-                <div key={i} className="flex gap-2">
-                  <Select value={v.type} onValueChange={val => updateVariant(i, "type", val)}>
-                    <SelectTrigger className="rounded-2xl w-28"><SelectValue /></SelectTrigger>
-                    <SelectContent>{["size","flavor","color","weight"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                  </Select>
-                  <Input value={v.value} onChange={e => updateVariant(i, "value", e.target.value)} placeholder="Value" className="rounded-2xl flex-1" />
-                  <Button variant="ghost" size="icon" onClick={() => removeVariant(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                <div key={i} className="p-3 rounded-2xl bg-muted/30 border border-border space-y-2">
+                  <div className="flex gap-2">
+                    <Input value={v.label} onChange={e => updateVariantField(i, "label", e.target.value)}
+                      placeholder="Label (e.g. 3 kg)" className="rounded-xl flex-1" />
+                    <Input value={v.packSize} onChange={e => updateVariantField(i, "packSize", e.target.value)}
+                      placeholder="Pack (e.g. 3 × 3 kg)" className="rounded-xl flex-1" />
+                    <Button variant="ghost" size="icon" onClick={() => removeVariant(i)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="relative">
+                      <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                      <Input type="number" value={v.price} onChange={e => updateVariantField(i, "price", e.target.value)}
+                        placeholder="Price" className="rounded-xl pl-7 text-sm" />
+                    </div>
+                    <div className="relative">
+                      <IndianRupee className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                      <Input type="number" value={v.originalPrice} onChange={e => updateVariantField(i, "originalPrice", e.target.value)}
+                        placeholder="MRP" className="rounded-xl pl-7 text-sm" />
+                    </div>
+                    <Input value={v.discount} onChange={e => updateVariantField(i, "discount", e.target.value)}
+                      placeholder="e.g. 5% OFF" className="rounded-xl text-sm" />
+                  </div>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addVariant} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add Variant</Button>
+              <Button variant="outline" size="sm" onClick={addVariant} className="rounded-2xl">
+                <Plus className="w-4 h-4 mr-1" /> Add Pack / Variant
+              </Button>
             </div>
           </div>
+
           <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/50">
             <div><Label className="text-sm font-semibold">Low Stock Alert</Label><p className="text-xs text-muted-foreground">Get notified when stock is low</p></div>
             <Switch checked={lowStockAlert} onCheckedChange={setLowStockAlert} />
@@ -430,11 +539,6 @@ const AddProduct = () => {
               <SelectContent>{["Same Day","1-2 Days","3-5 Days","5-7 Days"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-          {handlingTime && (
-            <div className="p-3 rounded-2xl bg-muted/50 text-sm text-muted-foreground">
-              Estimated delivery: {handlingTime === "Same Day" ? "1-3 days" : handlingTime === "1-2 Days" ? "3-5 days" : "5-10 days"}
-            </div>
-          )}
           <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/50">
             <div><Label className="text-sm font-semibold">Free Shipping</Label></div>
             <Switch checked={shippingFree} onCheckedChange={setShippingFree} />
@@ -525,58 +629,33 @@ const AddProduct = () => {
                 <span className="text-xl font-bold text-primary">₹{sellingPrice || "0"}</span>
                 {mrp && <span className="text-sm text-muted-foreground line-through">₹{mrp}</span>}
               </div>
-              <p className="text-xs text-muted-foreground mt-2">{description?.slice(0, 100) || "No description"}</p>
             </CardContent>
           </Card>
 
-          {/* Full Preview Details */}
+          {/* Preview Details */}
           <div className="space-y-3 bg-muted/50 rounded-2xl p-4">
             <h3 className="font-semibold text-lg">{name || "Product Name"}</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><span className="text-muted-foreground">Brand:</span><span className="ml-2 font-medium">{brand}</span></div>
               <div><span className="text-muted-foreground">Pet Type:</span><span className="ml-2 font-medium">{PET_NAMES[petType] || "-"}</span></div>
               <div><span className="text-muted-foreground">Category:</span><span className="ml-2 font-medium">{category}</span></div>
-              <div><span className="text-muted-foreground">SKU:</span><span className="ml-2 font-medium">{sku || "-"}</span></div>
               <div><span className="text-muted-foreground">Stock:</span><span className="ml-2 font-medium">{stock}</span></div>
               <div><span className="text-muted-foreground">Weight:</span><span className="ml-2 font-medium">{weight || "-"} {unit}</span></div>
-              <div><span className="text-muted-foreground">Selling Price:</span><span className="ml-2 font-medium text-primary">₹{sellingPrice}</span></div>
-              {mrp && <div><span className="text-muted-foreground">MRP:</span><span className="ml-2 font-medium">₹{mrp}</span></div>}
               <div><span className="text-muted-foreground">Shipping:</span><span className="ml-2 font-medium">{shippingFree ? "Free" : `₹${shippingCharges}`}</span></div>
-              <div><span className="text-muted-foreground">Delivery:</span><span className="ml-2 font-medium">{deliveryScope === "pan_india" ? "PAN India" : "Local"}</span></div>
               <div><span className="text-muted-foreground">Media:</span><span className="ml-2 font-medium">{imageCount} photos, {videoCount} videos</span></div>
             </div>
-            {description && (
-              <div><span className="text-muted-foreground text-sm">Description:</span><p className="mt-1 text-sm">{description}</p></div>
+            {variants.length > 0 && (
+              <div>
+                <span className="text-muted-foreground text-sm font-medium">Packs/Variants:</span>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {variants.filter(v => v.label.trim()).map((v, i) => (
+                    <span key={i} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                      {v.label} {v.packSize && `(${v.packSize})`} {v.price && `₹${v.price}`}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
-
-          {/* Feeding Guide Builder */}
-          <div>
-            <Label className="text-sm font-semibold">Feeding Guide Table</Label>
-            <div className="space-y-2 mt-2">
-              {feedingGuide.map((row, i) => (
-                <div key={i} className="flex gap-2">
-                  <Input value={row.weight} onChange={e => updateFeedingRow(i, "weight", e.target.value)} placeholder="Weight range" className="rounded-2xl" />
-                  <Input value={row.serving} onChange={e => updateFeedingRow(i, "serving", e.target.value)} placeholder="Daily serving" className="rounded-2xl" />
-                  <Button variant="ghost" size="icon" onClick={() => removeFeedingRow(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={addFeedingRow} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add Row</Button>
-            </div>
-          </div>
-
-          {/* Ingredients Builder */}
-          <div>
-            <Label className="text-sm font-semibold">Ingredients List</Label>
-            <div className="space-y-2 mt-2">
-              {ingredients.map((ing, i) => (
-                <div key={i} className="flex gap-2">
-                  <Input value={ing} onChange={e => updateIngredient(i, e.target.value)} placeholder={`Ingredient ${i + 1}`} className="rounded-2xl" />
-                  {ingredients.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeIngredient(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>}
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={addIngredient} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add</Button>
-            </div>
           </div>
 
           {/* Section edit buttons */}
@@ -605,7 +684,6 @@ const AddProduct = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header - Exact same structure as AddPet */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate("/products-dashboard")}>
@@ -624,7 +702,6 @@ const AddProduct = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-3xl">
-        {/* Step Progress - Exact same structure as AddPet */}
         <div className="mb-8 overflow-x-auto">
           <div className="flex items-center gap-2 min-w-max px-2">
             {STEPS.map((step, index) => (
@@ -640,42 +717,37 @@ const AddProduct = () => {
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                     currentStep === step.id ? "bg-gradient-primary text-white"
-                      : currentStep > step.id ? "bg-success text-white" : "bg-muted"
+                      : currentStep > step.id ? "bg-success text-white"
+                        : "bg-muted text-muted-foreground"
                   }`}>
                     {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
                   </div>
-                  <span className="text-xs font-medium whitespace-nowrap">{step.title}</span>
+                  <span className="text-[10px] font-medium whitespace-nowrap">{step.title}</span>
                 </button>
                 {index < STEPS.length - 1 && (
-                  <div className={`w-8 h-0.5 mx-1 ${currentStep > step.id ? "bg-success" : "bg-muted"}`} />
+                  <div className={`w-6 h-0.5 mx-1 rounded-full ${currentStep > step.id ? "bg-success" : "bg-border"}`} />
                 )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Card with CardHeader - Exact same structure as AddPet */}
-        <Card className="border-0 shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {(() => { const StepIcon = STEPS[currentStep - 1].icon; return <StepIcon className="w-5 h-5 text-primary" />; })()}
-              {STEPS[currentStep - 1].title}
-            </CardTitle>
+        <Card className="border-0 shadow-card rounded-3xl">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">{STEPS[currentStep - 1].title}</CardTitle>
             <CardDescription>{STEPS[currentStep - 1].description}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {renderStep()}
-
-            {/* Navigation Buttons - Inside CardContent like AddPet */}
             {currentStep < 8 && (
-              <div className="flex gap-3 mt-6">
+              <div className="flex gap-3 mt-8">
                 {currentStep > 1 && (
-                  <Button type="button" variant="outline" className="flex-1 rounded-2xl" onClick={handleBack}>
-                    <ArrowLeft className="w-4 h-4 mr-2" />Back
+                  <Button variant="outline" className="flex-1 rounded-2xl h-12" onClick={handleBack}>
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Back
                   </Button>
                 )}
-                <Button type="button" className="flex-1 rounded-2xl bg-gradient-primary hover:opacity-90" onClick={handleNext}>
-                  Next<ArrowRight className="w-4 h-4 ml-2" />
+                <Button className="flex-1 rounded-2xl h-12 bg-gradient-primary hover:opacity-90" onClick={handleNext}>
+                  Next <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             )}

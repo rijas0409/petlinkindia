@@ -53,7 +53,6 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
   
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
 
-  // Task I: Fetch real products from database
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -97,12 +96,14 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
     setActiveQuickFilters(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
   };
 
-  const handleAddToCart = (product: ShopProduct) => {
+  const handleAddToCart = (e: React.MouseEvent, product: ShopProduct) => {
+    e.stopPropagation();
     onAddToCart({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "" });
     toast.success(`${product.name} added to cart!`);
   };
 
-  const handleToggleWishlist = async (product: ShopProduct) => {
+  const handleToggleWishlist = async (e: React.MouseEvent, product: ShopProduct) => {
+    e.stopPropagation();
     await toggleProductWishlist({
       id: product.id, name: product.name, price: product.price,
       image: product.images?.[0] || "", petType,
@@ -204,12 +205,12 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
           ))}
         </aside>
 
-        <main className="flex-1 p-3 pb-24">
+        <main className="flex-1 p-2 pb-24">
           {loading ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {[1,2,3,4].map(i => (
                 <div key={i} className="bg-card rounded-xl overflow-hidden shadow-sm border border-border animate-pulse">
-                  <div className="aspect-square bg-muted" /><div className="p-3 space-y-2"><div className="h-4 bg-muted rounded" /></div>
+                  <div className="aspect-square bg-muted" /><div className="p-2 space-y-2"><div className="h-3 bg-muted rounded" /></div>
                 </div>
               ))}
             </div>
@@ -220,33 +221,41 @@ const ProductListingScreen = ({ petType, initialBreed, initialSearch, initialCat
               <p className="text-sm text-muted-foreground/70">Products from seller panel will appear here</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {filteredProducts.map(product => {
                 const imgUrl = product.images?.[0] || "";
                 return (
-                  <div key={product.id} className="bg-card rounded-xl overflow-hidden shadow-sm border border-border cursor-pointer" onClick={() => navigate(`/product/${product.id}`)}>
-                    <div className="relative aspect-square bg-muted">
-                      {imgUrl ? <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-4xl">🛒</div>}
+                  <div key={product.id}
+                    className="bg-card rounded-xl overflow-hidden shadow-sm border border-border cursor-pointer flex flex-col"
+                    onClick={() => navigate(`/product/${product.id}`)}>
+                    {/* Fixed aspect ratio image container */}
+                    <div className="relative aspect-square bg-muted flex-shrink-0">
+                      {imgUrl ? <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" loading="lazy" /> : <div className="w-full h-full flex items-center justify-center text-3xl">🛒</div>}
                       {product.discount && product.discount > 0 && (
-                        <span className="absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: '#ec4899' }}>{product.discount}% OFF</span>
+                        <span className="absolute top-1.5 left-1.5 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: '#ec4899' }}>{product.discount}% OFF</span>
                       )}
-                      <Button size="icon" variant="ghost"
-                        className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 shadow-sm ${isProductInWishlist(product.id) ? "text-red-500" : "text-muted-foreground"}`}
-                        onClick={() => handleToggleWishlist(product)}>
-                        <Heart className={`w-4 h-4 ${isProductInWishlist(product.id) ? "fill-current" : ""}`} />
-                      </Button>
+                      <button
+                        className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/80 shadow-sm flex items-center justify-center ${isProductInWishlist(product.id) ? "text-red-500" : "text-muted-foreground"}`}
+                        onClick={(e) => handleToggleWishlist(e, product)}>
+                        <Heart className={`w-3.5 h-3.5 ${isProductInWishlist(product.id) ? "fill-current" : ""}`} />
+                      </button>
                     </div>
-                    <div className="p-3">
-                      <h3 className="text-sm font-medium text-foreground line-clamp-2">{product.name}</h3>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-base font-bold text-foreground">₹{product.price}</span>
-                        {product.original_price && product.original_price > product.price && (
-                          <span className="text-xs text-muted-foreground line-through">₹{product.original_price}</span>
-                        )}
-                        <Button size="icon" className="w-7 h-7 rounded-full ml-auto" style={{ backgroundColor: '#ec4899' }}
-                          onClick={() => handleAddToCart(product)}>
-                          <Plus className="w-4 h-4 text-white" />
-                        </Button>
+                    {/* Fixed height text container */}
+                    <div className="p-2 flex flex-col flex-1">
+                      <h3 className="text-[12px] font-medium text-foreground line-clamp-2 leading-tight min-h-[32px]">{product.name}</h3>
+                      <div className="flex items-center justify-between mt-auto pt-1.5">
+                        <div className="flex items-baseline gap-1 min-w-0 flex-1">
+                          <span className="text-[13px] font-bold text-foreground">₹{product.price}</span>
+                          {product.original_price && product.original_price > product.price && (
+                            <span className="text-[10px] text-muted-foreground line-through truncate">₹{product.original_price}</span>
+                          )}
+                        </div>
+                        <button
+                          className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ml-1"
+                          style={{ backgroundColor: '#ec4899' }}
+                          onClick={(e) => handleAddToCart(e, product)}>
+                          <Plus className="w-3.5 h-3.5 text-white" />
+                        </button>
                       </div>
                     </div>
                   </div>
