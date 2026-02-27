@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { PET_CATEGORIES, PET_NAMES } from "@/lib/shopData";
 import {
   ArrowLeft, ArrowRight, Heart, Loader2, Upload, X, Plus, Trash2,
-  ImageIcon, FileText, IndianRupee, Package, Truck, Shield, Eye, Video, Camera, Check
+  ImageIcon, FileText, IndianRupee, Package, Truck, Shield, Eye, Video, CheckCircle
 } from "lucide-react";
 
 const ALL_PET_TYPES = Object.keys(PET_NAMES);
@@ -22,18 +22,24 @@ const DOG_BREEDS = ["Golden Retriever", "Labrador", "Pomeranian", "German Shephe
 const CAT_BREEDS = ["Persian", "Siamese", "Maine Coon", "Ragdoll", "Bengal", "British Shorthair", "Sphynx", "All Breeds"];
 
 const STEPS = [
-  { id: 1, title: "Media", icon: ImageIcon, desc: "Upload photos & videos" },
-  { id: 2, title: "Basic Info", icon: FileText, desc: "Product details" },
-  { id: 3, title: "Pricing", icon: IndianRupee, desc: "Set your price" },
-  { id: 4, title: "Inventory", icon: Package, desc: "Stock & variants" },
-  { id: 5, title: "Shipping", icon: Truck, desc: "Location & delivery" },
-  { id: 6, title: "Documents", icon: FileText, desc: "Certificates" },
-  { id: 7, title: "Compliance", icon: Shield, desc: "Regulations" },
-  { id: 8, title: "Preview", icon: Eye, desc: "Review & submit" },
+  { id: 1, title: "Media", icon: ImageIcon, description: "Upload photos & videos" },
+  { id: 2, title: "Basic Info", icon: FileText, description: "Product details" },
+  { id: 3, title: "Pricing", icon: IndianRupee, description: "Set your price" },
+  { id: 4, title: "Inventory", icon: Package, description: "Stock & variants" },
+  { id: 5, title: "Shipping", icon: Truck, description: "Location & delivery" },
+  { id: 6, title: "Documents", icon: FileText, description: "Certificates" },
+  { id: 7, title: "Compliance", icon: Shield, description: "Regulations" },
+  { id: 8, title: "Preview", icon: Eye, description: "Review & submit" },
 ];
 
 interface VariantItem { type: string; value: string; }
 interface FeedingRow { weight: string; serving: string; }
+
+interface ProductMediaFile {
+  file: File;
+  preview: string;
+  type: 'image' | 'video';
+}
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -41,9 +47,8 @@ const AddProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  // Step 1 - Media
-  const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
-  const [videos, setVideos] = useState<{ file: File; preview: string }[]>([]);
+  // Step 1 - Media (unified like AddPet)
+  const [media, setMedia] = useState<ProductMediaFile[]>([]);
 
   // Step 2 - Basic Info
   const [name, setName] = useState("");
@@ -102,19 +107,36 @@ const AddProduct = () => {
     init();
   }, []);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (images.length + files.length > 20) { toast.error("Maximum 20 images"); return; }
-    const newImages = files.filter(f => f.type.startsWith("image/")).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
-    setImages(prev => [...prev, ...newImages]);
+    const imageCount = media.filter(m => m.type === 'image').length;
+    const videoCount = media.filter(m => m.type === 'video').length;
+    const newMedia: ProductMediaFile[] = [];
+
+    for (const file of files) {
+      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith('image/');
+      if (!isVideo && !isImage) { toast.error(`${file.name} is not a valid image or video`); continue; }
+      if (isImage && imageCount + newMedia.filter(m => m.type === 'image').length >= 20) { toast.error("Maximum 20 images allowed"); continue; }
+      if (isVideo && videoCount + newMedia.filter(m => m.type === 'video').length >= 2) { toast.error("Maximum 2 videos allowed"); continue; }
+      const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > maxSize) { toast.error(`${file.name} is too large. Max ${isVideo ? '50MB' : '10MB'}`); continue; }
+      const preview = URL.createObjectURL(file);
+      newMedia.push({ file, preview, type: isVideo ? 'video' : 'image' });
+    }
+    setMedia(prev => [...prev, ...newMedia]);
   };
 
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (videos.length + files.length > 2) { toast.error("Maximum 2 videos"); return; }
-    const newVideos = files.filter(f => f.type.startsWith("video/") && f.size <= 50 * 1024 * 1024).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
-    setVideos(prev => [...prev, ...newVideos]);
+  const removeMedia = (index: number) => {
+    setMedia(prev => {
+      const item = prev[index];
+      URL.revokeObjectURL(item.preview);
+      return prev.filter((_, i) => i !== index);
+    });
   };
+
+  const imageCount = media.filter(m => m.type === 'image').length;
+  const videoCount = media.filter(m => m.type === 'video').length;
 
   const discount = mrp && sellingPrice ? Math.round(((parseFloat(mrp) - parseFloat(sellingPrice)) / parseFloat(mrp)) * 100) : 0;
   const categories = petType ? (PET_CATEGORIES[petType] || []) : [];
@@ -122,7 +144,7 @@ const AddProduct = () => {
 
   const validateStep = (step: number): boolean => {
     switch (step) {
-      case 1: if (images.length === 0) { toast.error("Upload at least one image"); return false; } return true;
+      case 1: if (imageCount === 0) { toast.error("Upload at least one image"); return false; } return true;
       case 2: if (!name || !brand || !petType || !category) { toast.error("Fill all required fields"); return false; } return true;
       case 3: if (!sellingPrice) { toast.error("Enter selling price"); return false; } return true;
       case 4: if (!stock) { toast.error("Enter stock quantity"); return false; } return true;
@@ -147,8 +169,10 @@ const AddProduct = () => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const imageUrls = await Promise.all(images.map(i => uploadFile(i.file, "product-images", user.id)));
-      const videoUrls = await Promise.all(videos.map(v => uploadFile(v.file, "product-images", user.id)));
+      const imageFiles = media.filter(m => m.type === 'image').map(m => m.file);
+      const videoFiles = media.filter(m => m.type === 'video').map(m => m.file);
+      const imageUrls = await Promise.all(imageFiles.map(f => uploadFile(f, "product-images", user.id)));
+      const videoUrls = await Promise.all(videoFiles.map(f => uploadFile(f, "product-images", user.id)));
 
       let gstCertUrl = null, tradeLicUrl = null, fssaiUrl = null, brandAuthUrl = null;
       if (gstCertFile) gstCertUrl = await uploadFile(gstCertFile, "product-images", `${user.id}/docs`);
@@ -227,83 +251,70 @@ const AddProduct = () => {
     switch (currentStep) {
       case 1: return (
         <div className="space-y-6">
-          <div>
-            <Label className="text-sm font-semibold flex items-center gap-2 mb-3">
-              <ImageIcon className="w-4 h-4 text-primary" /> Gallery Images *
-              <span className="text-xs text-muted-foreground font-normal">({images.length}/20)</span>
-            </Label>
-            <div className="flex gap-2 flex-wrap">
-              {images.map((img, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
-                  <img src={img.preview} className="w-full h-full object-cover" />
-                  <button onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
-                    <X className="w-3 h-3 text-white" />
-                  </button>
-                  {i === 0 && <span className="absolute bottom-0 inset-x-0 bg-primary/80 text-white text-[9px] text-center py-0.5">Cover</span>}
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+            {media.map((item, index) => (
+              <div key={index} className="relative aspect-square rounded-2xl overflow-hidden group">
+                {item.type === 'image' ? (
+                  <img src={item.preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <Video className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="absolute top-1 left-1">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${item.type === 'video' ? 'bg-primary text-white' : 'bg-success text-white'}`}>
+                    {item.type === 'video' ? 'Video' : 'Photo'}
+                  </span>
                 </div>
-              ))}
-              {images.length < 20 && (
-                <label className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors gap-1">
-                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-                  <Upload className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-[9px] text-muted-foreground">Upload</span>
-                </label>
-              )}
-            </div>
+                {index === 0 && item.type === 'image' && (
+                  <span className="absolute bottom-0 inset-x-0 bg-primary/80 text-white text-[9px] text-center py-0.5">Cover</span>
+                )}
+                <button type="button" onClick={() => removeMedia(index)} className="absolute top-1 right-1 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <label className="aspect-square border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors">
+              <input type="file" accept="image/*,video/*" multiple onChange={handleMediaUpload} className="hidden" />
+              <Upload className="w-6 h-6 text-muted-foreground mb-1" />
+              <span className="text-xs text-muted-foreground">Add</span>
+            </label>
           </div>
-          <div>
-            <Label className="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Video className="w-4 h-4 text-primary" /> Product Videos
-              <span className="text-xs text-muted-foreground font-normal">(optional, max 2)</span>
-            </Label>
-            <div className="flex gap-2 flex-wrap">
-              {videos.map((vid, i) => (
-                <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border bg-muted flex items-center justify-center">
-                  <Video className="w-6 h-6 text-muted-foreground" />
-                  <button onClick={() => setVideos(prev => prev.filter((_, idx) => idx !== i))}
-                    className="absolute top-0.5 right-0.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center">
-                    <X className="w-3 h-3 text-white" />
-                  </button>
-                </div>
-              ))}
-              {videos.length < 2 && (
-                <label className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors gap-1">
-                  <input type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" />
-                  <Video className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-[9px] text-muted-foreground">Video</span>
-                </label>
-              )}
-            </div>
+          <div className="flex gap-4 text-xs text-muted-foreground">
+            <span>{imageCount}/20 photos</span>
+            <span>{videoCount}/2 videos</span>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Upload up to 20 photos (max 10MB each) and 2 videos (max 50MB each)
+          </p>
         </div>
       );
 
       case 2: return (
         <div className="space-y-4">
           <div><Label className="text-sm font-semibold">Product Name *</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Premium Chicken Dog Food" className="rounded-xl mt-1.5" />
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Premium Chicken Dog Food" className="rounded-2xl mt-1.5" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><Label className="text-sm font-semibold">Brand *</Label>
-              <Input value={brand} onChange={e => setBrand(e.target.value)} placeholder="Royal Canin" className="rounded-xl mt-1.5" />
+              <Input value={brand} onChange={e => setBrand(e.target.value)} placeholder="Royal Canin" className="rounded-2xl mt-1.5" />
             </div>
             <div><Label className="text-sm font-semibold">Pet Type *</Label>
               <Select value={petType} onValueChange={v => { setPetType(v); setCategory(""); setBreedApplicable([]); }}>
-                <SelectTrigger className="rounded-xl mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
                 <SelectContent>{ALL_PET_TYPES.map(pt => <SelectItem key={pt} value={pt}>{PET_NAMES[pt]}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><Label className="text-sm font-semibold">Category *</Label>
               <Select value={category} onValueChange={setCategory} disabled={!petType}>
-                <SelectTrigger className="rounded-xl mt-1.5"><SelectValue placeholder={petType ? "Select" : "Pick pet first"} /></SelectTrigger>
+                <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue placeholder={petType ? "Select" : "Pick pet first"} /></SelectTrigger>
                 <SelectContent>{categories.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><Label className="text-sm font-semibold">SKU</Label>
-              <Input value={sku} onChange={e => setSku(e.target.value)} placeholder="RC-DOG-001" className="rounded-xl mt-1.5" />
+              <Input value={sku} onChange={e => setSku(e.target.value)} placeholder="RC-DOG-001" className="rounded-2xl mt-1.5" />
             </div>
           </div>
           {breedOptions.length > 0 && (
@@ -319,11 +330,11 @@ const AddProduct = () => {
             </div>
           )}
           <div><Label className="text-sm font-semibold">Country of Origin</Label>
-            <Input value={countryOfOrigin} onChange={e => setCountryOfOrigin(e.target.value)} className="rounded-xl mt-1.5" />
+            <Input value={countryOfOrigin} onChange={e => setCountryOfOrigin(e.target.value)} className="rounded-2xl mt-1.5" />
           </div>
           <div><Label className="text-sm font-semibold">Description</Label>
             <div className="relative mt-1.5">
-              <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." className="rounded-xl min-h-[100px]" maxLength={2000} />
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." className="rounded-2xl min-h-[100px]" maxLength={2000} />
               <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{description.length}/2000</span>
             </div>
           </div>
@@ -332,11 +343,11 @@ const AddProduct = () => {
             <div className="space-y-2 mt-1.5">
               {highlights.map((h, i) => (
                 <div key={i} className="flex gap-2">
-                  <Input value={h} onChange={e => updateHighlight(i, e.target.value)} placeholder={`Highlight ${i + 1}`} className="rounded-xl" />
+                  <Input value={h} onChange={e => updateHighlight(i, e.target.value)} placeholder={`Highlight ${i + 1}`} className="rounded-2xl" />
                   {highlights.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeHighlight(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>}
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addHighlight} className="rounded-xl"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+              <Button variant="outline" size="sm" onClick={addHighlight} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add</Button>
             </div>
           </div>
         </div>
@@ -344,15 +355,15 @@ const AddProduct = () => {
 
       case 3: return (
         <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div><Label className="text-sm font-semibold">Selling Price (₹) *</Label>
               <div className="relative mt-1.5"><IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input type="number" value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} placeholder="499" className="rounded-xl pl-9" min="0" />
+                <Input type="number" value={sellingPrice} onChange={e => setSellingPrice(e.target.value)} placeholder="499" className="rounded-2xl pl-9" min="0" />
               </div>
             </div>
             <div><Label className="text-sm font-semibold">MRP (₹)</Label>
               <div className="relative mt-1.5"><IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input type="number" value={mrp} onChange={e => setMrp(e.target.value)} placeholder="699" className="rounded-xl pl-9" min="0" />
+                <Input type="number" value={mrp} onChange={e => setMrp(e.target.value)} placeholder="699" className="rounded-2xl pl-9" min="0" />
               </div>
             </div>
           </div>
@@ -363,7 +374,7 @@ const AddProduct = () => {
           </div>
           {!gstInclusive && (
             <div><Label className="text-sm font-semibold">Tax Percentage (%)</Label>
-              <Input type="number" value={taxPercentage} onChange={e => setTaxPercentage(e.target.value)} placeholder="18" className="rounded-xl mt-1.5" min="0" max="100" />
+              <Input type="number" value={taxPercentage} onChange={e => setTaxPercentage(e.target.value)} placeholder="18" className="rounded-2xl mt-1.5" min="0" max="100" />
             </div>
           )}
         </div>
@@ -371,16 +382,16 @@ const AddProduct = () => {
 
       case 4: return (
         <div className="space-y-5">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4">
             <div><Label className="text-xs font-semibold">Stock Qty *</Label>
-              <Input type="number" value={stock} onChange={e => setStock(e.target.value)} placeholder="100" className="rounded-xl mt-1.5" min="0" />
+              <Input type="number" value={stock} onChange={e => setStock(e.target.value)} placeholder="100" className="rounded-2xl mt-1.5" min="0" />
             </div>
             <div><Label className="text-xs font-semibold">Weight/Size</Label>
-              <Input value={weight} onChange={e => setWeight(e.target.value)} placeholder="1kg" className="rounded-xl mt-1.5" />
+              <Input value={weight} onChange={e => setWeight(e.target.value)} placeholder="1kg" className="rounded-2xl mt-1.5" />
             </div>
             <div><Label className="text-xs font-semibold">Unit</Label>
               <Select value={unit} onValueChange={setUnit}>
-                <SelectTrigger className="rounded-xl mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue /></SelectTrigger>
                 <SelectContent>{["piece","kg","gm","litre","ml","pack","box","bag"].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
               </Select>
             </div>
@@ -391,14 +402,14 @@ const AddProduct = () => {
               {variants.map((v, i) => (
                 <div key={i} className="flex gap-2">
                   <Select value={v.type} onValueChange={val => updateVariant(i, "type", val)}>
-                    <SelectTrigger className="rounded-xl w-28"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="rounded-2xl w-28"><SelectValue /></SelectTrigger>
                     <SelectContent>{["size","flavor","color","weight"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                   </Select>
-                  <Input value={v.value} onChange={e => updateVariant(i, "value", e.target.value)} placeholder="Value" className="rounded-xl flex-1" />
+                  <Input value={v.value} onChange={e => updateVariant(i, "value", e.target.value)} placeholder="Value" className="rounded-2xl flex-1" />
                   <Button variant="ghost" size="icon" onClick={() => removeVariant(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addVariant} className="rounded-xl"><Plus className="w-4 h-4 mr-1" /> Add Variant</Button>
+              <Button variant="outline" size="sm" onClick={addVariant} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add Variant</Button>
             </div>
           </div>
           <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/50">
@@ -411,16 +422,16 @@ const AddProduct = () => {
       case 5: return (
         <div className="space-y-5">
           <div><Label className="text-sm font-semibold">Dispatch City</Label>
-            <Input value={dispatchCity} onChange={e => setDispatchCity(e.target.value)} placeholder="Mumbai" className="rounded-xl mt-1.5" />
+            <Input value={dispatchCity} onChange={e => setDispatchCity(e.target.value)} placeholder="Mumbai" className="rounded-2xl mt-1.5" />
           </div>
           <div><Label className="text-sm font-semibold">Handling Time</Label>
             <Select value={handlingTime} onValueChange={setHandlingTime}>
-              <SelectTrigger className="rounded-xl mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>{["Same Day","1-2 Days","3-5 Days","5-7 Days"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           {handlingTime && (
-            <div className="p-3 rounded-xl bg-muted/50 text-sm text-muted-foreground">
+            <div className="p-3 rounded-2xl bg-muted/50 text-sm text-muted-foreground">
               Estimated delivery: {handlingTime === "Same Day" ? "1-3 days" : handlingTime === "1-2 Days" ? "3-5 days" : "5-10 days"}
             </div>
           )}
@@ -430,12 +441,12 @@ const AddProduct = () => {
           </div>
           {!shippingFree && (
             <div><Label className="text-sm font-semibold">Shipping Charges (₹)</Label>
-              <Input type="number" value={shippingCharges} onChange={e => setShippingCharges(e.target.value)} placeholder="49" className="rounded-xl mt-1.5" />
+              <Input type="number" value={shippingCharges} onChange={e => setShippingCharges(e.target.value)} placeholder="49" className="rounded-2xl mt-1.5" />
             </div>
           )}
           <div><Label className="text-sm font-semibold">Delivery Availability</Label>
             <Select value={deliveryScope} onValueChange={setDeliveryScope}>
-              <SelectTrigger className="rounded-xl mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="pan_india">PAN India</SelectItem>
                 <SelectItem value="local">Local Only</SelectItem>
@@ -456,13 +467,13 @@ const AddProduct = () => {
             <div key={doc.label} className="space-y-1.5">
               <Label className="text-sm font-semibold">{doc.label}</Label>
               {doc.file ? (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-muted/50 border border-border">
+                <div className="flex items-center gap-2 p-3 rounded-2xl bg-muted/50 border border-border">
                   <FileText className="w-4 h-4 text-primary" />
                   <span className="text-sm flex-1 truncate">{doc.file.name}</span>
                   <button onClick={() => doc.setter(null)}><X className="w-4 h-4 text-destructive" /></button>
                 </div>
               ) : (
-                <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-primary/50 transition-colors">
+                <label className="flex items-center gap-3 p-4 rounded-2xl border-2 border-dashed border-border cursor-pointer hover:border-primary/50 transition-colors">
                   <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => { if (e.target.files?.[0]) doc.setter(e.target.files[0]); }} className="hidden" />
                   <Upload className="w-5 h-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">Click to upload</span>
@@ -475,22 +486,22 @@ const AddProduct = () => {
 
       case 7: return (
         <div className="space-y-5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div><Label className="text-sm font-semibold">Expiry Date</Label>
-              <Input type="date" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} className="rounded-xl mt-1.5" />
+              <Input type="date" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} className="rounded-2xl mt-1.5" />
             </div>
             <div><Label className="text-sm font-semibold">Batch Number</Label>
-              <Input value={batchNumber} onChange={e => setBatchNumber(e.target.value)} placeholder="BATCH-001" className="rounded-xl mt-1.5" />
+              <Input value={batchNumber} onChange={e => setBatchNumber(e.target.value)} placeholder="BATCH-001" className="rounded-2xl mt-1.5" />
             </div>
           </div>
           <div><Label className="text-sm font-semibold">Storage Instructions</Label>
-            <Textarea value={storageInstructions} onChange={e => setStorageInstructions(e.target.value)} placeholder="Store in a cool, dry place..." className="rounded-xl mt-1.5" rows={3} />
+            <Textarea value={storageInstructions} onChange={e => setStorageInstructions(e.target.value)} placeholder="Store in a cool, dry place..." className="rounded-2xl mt-1.5" rows={3} />
           </div>
           <div><Label className="text-sm font-semibold">Return Policy</Label>
-            <Textarea value={returnPolicy} onChange={e => setReturnPolicy(e.target.value)} placeholder="7-day return policy..." className="rounded-xl mt-1.5" rows={3} />
+            <Textarea value={returnPolicy} onChange={e => setReturnPolicy(e.target.value)} placeholder="7-day return policy..." className="rounded-2xl mt-1.5" rows={3} />
           </div>
           <div><Label className="text-sm font-semibold">Warranty (optional)</Label>
-            <Input value={warranty} onChange={e => setWarranty(e.target.value)} placeholder="6 months manufacturer warranty" className="rounded-xl mt-1.5" />
+            <Input value={warranty} onChange={e => setWarranty(e.target.value)} placeholder="6 months manufacturer warranty" className="rounded-2xl mt-1.5" />
           </div>
         </div>
       );
@@ -500,7 +511,11 @@ const AddProduct = () => {
           {/* Preview Card */}
           <Card className="border-0 shadow-card rounded-3xl overflow-hidden">
             <div className="aspect-video bg-muted relative">
-              {images[0] ? <img src={images[0].preview} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-12 h-12 text-muted-foreground" /></div>}
+              {media.filter(m => m.type === 'image')[0] ? (
+                <img src={media.filter(m => m.type === 'image')[0].preview} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-12 h-12 text-muted-foreground" /></div>
+              )}
               {discount > 0 && <Badge className="absolute top-3 left-3 bg-emerald-500 text-white">{discount}% OFF</Badge>}
             </div>
             <CardContent className="p-5">
@@ -514,18 +529,39 @@ const AddProduct = () => {
             </CardContent>
           </Card>
 
+          {/* Full Preview Details */}
+          <div className="space-y-3 bg-muted/50 rounded-2xl p-4">
+            <h3 className="font-semibold text-lg">{name || "Product Name"}</h3>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div><span className="text-muted-foreground">Brand:</span><span className="ml-2 font-medium">{brand}</span></div>
+              <div><span className="text-muted-foreground">Pet Type:</span><span className="ml-2 font-medium">{PET_NAMES[petType] || "-"}</span></div>
+              <div><span className="text-muted-foreground">Category:</span><span className="ml-2 font-medium">{category}</span></div>
+              <div><span className="text-muted-foreground">SKU:</span><span className="ml-2 font-medium">{sku || "-"}</span></div>
+              <div><span className="text-muted-foreground">Stock:</span><span className="ml-2 font-medium">{stock}</span></div>
+              <div><span className="text-muted-foreground">Weight:</span><span className="ml-2 font-medium">{weight || "-"} {unit}</span></div>
+              <div><span className="text-muted-foreground">Selling Price:</span><span className="ml-2 font-medium text-primary">₹{sellingPrice}</span></div>
+              {mrp && <div><span className="text-muted-foreground">MRP:</span><span className="ml-2 font-medium">₹{mrp}</span></div>}
+              <div><span className="text-muted-foreground">Shipping:</span><span className="ml-2 font-medium">{shippingFree ? "Free" : `₹${shippingCharges}`}</span></div>
+              <div><span className="text-muted-foreground">Delivery:</span><span className="ml-2 font-medium">{deliveryScope === "pan_india" ? "PAN India" : "Local"}</span></div>
+              <div><span className="text-muted-foreground">Media:</span><span className="ml-2 font-medium">{imageCount} photos, {videoCount} videos</span></div>
+            </div>
+            {description && (
+              <div><span className="text-muted-foreground text-sm">Description:</span><p className="mt-1 text-sm">{description}</p></div>
+            )}
+          </div>
+
           {/* Feeding Guide Builder */}
           <div>
             <Label className="text-sm font-semibold">Feeding Guide Table</Label>
             <div className="space-y-2 mt-2">
               {feedingGuide.map((row, i) => (
                 <div key={i} className="flex gap-2">
-                  <Input value={row.weight} onChange={e => updateFeedingRow(i, "weight", e.target.value)} placeholder="Weight range" className="rounded-xl" />
-                  <Input value={row.serving} onChange={e => updateFeedingRow(i, "serving", e.target.value)} placeholder="Daily serving" className="rounded-xl" />
+                  <Input value={row.weight} onChange={e => updateFeedingRow(i, "weight", e.target.value)} placeholder="Weight range" className="rounded-2xl" />
+                  <Input value={row.serving} onChange={e => updateFeedingRow(i, "serving", e.target.value)} placeholder="Daily serving" className="rounded-2xl" />
                   <Button variant="ghost" size="icon" onClick={() => removeFeedingRow(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addFeedingRow} className="rounded-xl"><Plus className="w-4 h-4 mr-1" /> Add Row</Button>
+              <Button variant="outline" size="sm" onClick={addFeedingRow} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add Row</Button>
             </div>
           </div>
 
@@ -535,18 +571,18 @@ const AddProduct = () => {
             <div className="space-y-2 mt-2">
               {ingredients.map((ing, i) => (
                 <div key={i} className="flex gap-2">
-                  <Input value={ing} onChange={e => updateIngredient(i, e.target.value)} placeholder={`Ingredient ${i + 1}`} className="rounded-xl" />
+                  <Input value={ing} onChange={e => updateIngredient(i, e.target.value)} placeholder={`Ingredient ${i + 1}`} className="rounded-2xl" />
                   {ingredients.length > 1 && <Button variant="ghost" size="icon" onClick={() => removeIngredient(i)}><Trash2 className="w-4 h-4 text-destructive" /></Button>}
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={addIngredient} className="rounded-xl"><Plus className="w-4 h-4 mr-1" /> Add</Button>
+              <Button variant="outline" size="sm" onClick={addIngredient} className="rounded-2xl"><Plus className="w-4 h-4 mr-1" /> Add</Button>
             </div>
           </div>
 
           {/* Section edit buttons */}
           <div className="grid grid-cols-2 gap-2">
             {STEPS.slice(0, 7).map(s => (
-              <Button key={s.id} variant="outline" size="sm" className="rounded-xl text-xs" onClick={() => setCurrentStep(s.id)}>
+              <Button key={s.id} variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setCurrentStep(s.id)}>
                 Edit {s.title}
               </Button>
             ))}
@@ -554,9 +590,9 @@ const AddProduct = () => {
 
           {/* Submit Buttons */}
           <div className="space-y-3">
-            <Button className="w-full rounded-2xl h-14 text-base font-bold" style={{ background: "linear-gradient(135deg, hsl(345 80% 68%), hsl(270 60% 75%))" }}
+            <Button className="w-full rounded-2xl h-14 text-base font-bold bg-gradient-primary hover:opacity-90"
               onClick={() => handleSubmit(false)} disabled={isLoading}>
-              {isLoading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Submitting...</> : "Submit for Approval"}
+              {isLoading ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Submitting...</> : <><CheckCircle className="w-5 h-5 mr-2" /> Submit for Approval</>}
             </Button>
             <Button variant="outline" className="w-full rounded-2xl" onClick={() => handleSubmit(true)} disabled={isLoading}>
               Save as Draft
@@ -569,6 +605,7 @@ const AddProduct = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header - Exact same structure as AddPet */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
           <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate("/products-dashboard")}>
@@ -576,10 +613,10 @@ const AddProduct = () => {
           </Button>
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
-              <Package className="w-5 h-5 text-white" />
+              <Heart className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">Add Product</span>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Add New Product</span>
               <p className="text-xs text-muted-foreground">Step {currentStep} of {STEPS.length}</p>
             </div>
           </div>
@@ -587,53 +624,63 @@ const AddProduct = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-3xl">
-        {/* Step Progress */}
-        <div className="mb-6 overflow-x-auto">
-          <div className="flex items-center gap-1.5 min-w-max px-1">
+        {/* Step Progress - Exact same structure as AddPet */}
+        <div className="mb-8 overflow-x-auto">
+          <div className="flex items-center gap-2 min-w-max px-2">
             {STEPS.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <button onClick={() => currentStep > step.id && setCurrentStep(step.id)}
+                <button
+                  onClick={() => currentStep > step.id && setCurrentStep(step.id)}
                   disabled={currentStep < step.id}
-                  className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-all ${
-                    currentStep === step.id ? "bg-primary/10 text-primary" : currentStep > step.id ? "text-emerald-600 cursor-pointer" : "text-muted-foreground"
+                  className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${
+                    currentStep === step.id ? "bg-primary/10 text-primary"
+                      : currentStep > step.id ? "text-success cursor-pointer hover:bg-success/10"
+                        : "text-muted-foreground"
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    currentStep === step.id ? "bg-gradient-primary text-white"
+                      : currentStep > step.id ? "bg-success text-white" : "bg-muted"
                   }`}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                    currentStep === step.id ? "bg-primary text-primary-foreground" : currentStep > step.id ? "bg-emerald-100 text-emerald-600" : "bg-muted text-muted-foreground"
-                  }`}>
-                    {currentStep > step.id ? <Check className="w-4 h-4" /> : step.id}
+                    {currentStep > step.id ? <CheckCircle className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
                   </div>
-                  <span className="text-[10px] font-medium whitespace-nowrap">{step.title}</span>
+                  <span className="text-xs font-medium whitespace-nowrap">{step.title}</span>
                 </button>
-                {index < STEPS.length - 1 && <div className={`w-4 h-0.5 mx-0.5 ${currentStep > step.id ? "bg-emerald-300" : "bg-border"}`} />}
+                {index < STEPS.length - 1 && (
+                  <div className={`w-8 h-0.5 mx-1 ${currentStep > step.id ? "bg-success" : "bg-muted"}`} />
+                )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Step Content */}
-        <Card className="border-0 shadow-card rounded-3xl">
-          <CardContent className="p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-bold">{STEPS[currentStep - 1].title}</h2>
-              <p className="text-sm text-muted-foreground">{STEPS[currentStep - 1].desc}</p>
-            </div>
+        {/* Card with CardHeader - Exact same structure as AddPet */}
+        <Card className="border-0 shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {(() => { const StepIcon = STEPS[currentStep - 1].icon; return <StepIcon className="w-5 h-5 text-primary" />; })()}
+              {STEPS[currentStep - 1].title}
+            </CardTitle>
+            <CardDescription>{STEPS[currentStep - 1].description}</CardDescription>
+          </CardHeader>
+          <CardContent>
             {renderStep()}
+
+            {/* Navigation Buttons - Inside CardContent like AddPet */}
+            {currentStep < 8 && (
+              <div className="flex gap-3 mt-6">
+                {currentStep > 1 && (
+                  <Button type="button" variant="outline" className="flex-1 rounded-2xl" onClick={handleBack}>
+                    <ArrowLeft className="w-4 h-4 mr-2" />Back
+                  </Button>
+                )}
+                <Button type="button" className="flex-1 rounded-2xl bg-gradient-primary hover:opacity-90" onClick={handleNext}>
+                  Next<ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {/* Navigation */}
-        {currentStep < 8 && (
-          <div className="flex gap-3 mt-6 pb-8">
-            {currentStep > 1 && (
-              <Button variant="outline" className="flex-1 rounded-2xl h-12" onClick={handleBack}>
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
-              </Button>
-            )}
-            <Button className="flex-1 rounded-2xl h-12 bg-gradient-primary hover:opacity-90" onClick={handleNext}>
-              Next <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
       </main>
     </div>
   );
