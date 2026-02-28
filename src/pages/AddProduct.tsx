@@ -146,9 +146,49 @@ const AddProduct = () => {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1: if (imageCount === 0) { toast.error("Upload at least one image"); return false; } return true;
-      case 2: if (!name || !brand || !petType || !category) { toast.error("Fill all required fields"); return false; } return true;
+      case 2: {
+        if (!name || !brand || !petType || !category) { toast.error("Fill all required fields (Name, Brand, Pet Type, Category)"); return false; }
+        if (!sku) { toast.error("SKU is mandatory"); return false; }
+        if (!countryOfOrigin) { toast.error("Country of Origin is mandatory"); return false; }
+        if (!description.trim()) { toast.error("Description is mandatory"); return false; }
+        const filledHighlights = highlights.filter(h => h.value.trim());
+        if (filledHighlights.length === 0) { toast.error("Add at least one Product Highlight"); return false; }
+        const filledIngredients = ingredients.filter(i => i.trim());
+        if (filledIngredients.length === 0) { toast.error("Add at least one Ingredient"); return false; }
+        if (feedingGuide.length === 0 || !feedingGuide.some(r => r.weight.trim() && r.serving.trim())) { toast.error("Add at least one Feeding Guide row"); return false; }
+        return true;
+      }
       case 3: if (!sellingPrice) { toast.error("Enter selling price"); return false; } return true;
-      case 4: if (!stock) { toast.error("Enter stock quantity"); return false; } return true;
+      case 4: {
+        if (!stock) { toast.error("Enter stock quantity"); return false; }
+        if (!weight) { toast.error("Weight is mandatory"); return false; }
+        if (!unit) { toast.error("Unit is mandatory"); return false; }
+        if (variants.length === 0) { toast.error("Add at least one Pack/Variant"); return false; }
+        const validVariants = variants.filter(v => v.label.trim());
+        if (validVariants.length === 0) { toast.error("Fill at least one variant label"); return false; }
+        return true;
+      }
+      case 5: {
+        if (!dispatchCity) { toast.error("Dispatch City is mandatory"); return false; }
+        if (!handlingTime) { toast.error("Handling Time is mandatory"); return false; }
+        if (!deliveryScope) { toast.error("Delivery Availability is mandatory"); return false; }
+        if (!shippingFree && !shippingCharges) { toast.error("Enter shipping charges"); return false; }
+        return true;
+      }
+      case 6: {
+        if (!gstCertFile) { toast.error("GST Certificate is mandatory"); return false; }
+        if (!tradeLicenseFile) { toast.error("Trade License is mandatory"); return false; }
+        if (!fssaiFile) { toast.error("FSSAI Certificate is mandatory"); return false; }
+        if (!brandAuthFile) { toast.error("Brand Authorization is mandatory"); return false; }
+        return true;
+      }
+      case 7: {
+        if (!expiryDate) { toast.error("Expiry Date is mandatory"); return false; }
+        if (!batchNumber) { toast.error("Batch Number is mandatory"); return false; }
+        if (!storageInstructions.trim()) { toast.error("Storage Instructions is mandatory"); return false; }
+        if (!returnPolicy.trim()) { toast.error("Return Policy is mandatory"); return false; }
+        return true;
+      }
       default: return true;
     }
   };
@@ -338,7 +378,7 @@ const AddProduct = () => {
                 <SelectContent>{categories.map((c: any) => <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div><Label className="text-sm font-semibold">SKU</Label>
+            <div><Label className="text-sm font-semibold">SKU *</Label>
               <Input value={sku} onChange={e => setSku(e.target.value)} placeholder="RC-DOG-001" className="rounded-2xl mt-1.5" />
             </div>
           </div>
@@ -354,10 +394,10 @@ const AddProduct = () => {
               </div>
             </div>
           )}
-          <div><Label className="text-sm font-semibold">Country of Origin</Label>
+          <div><Label className="text-sm font-semibold">Country of Origin *</Label>
             <Input value={countryOfOrigin} onChange={e => setCountryOfOrigin(e.target.value)} className="rounded-2xl mt-1.5" />
           </div>
-          <div><Label className="text-sm font-semibold">Description</Label>
+          <div><Label className="text-sm font-semibold">Description *</Label>
             <div className="relative mt-1.5">
               <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." className="rounded-2xl min-h-[100px]" maxLength={2000} />
               <span className="absolute bottom-2 right-3 text-[10px] text-muted-foreground">{description.length}/2000</span>
@@ -366,7 +406,7 @@ const AddProduct = () => {
 
           {/* ── C) Highlight with Dropdown ── */}
           <div>
-            <Label className="text-sm font-semibold">Product Highlights</Label>
+            <Label className="text-sm font-semibold">Product Highlights *</Label>
             <p className="text-xs text-muted-foreground mb-2">Select highlight type then enter value</p>
             <div className="space-y-3 mt-1.5">
               {highlights.map((h, i) => (
@@ -401,7 +441,7 @@ const AddProduct = () => {
 
           {/* ── D) Ingredients in Basic Info ── */}
           <div>
-            <Label className="text-sm font-semibold">Ingredients</Label>
+            <Label className="text-sm font-semibold">Ingredients *</Label>
             <p className="text-xs text-muted-foreground mb-2">List all ingredients of your product</p>
             <div className="space-y-2 mt-1.5">
               {ingredients.map((ing, i) => (
@@ -416,7 +456,7 @@ const AddProduct = () => {
 
           {/* ── D) Feeding Guide in Basic Info ── */}
           <div>
-            <Label className="text-sm font-semibold">How to Make (Feeding Guide)</Label>
+            <Label className="text-sm font-semibold">How to Make (Feeding Guide) *</Label>
             <p className="text-xs text-muted-foreground mb-2">Add weight range and daily serving details</p>
             <div className="space-y-2 mt-1.5">
               {feedingGuide.length > 0 && (
@@ -472,10 +512,10 @@ const AddProduct = () => {
             <div><Label className="text-xs font-semibold">Stock Qty *</Label>
               <Input type="number" value={stock} onChange={e => setStock(e.target.value)} placeholder="100" className="rounded-2xl mt-1.5" min="0" />
             </div>
-            <div><Label className="text-xs font-semibold">Weight/Size</Label>
+            <div><Label className="text-xs font-semibold">Weight/Size *</Label>
               <Input value={weight} onChange={e => setWeight(e.target.value)} placeholder="1kg" className="rounded-2xl mt-1.5" />
             </div>
-            <div><Label className="text-xs font-semibold">Unit</Label>
+            <div><Label className="text-xs font-semibold">Unit *</Label>
               <Select value={unit} onValueChange={setUnit}>
                 <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue /></SelectTrigger>
                 <SelectContent>{["piece","kg","gm","litre","ml","pack","box","bag"].map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
@@ -485,7 +525,7 @@ const AddProduct = () => {
 
           {/* ── B) Pack/Variant Builder ── */}
           <div>
-            <Label className="text-sm font-semibold">Packs / Variants</Label>
+            <Label className="text-sm font-semibold">Packs / Variants *</Label>
             <p className="text-xs text-muted-foreground mb-2">Create pack options (e.g. "3 kg", "3 × 3 kg") with pricing</p>
             <div className="space-y-3 mt-2">
               {variants.map((v, i) => (
@@ -530,10 +570,10 @@ const AddProduct = () => {
 
       case 5: return (
         <div className="space-y-5">
-          <div><Label className="text-sm font-semibold">Dispatch City</Label>
+          <div><Label className="text-sm font-semibold">Dispatch City *</Label>
             <Input value={dispatchCity} onChange={e => setDispatchCity(e.target.value)} placeholder="Mumbai" className="rounded-2xl mt-1.5" />
           </div>
-          <div><Label className="text-sm font-semibold">Handling Time</Label>
+          <div><Label className="text-sm font-semibold">Handling Time *</Label>
             <Select value={handlingTime} onValueChange={setHandlingTime}>
               <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>{["Same Day","1-2 Days","3-5 Days","5-7 Days"].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
@@ -548,7 +588,7 @@ const AddProduct = () => {
               <Input type="number" value={shippingCharges} onChange={e => setShippingCharges(e.target.value)} placeholder="49" className="rounded-2xl mt-1.5" />
             </div>
           )}
-          <div><Label className="text-sm font-semibold">Delivery Availability</Label>
+          <div><Label className="text-sm font-semibold">Delivery Availability *</Label>
             <Select value={deliveryScope} onValueChange={setDeliveryScope}>
               <SelectTrigger className="rounded-2xl mt-1.5"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -563,10 +603,10 @@ const AddProduct = () => {
       case 6: return (
         <div className="space-y-5">
           {[
-            { label: "GST Certificate", file: gstCertFile, setter: setGstCertFile },
-            { label: "Shop / Trade License", file: tradeLicenseFile, setter: setTradeLicenseFile },
-            { label: "FSSAI Certificate (if pet food)", file: fssaiFile, setter: setFssaiFile },
-            { label: "Brand Authorization", file: brandAuthFile, setter: setBrandAuthFile },
+            { label: "GST Certificate *", file: gstCertFile, setter: setGstCertFile },
+            { label: "Shop / Trade License *", file: tradeLicenseFile, setter: setTradeLicenseFile },
+            { label: "FSSAI Certificate *", file: fssaiFile, setter: setFssaiFile },
+            { label: "Brand Authorization *", file: brandAuthFile, setter: setBrandAuthFile },
           ].map(doc => (
             <div key={doc.label} className="space-y-1.5">
               <Label className="text-sm font-semibold">{doc.label}</Label>
@@ -591,17 +631,17 @@ const AddProduct = () => {
       case 7: return (
         <div className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
-            <div><Label className="text-sm font-semibold">Expiry Date</Label>
+            <div><Label className="text-sm font-semibold">Expiry Date *</Label>
               <Input type="date" value={expiryDate} onChange={e => setExpiryDate(e.target.value)} className="rounded-2xl mt-1.5" />
             </div>
-            <div><Label className="text-sm font-semibold">Batch Number</Label>
+            <div><Label className="text-sm font-semibold">Batch Number *</Label>
               <Input value={batchNumber} onChange={e => setBatchNumber(e.target.value)} placeholder="BATCH-001" className="rounded-2xl mt-1.5" />
             </div>
           </div>
-          <div><Label className="text-sm font-semibold">Storage Instructions</Label>
+          <div><Label className="text-sm font-semibold">Storage Instructions *</Label>
             <Textarea value={storageInstructions} onChange={e => setStorageInstructions(e.target.value)} placeholder="Store in a cool, dry place..." className="rounded-2xl mt-1.5" rows={3} />
           </div>
-          <div><Label className="text-sm font-semibold">Return Policy</Label>
+          <div><Label className="text-sm font-semibold">Return Policy *</Label>
             <Textarea value={returnPolicy} onChange={e => setReturnPolicy(e.target.value)} placeholder="7-day return policy..." className="rounded-2xl mt-1.5" rows={3} />
           </div>
           <div><Label className="text-sm font-semibold">Warranty (optional)</Label>

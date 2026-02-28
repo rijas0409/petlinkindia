@@ -179,7 +179,18 @@ const ProductProfile = () => {
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
 
   const images = product.images || [];
-  const variantList: any[] = Array.isArray(product.variants) ? product.variants : [];
+  // Build full variant list: first = base product (from pricing page), then inventory variants
+  const rawVariants: any[] = Array.isArray(product.variants) ? product.variants.filter((v: any) => v && (v.label || v.packSize)) : [];
+  const hasInventoryVariants = rawVariants.length > 0;
+  const baseVariant = hasInventoryVariants ? {
+    label: product.weight || product.name,
+    packSize: "",
+    price: product.price,
+    originalPrice: product.original_price,
+    discount: product.discount && product.discount > 0 ? `${product.discount}% OFF` : null,
+    stock: product.stock,
+  } : null;
+  const variantList: any[] = baseVariant ? [baseVariant, ...rawVariants] : [];
   const ingredientsList = product.ingredients || [];
   const feedingGuide: any[] = Array.isArray(product.feeding_guide) ? product.feeding_guide : [];
 
@@ -253,18 +264,29 @@ const ProductProfile = () => {
           <span className="text-[14px] font-bold text-[#111827]">4.6</span>
           <span className="text-[13px] text-[#9CA3AF]">(4.9k)</span>
         </div>
-        <div className="flex items-baseline gap-2.5 mt-3">
-          <span className="text-[26px] font-extrabold text-[#111827]">₹{product.price}</span>
-          {product.original_price && product.original_price > product.price && (
-            <span className="text-[15px] text-[#9CA3AF] line-through">₹{product.original_price}</span>
-          )}
-          {product.discount && product.discount > 0 && (
-            <span className="text-[13px] font-bold text-[#9333EA]">{product.discount}% OFF</span>
-          )}
-        </div>
+        {/* Dynamic price based on selected variant */}
+        {(() => {
+          const sv = variantList.length > 0 ? variantList[selectedVariant] : null;
+          const displayPrice = sv?.price ? Number(sv.price) : product.price;
+          const displayOriginal = sv?.originalPrice ? Number(sv.originalPrice) : product.original_price;
+          const displayDiscount = sv?.discount
+            ? (typeof sv.discount === "string" ? sv.discount : `${sv.discount}% OFF`)
+            : (product.discount && product.discount > 0 ? `${product.discount}% OFF` : null);
+          return (
+            <div className="flex items-baseline gap-2.5 mt-3">
+              <span className="text-[26px] font-extrabold text-[#111827]">₹{displayPrice}</span>
+              {displayOriginal && Number(displayOriginal) > displayPrice && (
+                <span className="text-[15px] text-[#9CA3AF] line-through">₹{displayOriginal}</span>
+              )}
+              {displayDiscount && (
+                <span className="text-[13px] font-bold text-[#9333EA]">{displayDiscount}</span>
+              )}
+            </div>
+          );
+        })()}
         {product.weight && <p className="text-[14px] text-[#6B7280] mt-1">Quantity: {product.weight}</p>}
 
-        {/* ── A) Pack/Variant Cards (exact reference design) ── */}
+        {/* ── A) Pack/Variant Cards (exact reference image design) ── */}
         {variantList.length > 0 && (
           <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide pb-1">
             {variantList.map((v: any, i: number) => {
@@ -272,41 +294,55 @@ const ProductProfile = () => {
               const label = v.label || v.value || v.type || "";
               const packSize = v.packSize || "";
               const displayLabel = packSize || label;
-              const discountText = v.discount ? (typeof v.discount === "number" ? `${v.discount}% OFF` : v.discount) : "";
+              const discountText = v.discount
+                ? (typeof v.discount === "number" ? `${v.discount}% OFF` : v.discount)
+                : "";
               const vPrice = v.price ? Number(v.price) : null;
               const vOriginal = v.originalPrice ? Number(v.originalPrice) : null;
+              const vStock = v.stock ? Number(v.stock) : null;
+              const showLowStock = vStock !== null && vStock > 0 && vStock < 10;
+
               return (
                 <button key={i} onClick={() => setSelectedVariant(i)}
-                  className="flex-shrink-0 text-center transition-all"
+                  className="flex-shrink-0 text-left transition-all"
                   style={{
-                    minWidth: 130,
-                    borderRadius: 14,
-                    border: isSelected ? "2.5px solid #A855F7" : "1.5px solid #E5E7EB",
-                    background: isSelected ? "#FDFCFF" : "#FFFFFF",
+                    minWidth: 145,
+                    borderRadius: 12,
+                    border: isSelected ? "2.5px solid #1A6DFF" : "1.5px dashed #C4C4C4",
+                    background: "#FFFFFF",
                     padding: "14px 16px 12px",
-                    boxShadow: isSelected ? "0 2px 12px rgba(168,85,247,0.10)" : "none",
+                    boxShadow: isSelected ? "0 2px 10px rgba(26,109,255,0.10)" : "none",
                   }}>
+                  {/* Label – bold, normal (not italic) */}
                   <p style={{
-                    fontSize: 14, fontWeight: 600, fontStyle: "italic",
-                    color: isSelected ? "#111827" : "#6B7280",
+                    fontSize: 15, fontWeight: 700,
+                    color: "#374151",
                     marginBottom: 4,
                   }}>{displayLabel}</p>
+                  {/* Discount text – green bold */}
                   {discountText && (
                     <p style={{
-                      fontSize: 12, fontWeight: 700,
-                      color: isSelected ? "#A855F7" : "#9CA3AF",
-                      marginBottom: 4,
+                      fontSize: 13, fontWeight: 700,
+                      color: "#16A34A",
+                      marginBottom: 6,
                     }}>{discountText}</p>
                   )}
+                  {/* Price row */}
                   {vPrice !== null && (
-                    <p style={{
-                      fontSize: 16, fontWeight: 800,
-                      color: isSelected ? "#111827" : "#6B7280",
-                    }}>₹{vPrice}{" "}
+                    <p style={{ fontSize: 17, fontWeight: 800, color: "#111827", lineHeight: "1.2" }}>
+                      ₹{vPrice}{" "}
                       {vOriginal && vOriginal > vPrice && (
-                        <span style={{ fontSize: 12, fontWeight: 400, color: "#9CA3AF", textDecoration: "line-through" }}>₹{vOriginal}</span>
+                        <span style={{ fontSize: 13, fontWeight: 400, color: "#9CA3AF", textDecoration: "line-through" }}>₹{vOriginal}</span>
                       )}
                     </p>
+                  )}
+                  {/* Low stock indicator */}
+                  {showLowStock && (
+                    <p style={{
+                      fontSize: 12, fontWeight: 600,
+                      color: "#1A6DFF",
+                      marginTop: 4,
+                    }}>{vStock} left</p>
                   )}
                 </button>
               );
@@ -574,7 +610,7 @@ const ProductProfile = () => {
           </button>
           <button onClick={handleBuyNow}
             className="flex-1 h-[48px] rounded-2xl text-white font-bold text-[14px] flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #A855F7, #7C3AED)" }}>
+            style={{ background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)" }}>
             Buy Now
           </button>
         </div>
