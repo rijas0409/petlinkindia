@@ -269,9 +269,12 @@ const ProductProfile = () => {
           const sv = variantList.length > 0 ? variantList[selectedVariant] : null;
           const displayPrice = sv?.price ? Number(sv.price) : product.price;
           const displayOriginal = sv?.originalPrice ? Number(sv.originalPrice) : product.original_price;
-          const displayDiscount = sv?.discount
-            ? (typeof sv.discount === "string" ? sv.discount : `${sv.discount}% OFF`)
-            : (product.discount && product.discount > 0 ? `${product.discount}% OFF` : null);
+          const calcDiscount = (price: number, orig: number) => {
+            if (orig > 0 && price > 0 && orig > price) return `${Math.round(((orig - price) / orig) * 100)}% OFF`;
+            return null;
+          };
+          const displayDiscount = calcDiscount(displayPrice, Number(displayOriginal || 0))
+            || (product.discount && product.discount > 0 ? `${product.discount}% OFF` : null);
           return (
             <div className="flex items-baseline gap-2.5 mt-3">
               <span className="text-[26px] font-extrabold text-[#111827]">₹{displayPrice}</span>
@@ -294,11 +297,11 @@ const ProductProfile = () => {
               const label = v.label || v.value || v.type || "";
               const packSize = v.packSize || "";
               const displayLabel = packSize || label;
-              const discountText = v.discount
-                ? (typeof v.discount === "number" ? `${v.discount}% OFF` : v.discount)
-                : "";
               const vPrice = v.price ? Number(v.price) : null;
               const vOriginal = v.originalPrice ? Number(v.originalPrice) : null;
+              const discountText = (vOriginal && vPrice && vOriginal > vPrice)
+                ? `${Math.round(((vOriginal - vPrice) / vOriginal) * 100)}% OFF`
+                : "";
               const vStock = v.stock ? Number(v.stock) : null;
               const showLowStock = vStock !== null && vStock > 0 && vStock < 10;
 
