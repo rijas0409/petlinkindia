@@ -312,7 +312,21 @@ const AddProduct = () => {
   // Variant handlers (pack builder)
   const addVariant = () => setVariants(prev => [...prev, { label: "", packSize: "", price: "", originalPrice: "", discount: "" }]);
   const updateVariantField = (i: number, field: keyof VariantItem, v: string) =>
-    setVariants(prev => prev.map((vr, idx) => idx === i ? { ...vr, [field]: v } : vr));
+    setVariants(prev => prev.map((vr, idx) => {
+      if (idx !== i) return vr;
+      const updated = { ...vr, [field]: v };
+      // Auto-calculate discount when price or MRP changes
+      if (field === "price" || field === "originalPrice") {
+        const sp = Number(field === "price" ? v : updated.price);
+        const mrpVal = Number(field === "originalPrice" ? v : updated.originalPrice);
+        if (mrpVal > 0 && sp > 0 && mrpVal > sp) {
+          updated.discount = `${Math.round(((mrpVal - sp) / mrpVal) * 100)}% OFF`;
+        } else {
+          updated.discount = "";
+        }
+      }
+      return updated;
+    }));
   const removeVariant = (i: number) => setVariants(prev => prev.filter((_, idx) => idx !== i));
 
   const renderStep = () => {
@@ -550,8 +564,8 @@ const AddProduct = () => {
                       <Input type="number" value={v.originalPrice} onChange={e => updateVariantField(i, "originalPrice", e.target.value)}
                         placeholder="MRP" className="rounded-xl pl-7 text-sm" />
                     </div>
-                    <Input value={v.discount} onChange={e => updateVariantField(i, "discount", e.target.value)}
-                      placeholder="e.g. 5% OFF" className="rounded-xl text-sm" />
+                    <Input value={v.discount} readOnly
+                      placeholder="Auto" className="rounded-xl text-sm bg-muted/50" />
                   </div>
                 </div>
               ))}
