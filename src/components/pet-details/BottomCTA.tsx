@@ -28,7 +28,7 @@ const BottomCTA = ({ price, onBuyNow }: BottomCTAProps) => {
         <button
           onClick={onBuyNow}
           className="h-[52px] px-6 rounded-2xl text-white font-bold text-[13px] text-center flex-shrink-0"
-          style={{ background: "linear-gradient(135deg, #FF4BCD, #A855F7)" }}
+          style={{ background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)" }}
         >
           Buy Now
         </button>
