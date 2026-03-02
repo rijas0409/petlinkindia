@@ -34,7 +34,7 @@ const ProductProfile = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<"quick" | "deep">("quick");
   const [selectedVariant, setSelectedVariant] = useState(0);
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ highlights: true });
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({ highlights: true, description: true });
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
   const [aiInsights, setAiInsights] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -486,8 +486,12 @@ const ProductProfile = () => {
       {/* ── 5) Description ── */}
       {product.description && (
         <div className="px-5 py-4 border-t border-[#F3F4F6]">
-          <h3 className="text-[16px] font-bold text-[#111827] mb-3">Description</h3>
-          <div style={{
+          <button onClick={() => toggleSection("description")} className="flex items-center justify-between w-full">
+            <h3 className="text-[16px] font-bold text-[#111827]">Description</h3>
+            {expandedSections.description ? <ChevronUp className="w-5 h-5 text-[#9CA3AF]" /> : <ChevronDown className="w-5 h-5 text-[#9CA3AF]" />}
+          </button>
+          {expandedSections.description && (
+          <div className="mt-3" style={{
             padding: 16,
             background: "#FFFFFF",
             borderRadius: 14,
@@ -520,6 +524,7 @@ const ProductProfile = () => {
               );
             })}
           </div>
+          )}
         </div>
       )}
 
