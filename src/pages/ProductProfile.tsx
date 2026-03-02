@@ -15,7 +15,7 @@ interface Product {
   id: string; name: string; brand: string; description: string | null;
   price: number; original_price: number | null; discount: number | null;
   images: string[] | null; videos: string[] | null; pet_type: string;
-  category: string; weight: string | null; stock: number;
+  category: string; weight: string | null; unit: string | null; stock: number;
   highlights: string[] | null; ingredients: string[] | null;
   feeding_guide: any[] | null; variants: any[] | null;
   country_of_origin: string | null; breed_applicable: string[] | null;
@@ -162,28 +162,36 @@ const ProductProfile = () => {
   }, []);
 
   const handleTouchEnd = useCallback(() => {
-    if (!swiping.current || !product?.images) return;
+    if (!swiping.current || !product) return;
     swiping.current = false;
     const diff = touchStartX.current - touchEndX.current;
     const threshold = 50;
     if (Math.abs(diff) < threshold) return;
-    const total = product.images.length;
+    const total = (product.images?.length || 0) + (product.videos?.length || 0);
+    if (total <= 1) return;
     if (diff > 0) {
       setCurrentImageIndex(prev => (prev + 1) % total);
     } else {
       setCurrentImageIndex(prev => (prev - 1 + total) % total);
     }
-  }, [product?.images]);
+  }, [product]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
 
   const images = product.images || [];
+  const videos = product.videos || [];
+  const allMedia: { type: 'image' | 'video'; url: string }[] = [
+    ...images.map(url => ({ type: 'image' as const, url })),
+    ...videos.map(url => ({ type: 'video' as const, url })),
+  ];
+  const productUnit = product.unit || "";
   // Build full variant list: first = base product (from pricing page), then inventory variants
   const rawVariants: any[] = Array.isArray(product.variants) ? product.variants.filter((v: any) => v && (v.label || v.packSize)) : [];
   const hasInventoryVariants = rawVariants.length > 0;
+  const baseLabel = product.weight ? `${product.weight}${productUnit ? ` ${productUnit}` : ""}` : product.name;
   const baseVariant = hasInventoryVariants ? {
-    label: product.weight || product.name,
+    label: baseLabel,
     packSize: "",
     price: product.price,
     originalPrice: product.original_price,
@@ -214,23 +222,33 @@ const ProductProfile = () => {
         onTouchEnd={handleTouchEnd}
       >
         <div className="absolute inset-0 flex items-center justify-center p-6">
-          {images.length > 0 ? (
-            <img
-              key={currentImageIndex}
-              src={images[currentImageIndex]}
-              alt={product.name}
-              className="max-w-full max-h-full object-contain"
-              loading="eager"
-              decoding="async"
-            />
+          {allMedia.length > 0 ? (
+            allMedia[currentImageIndex]?.type === 'video' ? (
+              <video
+                key={currentImageIndex}
+                src={allMedia[currentImageIndex].url}
+                controls
+                playsInline
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            ) : (
+              <img
+                key={currentImageIndex}
+                src={allMedia[currentImageIndex]?.url}
+                alt={product.name}
+                className="max-w-full max-h-full object-contain"
+                loading="eager"
+                decoding="async"
+              />
+            )
           ) : (
             <div className="text-6xl">📦</div>
           )}
         </div>
         {/* Dots */}
-        {images.length > 1 && (
+        {allMedia.length > 1 && (
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-            {images.map((_, i) => (
+            {allMedia.map((m, i) => (
               <button key={i} onClick={() => setCurrentImageIndex(i)}
                 className={`h-[6px] rounded-full transition-all ${i === currentImageIndex ? "w-5 bg-[#A855F7]" : "w-[6px] bg-[#D1D5DB]"}`} />
             ))}
@@ -273,8 +291,9 @@ const ProductProfile = () => {
             if (orig > 0 && price > 0 && orig > price) return `${Math.round(((orig - price) / orig) * 100)}% OFF`;
             return null;
           };
-          const displayDiscount = calcDiscount(displayPrice, Number(displayOriginal || 0))
+          const rawDiscount = calcDiscount(displayPrice, Number(displayOriginal || 0))
             || (product.discount && product.discount > 0 ? `${product.discount}% OFF` : null);
+          const displayDiscount = rawDiscount === "0% OFF" ? null : rawDiscount;
           return (
             <div className="flex items-baseline gap-2.5 mt-3">
               <span className="text-[26px] font-extrabold text-[#111827]">₹{displayPrice}</span>
@@ -294,14 +313,20 @@ const ProductProfile = () => {
           <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide pb-1">
             {variantList.map((v: any, i: number) => {
               const isSelected = i === selectedVariant;
-              const label = v.label || v.value || v.type || "";
+              const rawLabel = v.label || v.value || v.type || "";
               const packSize = v.packSize || "";
-              const displayLabel = packSize || label;
+              // Append unit to labels if not already included
+              const appendUnit = (lbl: string) => {
+                if (!productUnit || lbl.toLowerCase().includes(productUnit.toLowerCase())) return lbl;
+                return `${lbl} ${productUnit}`;
+              };
+              const displayLabel = appendUnit(packSize || rawLabel);
               const vPrice = v.price ? Number(v.price) : null;
               const vOriginal = v.originalPrice ? Number(v.originalPrice) : null;
-              const discountText = (vOriginal && vPrice && vOriginal > vPrice)
-                ? `${Math.round(((vOriginal - vPrice) / vOriginal) * 100)}% OFF`
-                : "";
+              const discountPct = (vOriginal && vPrice && vOriginal > vPrice)
+                ? Math.round(((vOriginal - vPrice) / vOriginal) * 100)
+                : 0;
+              const discountText = discountPct > 0 ? `${discountPct}% OFF` : "";
               const vStock = v.stock ? Number(v.stock) : null;
               const showLowStock = vStock !== null && vStock > 0 && vStock < 10;
 
@@ -461,13 +486,40 @@ const ProductProfile = () => {
       {/* ── 5) Description ── */}
       {product.description && (
         <div className="px-5 py-4 border-t border-[#F3F4F6]">
-          <button onClick={() => toggleSection("desc")} className="flex items-center justify-between w-full">
-            <h3 className="text-[16px] font-bold text-[#111827]">Description</h3>
-            {expandedSections.desc ? <ChevronUp className="w-5 h-5 text-[#9CA3AF]" /> : <ChevronDown className="w-5 h-5 text-[#9CA3AF]" />}
-          </button>
-          {expandedSections.desc && (
-            <p className="mt-3 text-[13px] text-[#6B7280] leading-relaxed">{product.description}</p>
-          )}
+          <h3 className="text-[16px] font-bold text-[#111827] mb-3">Description</h3>
+          <div style={{
+            padding: 16,
+            background: "#FFFFFF",
+            borderRadius: 14,
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}>
+            {product.description.split(/\n/).map((line, li) => {
+              const trimmed = line.trim();
+              if (!trimmed) return <div key={li} style={{ height: 14 }} />;
+              // Detect headings: ALL CAPS or ending with ":"
+              const isHeading = /^[A-Z\s\d&/,.-]{4,}$/.test(trimmed) || /:\s*$/.test(trimmed);
+              // Detect bullet points
+              const bulletMatch = trimmed.match(/^([•\-\*])\s*(.*)/);
+              if (bulletMatch) {
+                return (
+                  <div key={li} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                    <span style={{ color: "#6B7280", fontSize: 14, lineHeight: 1.6 }}>•</span>
+                    <span style={{ fontSize: 14, lineHeight: 1.6, color: "#2C2C2C" }}>{bulletMatch[2]}</span>
+                  </div>
+                );
+              }
+              return (
+                <p key={li} style={{
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  color: "#2C2C2C",
+                  fontWeight: isHeading ? 600 : 400,
+                  marginBottom: 12,
+                  textAlign: "left",
+                }}>{trimmed}</p>
+              );
+            })}
+          </div>
         </div>
       )}
 

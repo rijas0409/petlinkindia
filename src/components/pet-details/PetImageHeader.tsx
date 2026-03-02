@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, ArrowLeft, Share2, Heart } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { ArrowLeft, Share2, Heart } from "lucide-react";
 
 interface PetImageHeaderProps {
   images: string[];
@@ -11,11 +11,46 @@ interface PetImageHeaderProps {
 
 const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggle }: PetImageHeaderProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const swiping = useRef(false);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    swiping.current = true;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!swiping.current || images.length <= 1) return;
+    swiping.current = false;
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) < 50) return;
+    if (diff > 0) {
+      setCurrentIndex(prev => (prev + 1) % images.length);
+    } else {
+      setCurrentIndex(prev => (prev - 1 + images.length) % images.length);
+    }
+  }, [images.length]);
 
   return (
-    <div className="relative w-full bg-[#F0F0F0]" style={{ minHeight: "280px", aspectRatio: "1/1" }}>
+    <div
+      className="relative w-full bg-[#F0F0F0]"
+      style={{ minHeight: "280px", aspectRatio: "1/1" }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {images.length > 0 ? (
-        <img src={images[currentIndex]} alt="Pet" className="w-full h-full object-cover" />
+        <img
+          key={currentIndex}
+          src={images[currentIndex]}
+          alt="Pet"
+          className="w-full h-full object-cover"
+        />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground" style={{ minHeight: "280px" }}>
           No images
@@ -31,7 +66,6 @@ const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggl
           <ArrowLeft className="w-5 h-5 text-[#444]" />
         </button>
         <div className="flex items-center gap-2.5">
-          {/* Task F2: Use same heart icon style as home page header */}
           <button
             onClick={onWishlistToggle}
             className="w-10 h-10 rounded-full bg-[#E8E8E8]/90 backdrop-blur-sm flex items-center justify-center"
@@ -47,31 +81,13 @@ const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggl
         </div>
       </div>
 
-      {/* Navigation arrows */}
-      {images.length > 1 && (
-        <>
-          <button
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 flex items-center justify-center"
-            onClick={() => setCurrentIndex((i) => (i - 1 + images.length) % images.length)}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 flex items-center justify-center"
-            onClick={() => setCurrentIndex((i) => (i + 1) % images.length)}
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </>
-      )}
-
       {/* Dot indicators */}
       {images.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
           {images.map((_, i) => (
             <button
               key={i}
-              className={`w-2 h-2 rounded-full transition-colors ${i === currentIndex ? "bg-[#FF4BCD]" : "bg-white/60"}`}
+              className={`h-[6px] rounded-full transition-all ${i === currentIndex ? "w-5 bg-[#FF4BCD]" : "w-[6px] bg-white/60"}`}
               onClick={() => setCurrentIndex(i)}
             />
           ))}
