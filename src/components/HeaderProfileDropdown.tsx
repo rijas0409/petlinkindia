@@ -20,37 +20,62 @@ const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    fetchUser();
+    // Immediately try to get cached session for initial render
+    const initUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // Use metadata immediately to avoid "U" flash
+        const metaName = (session.user.user_metadata as any)?.name || "";
+        setUser({
+          name: metaName || "User",
+          email: session.user.email || "",
+          photo: null,
+        });
+        // Then fetch full profile in background
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("name, email, profile_photo")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        if (profile) {
+          setUser({
+            name: profile.name || metaName || "User",
+            email: profile.email || session.user.email || "",
+            photo: profile.profile_photo,
+          });
+        }
+      }
+    };
+    initUser();
+
+    // Listen for auth state changes to keep in sync
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        const metaName = (session.user.user_metadata as any)?.name || "";
+        setUser(prev => ({
+          name: prev?.name || metaName || "User",
+          email: session.user.email || "",
+          photo: prev?.photo || null,
+        }));
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("name, email, profile_photo")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        if (profile) {
+          setUser({
+            name: profile.name || metaName || "User",
+            email: profile.email || session.user.email || "",
+            photo: profile.profile_photo,
+          });
+        }
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => { subscription.unsubscribe(); };
   }, []);
-
-  const fetchUser = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) return;
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("name, email, profile_photo")
-      .eq("id", session.user.id)
-      .maybeSingle();
-
-    if (profile) {
-      setUser({
-        name: profile.name || "User",
-        email: profile.email || session.user.email || "",
-        photo: profile.profile_photo,
-      });
-    } else {
-      // Avoid hard errors when profile row is temporarily missing.
-      setUser({
-        name: (session.user.user_metadata as any)?.name || "User",
-        email: session.user.email || "",
-        photo: null,
-      });
-    }
-  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
