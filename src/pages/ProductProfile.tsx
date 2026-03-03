@@ -673,7 +673,7 @@ const ProductProfile = () => {
       {cartCount > 0 && (
         <div
           className="fixed left-3 right-3 z-50 md:left-auto md:right-auto md:max-w-lg md:mx-auto"
-          style={{ bottom: "calc(56px + 54px + 8px)", animation: "slideUpCart 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
+          style={{ bottom: "calc(56px + 54px + 24px)", animation: "slideUpCart 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
         >
           <div
             onClick={() => navigate("/cart")}
