@@ -672,32 +672,41 @@ const ProductProfile = () => {
       {/* ── Floating Cart Bar (appears when cart has items) ── */}
       {cartCount > 0 && (
         <div
-          className="fixed left-4 right-4 z-50 md:left-auto md:right-auto md:max-w-lg md:mx-auto"
-          style={{ bottom: 78 }}
+          className="fixed left-3 right-3 z-50 md:left-auto md:right-auto md:max-w-lg md:mx-auto"
+          style={{ bottom: "calc(56px + 54px + 8px)", animation: "slideUpCart 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
         >
           <div
             onClick={() => navigate("/cart")}
-            className="flex items-center justify-between rounded-2xl px-5 py-3.5 cursor-pointer"
+            className="flex items-center justify-between rounded-2xl px-4 py-3 cursor-pointer"
             style={{
-              background: "linear-gradient(135deg, #1B5E20, #2E7D32)",
-              boxShadow: "0 8px 32px rgba(27,94,32,0.35)",
-              animation: "slideUpCart 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+              background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
+              boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
             }}
           >
-            <div className="flex flex-col">
-              <span className="text-white/80 text-[11px] font-medium">
-                {cartCount} {cartCount === 1 ? "item" : "items"} added
-              </span>
-              <span className="text-white text-[13px] font-bold">
-                View Cart →
-              </span>
+            {/* Left: free delivery message + progress */}
+            <div className="flex flex-col flex-1 mr-3">
+              <p className="text-white text-[12px] font-bold leading-tight">
+                Add ₹{Math.max(0, 500 - cartItems.reduce((s, i) => s + i.price * i.quantity, 0))} more to unlock <span className="uppercase">FREE DELIVERY</span>
+              </p>
+              <div className="w-full h-[3px] bg-white/30 rounded-full mt-1.5">
+                <div
+                  className="h-full bg-white rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, (cartItems.reduce((s, i) => s + i.price * i.quantity, 0) / 500) * 100)}%` }}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-white text-[16px] font-extrabold">
-                ₹{cartItems.reduce((s, i) => s + i.price * i.quantity, 0)}
-              </span>
-              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                <ShoppingCart className="w-5 h-5 text-white" />
+            {/* Right: CART count + thumbnail */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex flex-col items-center">
+                <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
+                <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
+                {cartItems[cartItems.length - 1]?.image ? (
+                  <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-xl" />
+                ) : (
+                  <ShoppingCart className="w-5 h-5 text-white" />
+                )}
               </div>
             </div>
           </div>
