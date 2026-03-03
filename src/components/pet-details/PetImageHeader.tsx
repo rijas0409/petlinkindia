@@ -83,11 +83,11 @@ const PetImageHeader = ({ images, isInWishlist, onBack, onShare, onWishlistToggl
 
       {/* Dot indicators */}
       {images.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
           {images.map((_, i) => (
             <button
               key={i}
-              className={`h-[6px] rounded-full transition-all ${i === currentIndex ? "w-5 bg-[#FF4BCD]" : "w-[6px] bg-white/60"}`}
+              className={`h-[6px] rounded-full transition-all ${i === currentIndex ? "w-5 bg-[#A855F7]" : "w-[6px] bg-[#D1D5DB]"}`}
               onClick={() => setCurrentIndex(i)}
             />
           ))}
