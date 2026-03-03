@@ -7,7 +7,7 @@ import { useCart } from "@/contexts/CartContext";
 import BottomNavigation from "@/components/BottomNavigation";
 import {
   ArrowLeft, Heart, Share2, Star, ChevronDown, ChevronUp,
-  Shield, Truck, Loader2, ChevronRight, Plus
+  Shield, Truck, Loader2, ChevronRight, Plus, Minus, ShoppingCart
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
 
@@ -39,7 +39,7 @@ const ProductProfile = () => {
   const [aiInsights, setAiInsights] = useState<any>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const { toggleProductWishlist, isProductInWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addToCart, cartItems, updateQuantity, cartCount } = useCart();
 
   // Swipe refs
   const touchStartX = useRef(0);
@@ -143,8 +143,16 @@ const ProductProfile = () => {
   const handleAddToCart = () => {
     if (!product) return;
     addToCart({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "" });
-    toast.success("Added to cart!");
   };
+
+  const handleRemoveFromCart = () => {
+    if (!product) return;
+    updateQuantity(product.id, -1);
+  };
+
+  // Get quantity of this product in cart
+  const productInCart = product ? cartItems.find(item => item.id === product.id) : null;
+  const productQty = productInCart?.quantity || 0;
 
   const handleBuyNow = () => {
     handleAddToCart();
@@ -661,13 +669,64 @@ const ProductProfile = () => {
         </div>
       </div>
 
+      {/* ── Floating Cart Bar (appears when cart has items) ── */}
+      {cartCount > 0 && (
+        <div
+          className="fixed left-4 right-4 z-50 md:left-auto md:right-auto md:max-w-lg md:mx-auto"
+          style={{ bottom: 78 }}
+        >
+          <div
+            onClick={() => navigate("/cart")}
+            className="flex items-center justify-between rounded-2xl px-5 py-3.5 cursor-pointer"
+            style={{
+              background: "linear-gradient(135deg, #1B5E20, #2E7D32)",
+              boxShadow: "0 8px 32px rgba(27,94,32,0.35)",
+              animation: "slideUpCart 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+          >
+            <div className="flex flex-col">
+              <span className="text-white/80 text-[11px] font-medium">
+                {cartCount} {cartCount === 1 ? "item" : "items"} added
+              </span>
+              <span className="text-white text-[13px] font-bold">
+                View Cart →
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white text-[16px] font-extrabold">
+                ₹{cartItems.reduce((s, i) => s + i.price * i.quantity, 0)}
+              </span>
+              <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── 12) Sticky Bottom Bar ── */}
       <div className="fixed bottom-14 left-0 right-0 z-50 bg-white border-t border-[#E5E7EB] px-5 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] md:bottom-0">
         <div className="flex gap-3 max-w-lg mx-auto">
-          <button onClick={handleAddToCart}
-            className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] text-[#A855F7] font-bold text-[14px] flex items-center justify-center">
-            Add to Cart
-          </button>
+          {/* Add to Cart / Quantity Counter */}
+          {productQty === 0 ? (
+            <button onClick={handleAddToCart}
+              className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] text-[#A855F7] font-bold text-[14px] flex items-center justify-center">
+              Add to Cart
+            </button>
+          ) : (
+            <div className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] flex items-center justify-between overflow-hidden"
+              style={{ background: "linear-gradient(90deg, #A855F7, #7C3AED)" }}>
+              <button onClick={handleRemoveFromCart}
+                className="h-full px-4 flex items-center justify-center">
+                <Minus className="w-5 h-5 text-white" />
+              </button>
+              <span className="text-white font-bold text-[16px]">{productQty}</span>
+              <button onClick={handleAddToCart}
+                className="h-full px-4 flex items-center justify-center">
+                <Plus className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          )}
           <button onClick={handleBuyNow}
             className="flex-1 h-[48px] rounded-2xl text-white font-bold text-[14px] flex items-center justify-center"
             style={{ background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)" }}>
@@ -679,6 +738,10 @@ const ProductProfile = () => {
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUpCart {
+          from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
