@@ -141,11 +141,20 @@ const PetDetails = () => {
   }
 
   const images = pet.images || [];
+  const videos = pet.videos || [];
+  // Build ordered media: first image, then videos, then remaining images
+  const orderedMedia: { type: 'image' | 'video'; url: string }[] = [];
+  if (images.length > 0) orderedMedia.push({ type: 'image', url: images[0] });
+  videos.forEach(v => orderedMedia.push({ type: 'video', url: v }));
+  images.slice(1).forEach(img => orderedMedia.push({ type: 'image', url: img }));
+  if (orderedMedia.length === 0 && videos.length > 0) {
+    videos.forEach(v => orderedMedia.push({ type: 'video', url: v }));
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] pb-36">
       <PetImageHeader
-        images={images}
+        media={orderedMedia}
         isInWishlist={isInWishlist}
         onBack={() => navigate(-1)}
         onShare={handleShare}
