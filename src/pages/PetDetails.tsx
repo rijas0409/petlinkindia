@@ -156,6 +156,7 @@ const PetDetails = () => {
         breed={pet.breed}
         name={pet.name}
         price={pet.price}
+        originalPrice={pet.original_price ?? undefined}
         ageMonths={pet.age_months}
         gender={pet.gender}
         color={pet.color}
