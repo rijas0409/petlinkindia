@@ -362,6 +362,7 @@ export type Database = {
           medical_history: string | null
           microchip: string | null
           name: string
+          original_price: number | null
           owner_id: string | null
           price: number
           priority_fee_paid: boolean | null
@@ -398,6 +399,7 @@ export type Database = {
           medical_history?: string | null
           microchip?: string | null
           name: string
+          original_price?: number | null
           owner_id?: string | null
           price: number
           priority_fee_paid?: boolean | null
@@ -434,6 +436,7 @@ export type Database = {
           medical_history?: string | null
           microchip?: string | null
           name?: string
+          original_price?: number | null
           owner_id?: string | null
           price?: number
           priority_fee_paid?: boolean | null

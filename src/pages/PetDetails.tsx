@@ -25,6 +25,7 @@ interface Pet {
   gender: string;
   age_months: number;
   price: number;
+  original_price?: number | null;
   description: string | null;
   images: string[] | null;
   videos: string[] | null;
@@ -140,11 +141,20 @@ const PetDetails = () => {
   }
 
   const images = pet.images || [];
+  const videos = pet.videos || [];
+  // Build ordered media: first image, then videos, then remaining images
+  const orderedMedia: { type: 'image' | 'video'; url: string }[] = [];
+  if (images.length > 0) orderedMedia.push({ type: 'image', url: images[0] });
+  videos.forEach(v => orderedMedia.push({ type: 'video', url: v }));
+  images.slice(1).forEach(img => orderedMedia.push({ type: 'image', url: img }));
+  if (orderedMedia.length === 0 && videos.length > 0) {
+    videos.forEach(v => orderedMedia.push({ type: 'video', url: v }));
+  }
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] pb-36">
       <PetImageHeader
-        images={images}
+        media={orderedMedia}
         isInWishlist={isInWishlist}
         onBack={() => navigate(-1)}
         onShare={handleShare}
@@ -155,6 +165,7 @@ const PetDetails = () => {
         breed={pet.breed}
         name={pet.name}
         price={pet.price}
+        originalPrice={pet.original_price ?? undefined}
         ageMonths={pet.age_months}
         gender={pet.gender}
         color={pet.color}

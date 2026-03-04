@@ -7,7 +7,8 @@ import { useCart } from "@/contexts/CartContext";
 import BottomNavigation from "@/components/BottomNavigation";
 import {
   ArrowLeft, Heart, Share2, Star, ChevronDown, ChevronUp,
-  Shield, Truck, Loader2, ChevronRight, Plus, Minus, ShoppingCart
+  Shield, Truck, Loader2, ChevronRight, Plus, Minus, ShoppingCart,
+  Play, Pause, Volume2, VolumeX, Maximize
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
 
@@ -26,6 +27,8 @@ interface Product {
   seller_id: string; views: number | null; total_sold: number | null;
 }
 
+const FREE_DELIVERY_THRESHOLD = 499;
+
 const ProductProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -40,6 +43,20 @@ const ProductProfile = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const { toggleProductWishlist, isProductInWishlist } = useWishlist();
   const { addToCart, cartItems, updateQuantity, cartCount } = useCart();
+
+  // Video state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showVideoControls, setShowVideoControls] = useState(true);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoDuration, setVideoDuration] = useState("");
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cart animation state
+  const [cartPhase, setCartPhase] = useState<'hidden' | 'mini' | 'expanding' | 'full' | 'collapsing'>('hidden');
+  const prevCartCount = useRef(0);
 
   // Swipe refs
   const touchStartX = useRef(0);
@@ -59,6 +76,37 @@ const ProductProfile = () => {
       });
     }
   }, [product?.images]);
+
+  // Auto-pause video when swiping to another slide
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  }, [currentImageIndex]);
+
+  // Cart animation logic
+  useEffect(() => {
+    if (cartCount > 0 && prevCartCount.current === 0) {
+      // Items added from 0
+      setCartPhase('mini');
+      setTimeout(() => setCartPhase('expanding'), 400);
+      setTimeout(() => setCartPhase('full'), 700);
+    } else if (cartCount === 0 && prevCartCount.current > 0) {
+      // Cart emptied
+      setCartPhase('collapsing');
+      setTimeout(() => setCartPhase('hidden'), 500);
+    }
+    prevCartCount.current = cartCount;
+  }, [cartCount]);
+
+  const resetControlsTimer = useCallback(() => {
+    setShowVideoControls(true);
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    controlsTimeout.current = setTimeout(() => {
+      if (isPlaying) setShowVideoControls(false);
+    }, 3000);
+  }, [isPlaying]);
 
   const fetchProduct = async () => {
     if (!id) return;
@@ -80,7 +128,6 @@ const ProductProfile = () => {
   };
 
   const fetchSimilar = async (petType: string, category: string, excludeId: string) => {
-    // Try same category first
     const { data } = await supabase
       .from("shop_products")
       .select("id, name, price, original_price, discount, images, pet_type, handling_time")
@@ -93,7 +140,6 @@ const ProductProfile = () => {
     if (data && data.length >= 2) {
       setSimilarProducts(data);
     } else {
-      // Fallback: same pet_type, any category
       const { data: fallback } = await supabase
         .from("shop_products")
         .select("id, name, price, original_price, discount, images, pet_type, handling_time")
@@ -150,13 +196,54 @@ const ProductProfile = () => {
     updateQuantity(product.id, -1);
   };
 
-  // Get quantity of this product in cart
   const productInCart = product ? cartItems.find(item => item.id === product.id) : null;
   const productQty = productInCart?.quantity || 0;
 
   const handleBuyNow = () => {
     handleAddToCart();
     navigate("/cart");
+  };
+
+  // Video controls
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+      setShowVideoControls(true);
+    } else {
+      videoRef.current.play();
+      setIsPlaying(true);
+      resetControlsTimer();
+    }
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
+
+  const handleFullscreen = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.requestFullscreen) videoRef.current.requestFullscreen();
+  };
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    setVideoProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
+  };
+
+  const handleLoadedMetadata = () => {
+    if (!videoRef.current) return;
+    const dur = videoRef.current.duration;
+    setVideoDuration(`${Math.floor(dur / 60)}:${Math.floor(dur % 60).toString().padStart(2, '0')}`);
+  };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!videoRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    videoRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * videoRef.current.duration;
   };
 
   // Touch swipe handlers
@@ -175,7 +262,7 @@ const ProductProfile = () => {
     const diff = touchStartX.current - touchEndX.current;
     const threshold = 50;
     if (Math.abs(diff) < threshold) return;
-    const total = (product.images?.length || 0) + (product.videos?.length || 0);
+    const total = allMedia.length;
     if (total <= 1) return;
     if (diff > 0) {
       setCurrentImageIndex(prev => (prev + 1) % total);
@@ -189,12 +276,16 @@ const ProductProfile = () => {
 
   const images = product.images || [];
   const videos = product.videos || [];
-  const allMedia: { type: 'image' | 'video'; url: string }[] = [
-    ...images.map(url => ({ type: 'image' as const, url })),
-    ...videos.map(url => ({ type: 'video' as const, url })),
-  ];
+  // Ordered: first image → videos → remaining images
+  const allMedia: { type: 'image' | 'video'; url: string }[] = [];
+  if (images.length > 0) allMedia.push({ type: 'image', url: images[0] });
+  videos.forEach(v => allMedia.push({ type: 'video', url: v }));
+  images.slice(1).forEach(img => allMedia.push({ type: 'image', url: img }));
+  if (allMedia.length === 0 && videos.length > 0) {
+    videos.forEach(v => allMedia.push({ type: 'video', url: v }));
+  }
+
   const productUnit = product.unit || "";
-  // Build full variant list: first = base product (from pricing page), then inventory variants
   const rawVariants: any[] = Array.isArray(product.variants) ? product.variants.filter((v: any) => v && (v.label || v.packSize)) : [];
   const hasInventoryVariants = rawVariants.length > 0;
   const baseLabel = product.weight ? `${product.weight}${productUnit ? ` ${productUnit}` : ""}` : product.name;
@@ -210,7 +301,6 @@ const ProductProfile = () => {
   const ingredientsList = product.ingredients || [];
   const feedingGuide: any[] = Array.isArray(product.feeding_guide) ? product.feeding_guide : [];
 
-  // Parse highlights as key-value pairs
   const highlightPairs: { label: string; value: string }[] = [];
   (product.highlights || []).forEach(h => {
     const sep = h.indexOf(":");
@@ -221,9 +311,16 @@ const ProductProfile = () => {
     }
   });
 
+  const cartTotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+  const deliveryProgress = Math.min(100, (cartTotal / FREE_DELIVERY_THRESHOLD) * 100);
+  const deliveryUnlocked = cartTotal >= FREE_DELIVERY_THRESHOLD;
+
+  const currentMedia = allMedia[currentImageIndex];
+  const isCurrentVideo = currentMedia?.type === 'video';
+
   return (
     <div className="min-h-screen bg-white pb-36">
-      {/* ── 1) Image Section with Swipe ── */}
+      {/* ── 1) Image Section with Swipe + Video Support ── */}
       <div className="relative bg-[#F8F7FC]" style={{ paddingTop: "90%" }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -231,39 +328,91 @@ const ProductProfile = () => {
       >
         <div className="absolute inset-0 flex items-center justify-center p-6">
           {allMedia.length > 0 ? (
-            allMedia[currentImageIndex]?.type === 'video' ? (
-              <video
-                key={currentImageIndex}
-                src={allMedia[currentImageIndex].url}
-                controls
-                playsInline
-                className="max-w-full max-h-full object-contain rounded-lg"
-              />
+            isCurrentVideo && !videoError ? (
+              <div className="w-full h-full relative flex items-center justify-center" onClick={resetControlsTimer}>
+                <video
+                  ref={videoRef}
+                  src={currentMedia.url}
+                  className="max-w-full max-h-full object-contain rounded-lg"
+                  playsInline
+                  muted={isMuted}
+                  onTimeUpdate={handleTimeUpdate}
+                  onLoadedMetadata={handleLoadedMetadata}
+                  onEnded={() => { setIsPlaying(false); setShowVideoControls(true); }}
+                  onError={() => setVideoError(true)}
+                />
+                {/* Duration badge */}
+                {videoDuration && !isPlaying && (
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[11px] font-medium z-10">
+                    {videoDuration}
+                  </div>
+                )}
+                {/* Bottom gradient */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none rounded-b-lg" />
+                {/* Play button */}
+                {!isPlaying && (
+                  <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center z-10">
+                    <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg" style={{ boxShadow: "0 0 20px rgba(244,114,182,0.3)" }}>
+                      <Play className="w-7 h-7 text-[#333] ml-1" fill="#333" />
+                    </div>
+                  </button>
+                )}
+                {/* Controls */}
+                {isPlaying && showVideoControls && (
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 z-10" style={{ animation: "fadeIn 0.15s ease-out" }}>
+                    <button onClick={togglePlay} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                      <Pause className="w-4 h-4 text-white" />
+                    </button>
+                    <div className="flex-1 h-[3px] bg-white/30 rounded-full cursor-pointer" onClick={handleSeek}>
+                      <div className="h-full bg-white rounded-full transition-all" style={{ width: `${videoProgress}%` }} />
+                    </div>
+                    <button onClick={toggleMute} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                      {isMuted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
+                    </button>
+                    <button onClick={handleFullscreen} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                      <Maximize className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : isCurrentVideo && videoError ? (
+              <div className="w-full h-full flex items-center justify-center bg-[#E5E7EB] rounded-lg">
+                <div className="w-16 h-16 rounded-full bg-white/60 flex items-center justify-center">
+                  <Play className="w-7 h-7 text-[#999] ml-1" />
+                </div>
+              </div>
             ) : (
               <img
                 key={currentImageIndex}
-                src={allMedia[currentImageIndex]?.url}
+                src={currentMedia?.url}
                 alt={product.name}
                 className="max-w-full max-h-full object-contain"
                 loading="eager"
                 decoding="async"
+                style={{ animation: "fadeIn 0.15s ease-out" }}
               />
             )
           ) : (
             <div className="text-6xl">📦</div>
           )}
         </div>
+        {/* Image counter */}
+        {allMedia.length > 1 && (
+          <div className="absolute top-14 right-4 px-2.5 py-1 rounded-full bg-black/40 text-white text-[11px] font-semibold z-10">
+            {currentImageIndex + 1}/{allMedia.length}
+          </div>
+        )}
         {/* Dots */}
         {allMedia.length > 1 && (
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
             {allMedia.map((m, i) => (
               <button key={i} onClick={() => setCurrentImageIndex(i)}
-                className={`h-[6px] rounded-full transition-all ${i === currentImageIndex ? "w-5 bg-[#A855F7]" : "w-[6px] bg-[#D1D5DB]"}`} />
+                className={`h-[6px] rounded-full transition-all duration-200 ${i === currentImageIndex ? "w-5 bg-[#A855F7]" : "w-[6px] bg-[#D1D5DB]"}`} />
             ))}
           </div>
         )}
         {/* Top bar */}
-        <div className="absolute top-10 left-4 right-4 flex justify-between">
+        <div className="absolute top-10 left-4 right-4 flex justify-between z-10">
           <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#F3F0F9] flex items-center justify-center">
             <ArrowLeft className="w-5 h-5 text-[#6B7280]" />
           </button>
@@ -316,14 +465,13 @@ const ProductProfile = () => {
         })()}
         {product.weight && <p className="text-[14px] text-[#6B7280] mt-1">Quantity: {product.weight}</p>}
 
-        {/* ── A) Pack/Variant Cards (exact reference image design) ── */}
+        {/* ── A) Pack/Variant Cards ── */}
         {variantList.length > 0 && (
           <div className="flex gap-3 mt-4 overflow-x-auto scrollbar-hide pb-1">
             {variantList.map((v: any, i: number) => {
               const isSelected = i === selectedVariant;
               const rawLabel = v.label || v.value || v.type || "";
               const packSize = v.packSize || "";
-              // Append unit to labels if not already included
               const appendUnit = (lbl: string) => {
                 if (!productUnit || lbl.toLowerCase().includes(productUnit.toLowerCase())) return lbl;
                 return `${lbl} ${productUnit}`;
@@ -349,21 +497,10 @@ const ProductProfile = () => {
                     padding: "14px 16px 12px",
                     boxShadow: isSelected ? "0 2px 10px rgba(26,109,255,0.10)" : "none",
                   }}>
-                  {/* Label – bold, normal (not italic) */}
-                  <p style={{
-                    fontSize: 15, fontWeight: 700,
-                    color: "#374151",
-                    marginBottom: 4,
-                  }}>{displayLabel}</p>
-                  {/* Discount text – green bold */}
+                  <p style={{ fontSize: 15, fontWeight: 700, color: "#374151", marginBottom: 4 }}>{displayLabel}</p>
                   {discountText && (
-                    <p style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: "#16A34A",
-                      marginBottom: 6,
-                    }}>{discountText}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#16A34A", marginBottom: 6 }}>{discountText}</p>
                   )}
-                  {/* Price row */}
                   {vPrice !== null && (
                     <p style={{ fontSize: 17, fontWeight: 800, color: "#111827", lineHeight: "1.2" }}>
                       ₹{vPrice}{" "}
@@ -372,13 +509,8 @@ const ProductProfile = () => {
                       )}
                     </p>
                   )}
-                  {/* Low stock indicator */}
                   {showLowStock && (
-                    <p style={{
-                      fontSize: 12, fontWeight: 600,
-                      color: "#1A6DFF",
-                      marginTop: 4,
-                    }}>{vStock} left</p>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "#1A6DFF", marginTop: 4 }}>{vStock} left</p>
                   )}
                 </button>
               );
@@ -387,7 +519,7 @@ const ProductProfile = () => {
         )}
       </div>
 
-      {/* ── 3) Sruvo AI Insights (Product-Specific) ── */}
+      {/* ── 3) Sruvo AI Insights ── */}
       <div className="px-5 py-4">
         <div className="rounded-3xl overflow-hidden" style={{
           border: "1.5px solid transparent",
@@ -508,9 +640,7 @@ const ProductProfile = () => {
             {product.description.split(/\n/).map((line, li) => {
               const trimmed = line.trim();
               if (!trimmed) return <div key={li} style={{ height: 14 }} />;
-              // Detect headings: ALL CAPS or ending with ":"
               const isHeading = /^[A-Z\s\d&/,.-]{4,}$/.test(trimmed) || /:\s*$/.test(trimmed);
-              // Detect bullet points
               const bulletMatch = trimmed.match(/^([•\-\*])\s*(.*)/);
               if (bulletMatch) {
                 return (
@@ -659,7 +789,7 @@ const ProductProfile = () => {
       <div className="px-5 py-4 border-t border-[#F3F4F6]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#F5F3FF] flex items-center justify-center">
-            <span className="text-[#9333EA] font-bold text-[14px]">{product.brand?.charAt(0)}</span>
+            <span className="text-[#9333EA] font-bold text-[#14px]">{product.brand?.charAt(0)}</span>
           </div>
           <div className="flex-1">
             <p className="text-[14px] font-semibold text-[#111827]">{product.brand}</p>
@@ -669,47 +799,96 @@ const ProductProfile = () => {
         </div>
       </div>
 
-      {/* ── Floating Cart Bar (appears when cart has items) ── */}
-      {cartCount > 0 && (
+      {/* ── Floating Cart Bar with Animation Phases ── */}
+      {cartPhase !== 'hidden' && (
         <div
-          className="fixed left-3 right-3 z-50 md:left-auto md:right-auto md:max-w-lg md:mx-auto"
-          style={{ bottom: "calc(56px + 54px + 24px)", animation: "slideUpCart 0.35s cubic-bezier(0.16, 1, 0.3, 1)" }}
+          className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none"
+          style={{ bottom: "calc(56px + 54px + 16px)" }}
         >
-          <div
-            onClick={() => navigate("/cart")}
-            className="flex items-center justify-between rounded-2xl px-4 py-3 cursor-pointer"
-            style={{
+          {/* Mini cart phase */}
+          {cartPhase === 'mini' && (
+            <div className="pointer-events-auto" style={{
+              width: 56, height: 56, borderRadius: 28,
+              background: "linear-gradient(135deg, #1565C0, #2196F3)",
+              boxShadow: "0 6px 24px rgba(21,101,192,0.5)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              animation: "miniCartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}>
+              <ShoppingCart className="w-6 h-6 text-white" />
+            </div>
+          )}
+
+          {/* Expanding phase */}
+          {cartPhase === 'expanding' && (
+            <div className="pointer-events-auto mx-3" style={{
+              width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
               background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
               boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
-            }}
-          >
-            {/* Left: free delivery message + progress */}
-            <div className="flex flex-col flex-1 mr-3">
-              <p className="text-white text-[12px] font-bold leading-tight">
-                Add ₹{Math.max(0, 500 - cartItems.reduce((s, i) => s + i.price * i.quantity, 0))} more to unlock <span className="uppercase">FREE DELIVERY</span>
-              </p>
-              <div className="w-full h-[3px] bg-white/30 rounded-full mt-1.5">
-                <div
-                  className="h-full bg-white rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, (cartItems.reduce((s, i) => s + i.price * i.quantity, 0) / 500) * 100)}%` }}
-                />
+              animation: "expandCart 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+              opacity: 0,
+            }} />
+          )}
+
+          {/* Full floating cart bar */}
+          {cartPhase === 'full' && (
+            <div
+              className="pointer-events-auto mx-3 cursor-pointer"
+              onClick={() => navigate("/cart")}
+              style={{
+                width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
+                background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
+                boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "0 16px",
+                animation: "fadeIn 0.2s ease-out",
+              }}
+            >
+              <div className="flex flex-col flex-1 mr-3">
+                <p className="text-white text-[12px] font-bold leading-tight">
+                  {deliveryUnlocked ? (
+                    <span className="text-[#A5F3AB]">🎉 FREE DELIVERY UNLOCKED</span>
+                  ) : (
+                    <>Add ₹{Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal)} more to unlock <span className="uppercase">FREE DELIVERY</span></>
+                  )}
+                </p>
+                <div className="w-full h-[3px] bg-white/30 rounded-full mt-1.5">
+                  <div
+                    className="h-full rounded-full transition-all duration-300"
+                    style={{
+                      width: `${deliveryProgress}%`,
+                      backgroundColor: deliveryUnlocked ? "#4ADE80" : "#FFFFFF",
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-col items-center">
+                  <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
+                  <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
+                  {cartItems[cartItems.length - 1]?.image ? (
+                    <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-xl" />
+                  ) : (
+                    <ShoppingCart className="w-5 h-5 text-white" />
+                  )}
+                </div>
               </div>
             </div>
-            {/* Right: CART count + thumbnail */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex flex-col items-center">
-                <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
-                <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
-                {cartItems[cartItems.length - 1]?.image ? (
-                  <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-xl" />
-                ) : (
-                  <ShoppingCart className="w-5 h-5 text-white" />
-                )}
-              </div>
+          )}
+
+          {/* Collapsing phase */}
+          {cartPhase === 'collapsing' && (
+            <div className="pointer-events-auto" style={{
+              width: 56, height: 56, borderRadius: 28,
+              background: "linear-gradient(135deg, #1565C0, #2196F3)",
+              boxShadow: "0 6px 24px rgba(21,101,192,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              animation: "collapseCart 0.4s ease-in forwards",
+            }}>
+              <ShoppingCart className="w-6 h-6 text-white" />
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -719,12 +898,17 @@ const ProductProfile = () => {
           {/* Add to Cart / Quantity Counter */}
           {productQty === 0 ? (
             <button onClick={handleAddToCart}
-              className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] text-[#A855F7] font-bold text-[14px] flex items-center justify-center">
+              className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] text-[#A855F7] font-bold text-[14px] flex items-center justify-center"
+              style={{ transition: "all 0.2s ease" }}>
               Add to Cart
             </button>
           ) : (
-            <div className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] flex items-center justify-between overflow-hidden"
-              style={{ background: "linear-gradient(90deg, #A855F7, #7C3AED)" }}>
+            <div className="flex-1 h-[48px] rounded-2xl flex items-center justify-between overflow-hidden"
+              style={{
+                background: "linear-gradient(90deg, #A855F7, #7C3AED)",
+                animation: "morphButton 0.2s ease-out",
+                transform: "scale(1)",
+              }}>
               <button onClick={handleRemoveFromCart}
                 className="h-full px-4 flex items-center justify-center">
                 <Minus className="w-5 h-5 text-white" />
@@ -749,9 +933,24 @@ const ProductProfile = () => {
           from { opacity: 0; transform: translateY(4px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes slideUpCart {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes miniCartPop {
+          0% { transform: scale(0.5) translateY(25px); opacity: 0; }
+          60% { transform: scale(1.05) translateY(-5px); opacity: 1; }
+          80% { transform: scale(0.98) translateY(2px); }
+          100% { transform: scale(1) translateY(0); }
+        }
+        @keyframes expandCart {
+          from { opacity: 0; transform: scaleX(0.15) scaleY(0.85); border-radius: 28px; }
+          to { opacity: 1; transform: scaleX(1) scaleY(1); border-radius: 22px; }
+        }
+        @keyframes collapseCart {
+          0% { width: 92%; border-radius: 22px; opacity: 1; transform: translateY(0); }
+          50% { width: 56px; border-radius: 28px; opacity: 0.8; transform: translateY(0); }
+          100% { width: 56px; border-radius: 28px; opacity: 0; transform: translateY(16px); }
+        }
+        @keyframes morphButton {
+          from { transform: scale(0.95); }
+          to { transform: scale(1); }
         }
       `}</style>
 
