@@ -25,6 +25,7 @@ interface Pet {
   gender: string;
   age_months: number;
   price: number;
+  original_price?: number | null;
   description: string | null;
   images: string[] | null;
   videos: string[] | null;

@@ -281,6 +281,7 @@ const AddPet = () => {
           age_months: ageMonths,
           color: formData.color || null,
           price: parseFloat(formData.price),
+          original_price: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
           description: formData.description || null,
           location: formData.location,
           city: formData.city,
