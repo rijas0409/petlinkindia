@@ -854,14 +854,15 @@ const ProductProfile = () => {
         >
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
-            <div className="pointer-events-auto" style={{
-              width: 56, height: 56, borderRadius: 28,
-              background: "linear-gradient(135deg, #1565C0, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.5)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              animation: "miniCartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            }}>
-              <ShoppingCart className="w-6 h-6 text-white" />
+            <div
+              className="pointer-events-none"
+              style={{
+                width: 56,
+                height: 56,
+                animation: `miniCartPop ${MINI_CART_POP_MS + MINI_CART_BOUNCE_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
+              }}
+            >
+              <img src={miniCartImage} alt="Mini cart" className="w-full h-full object-contain" style={{ imageRendering: "crisp-edges" }} />
             </div>
           )}
 
