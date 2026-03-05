@@ -11,6 +11,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
+import miniCartImage from "@/assets/mini-cart.png";
 
 interface Product {
   id: string; name: string; brand: string; description: string | null;
@@ -28,6 +29,10 @@ interface Product {
 }
 
 const FREE_DELIVERY_THRESHOLD = 499;
+const CART_STEPPER_MORPH_MS = 200;
+const MINI_CART_POP_MS = 250;
+const MINI_CART_BOUNCE_MS = 140;
+const CART_EXPAND_MS = 300;
 
 const ProductProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,6 +62,7 @@ const ProductProfile = () => {
   // Cart animation state
   const [cartPhase, setCartPhase] = useState<'hidden' | 'mini' | 'expanding' | 'full' | 'collapsing'>('hidden');
   const prevCartCount = useRef(0);
+  const cartTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Swipe refs
   const touchStartX = useRef(0);
@@ -64,6 +70,11 @@ const ProductProfile = () => {
   const swiping = useRef(false);
 
   const isWishlisted = isProductInWishlist(id || "");
+
+  const clearCartTimers = useCallback(() => {
+    cartTimersRef.current.forEach((timer) => clearTimeout(timer));
+    cartTimersRef.current = [];
+  }, []);
 
   useEffect(() => { fetchProduct(); }, [id]);
 
@@ -77,13 +88,19 @@ const ProductProfile = () => {
     }
   }, [product?.images]);
 
-  // Auto-pause video when swiping to another slide
+  // Auto-pause and reset video when slide changes
   useEffect(() => {
+    setVideoError(false);
+    setVideoDuration("");
+    setVideoProgress(0);
+    setShowVideoControls(true);
+
     if (videoRef.current) {
       videoRef.current.pause();
+      videoRef.current.currentTime = 0;
       setIsPlaying(false);
     }
-  }, [currentImageIndex]);
+  }, [currentImageIndex, id]);
 
   // Cart animation logic
   useEffect(() => {
