@@ -927,14 +927,11 @@ const ProductProfile = () => {
 
           {/* Collapsing phase */}
           {cartPhase === 'collapsing' && (
-            <div className="pointer-events-auto" style={{
-              width: 56, height: 56, borderRadius: 28,
-              background: "linear-gradient(135deg, #1565C0, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.3)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              animation: "collapseCart 0.4s ease-in forwards",
+            <div className="pointer-events-none" style={{
+              width: 56, height: 56,
+              animation: "collapseMini 0.42s ease-in forwards",
             }}>
-              <ShoppingCart className="w-6 h-6 text-white" />
+              <img src={miniCartImage} alt="Mini cart" className="w-full h-full object-contain" style={{ imageRendering: "crisp-edges" }} />
             </div>
           )}
         </div>
