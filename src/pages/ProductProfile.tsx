@@ -407,7 +407,7 @@ const ProductProfile = () => {
                 {/* Controls */}
                 {isPlaying && showVideoControls && (
                   <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 z-10" style={{ animation: "fadeIn 0.15s ease-out" }}>
-                    <button onClick={togglePlay} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={() => void togglePlay()} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       <Pause className="w-4 h-4 text-white" />
                     </button>
                     <div className="flex-1 h-[3px] bg-white/30 rounded-full cursor-pointer" onClick={handleSeek}>
