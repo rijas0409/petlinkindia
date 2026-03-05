@@ -376,10 +376,12 @@ const ProductProfile = () => {
             isCurrentVideo && !videoError ? (
               <div className="w-full h-full relative flex items-center justify-center" onClick={resetControlsTimer}>
                 <video
+                  key={currentMedia.url}
                   ref={videoRef}
                   src={currentMedia.url}
                   className="max-w-full max-h-full object-contain rounded-lg"
                   playsInline
+                  preload="metadata"
                   muted={isMuted}
                   onTimeUpdate={handleTimeUpdate}
                   onLoadedMetadata={handleLoadedMetadata}
@@ -396,7 +398,7 @@ const ProductProfile = () => {
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none rounded-b-lg" />
                 {/* Play button */}
                 {!isPlaying && (
-                  <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center z-10">
+                  <button onClick={(e) => { e.stopPropagation(); void togglePlay(); }} className="absolute inset-0 flex items-center justify-center z-10">
                     <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg" style={{ boxShadow: "0 0 20px rgba(244,114,182,0.3)" }}>
                       <Play className="w-7 h-7 text-[#333] ml-1" fill="#333" />
                     </div>
