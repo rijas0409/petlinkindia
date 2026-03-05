@@ -884,8 +884,8 @@ const ProductProfile = () => {
               onClick={() => navigate("/cart")}
               style={{
                 width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
-                background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
-                boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
+                background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)",
+                boxShadow: "0 6px 24px rgba(139, 92, 246, 0.35)",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "0 16px",
                 animation: "fadeIn 0.2s ease-out",
