@@ -316,15 +316,18 @@ const ProductProfile = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
 
-  const images = product.images || [];
-  const videos = product.videos || [];
-  // Ordered: first image → videos → remaining images
+  const images = (product.images || []).filter((url): url is string => Boolean(url));
+  const videos = (product.videos || []).filter((url): url is string => Boolean(url));
+
+  // Ordered media: first image (hero) → videos → remaining images
   const allMedia: { type: 'image' | 'video'; url: string }[] = [];
   if (images.length > 0) allMedia.push({ type: 'image', url: images[0] });
-  videos.forEach(v => allMedia.push({ type: 'video', url: v }));
-  images.slice(1).forEach(img => allMedia.push({ type: 'image', url: img }));
+  videos.forEach((videoUrl) => allMedia.push({ type: 'video', url: videoUrl }));
+  images.slice(1).forEach((imgUrl) => allMedia.push({ type: 'image', url: imgUrl }));
+
+  // If no image is available, keep videos as the only media slides
   if (allMedia.length === 0 && videos.length > 0) {
-    videos.forEach(v => allMedia.push({ type: 'video', url: v }));
+    videos.forEach((videoUrl) => allMedia.push({ type: 'video', url: videoUrl }));
   }
 
   const productUnit = product.unit || "";
