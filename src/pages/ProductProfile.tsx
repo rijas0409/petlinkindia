@@ -240,16 +240,23 @@ const ProductProfile = () => {
   };
 
   // Video controls
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!videoRef.current) return;
+
     if (isPlaying) {
       videoRef.current.pause();
       setIsPlaying(false);
       setShowVideoControls(true);
-    } else {
-      videoRef.current.play();
+      return;
+    }
+
+    try {
+      await videoRef.current.play();
       setIsPlaying(true);
       resetControlsTimer();
+    } catch {
+      setIsPlaying(false);
+      toast.error("Unable to play this video");
     }
   };
 
