@@ -102,20 +102,38 @@ const ProductProfile = () => {
     }
   }, [currentImageIndex, id]);
 
-  // Cart animation logic
+  // Cart animation timeline: 0ms click → 200ms stepper morph done → 250ms pop + 140ms bounce → expand
   useEffect(() => {
+    clearCartTimers();
+
     if (cartCount > 0 && prevCartCount.current === 0) {
-      // Items added from 0
-      setCartPhase('mini');
-      setTimeout(() => setCartPhase('expanding'), 400);
-      setTimeout(() => setCartPhase('full'), 700);
+      const miniStart = setTimeout(() => setCartPhase('mini'), CART_STEPPER_MORPH_MS);
+      const expandStart = setTimeout(
+        () => setCartPhase('expanding'),
+        CART_STEPPER_MORPH_MS + MINI_CART_POP_MS + MINI_CART_BOUNCE_MS,
+      );
+      const fullStart = setTimeout(
+        () => setCartPhase('full'),
+        CART_STEPPER_MORPH_MS + MINI_CART_POP_MS + MINI_CART_BOUNCE_MS + CART_EXPAND_MS,
+      );
+
+      cartTimersRef.current = [miniStart, expandStart, fullStart];
     } else if (cartCount === 0 && prevCartCount.current > 0) {
-      // Cart emptied
       setCartPhase('collapsing');
-      setTimeout(() => setCartPhase('hidden'), 500);
+      const hideTimer = setTimeout(() => setCartPhase('hidden'), 450);
+      cartTimersRef.current = [hideTimer];
     }
+
     prevCartCount.current = cartCount;
-  }, [cartCount]);
+    return clearCartTimers;
+  }, [cartCount, clearCartTimers]);
+
+  useEffect(() => {
+    return () => {
+      clearCartTimers();
+      if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    };
+  }, [clearCartTimers]);
 
   const resetControlsTimer = useCallback(() => {
     setShowVideoControls(true);
