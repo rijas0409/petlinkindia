@@ -145,6 +145,7 @@ const AdminDashboard = () => {
       case "vets": return <AdminVets data={data} actions={actions} />;
       case "products": return <AdminProducts data={data} actions={actions} />;
       case "financials": return <AdminFinancials data={data} />;
+      case "banners": return <AdminBanners />;
       case "settings": return <AdminSettings />;
       case "listings": return <AdminListings data={data} actions={actions} />;
       case "transport": return <AdminTransport data={data} actions={actions} />;
