@@ -373,7 +373,7 @@ const Vet = () => {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {vetsNearYou.map((vet) => (
-              <div key={vet.id} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border">
+              <div key={vet.id} onClick={() => navigate(`/vet/doctor/${vet.id}`)} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border cursor-pointer">
                 <div className="relative h-32">
                   <img 
                     src={vet.image} 
