@@ -126,7 +126,7 @@ const AdminOverview = ({ data, actions, setActiveSection }: Props) => {
         </div>
 
         {/* Pending Tasks */}
-        <div className="bg-white rounded-2xl border border-[hsl(220,20%,92%)] p-4 md:p-6 flex flex-col max-h-[500px]">
+        <div className="bg-white rounded-2xl border border-[hsl(220,20%,92%)] p-4 md:p-5 flex flex-col max-h-[440px]">
           <div className="flex items-center gap-2 mb-4 md:mb-5">
             <h2 className="text-base md:text-lg font-bold text-[hsl(220,20%,15%)]">Pending Tasks</h2>
             <span className="px-2.5 py-0.5 bg-[hsl(0,75%,55%)] text-white text-[11px] font-bold rounded-full">{totalPending}</span>

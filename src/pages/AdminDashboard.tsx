@@ -134,22 +134,15 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[hsl(220,20%,97%)] flex">
-      {/* Desktop sidebar */}
-      {!isMobile && (
-        <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} />
-      )}
+      {/* Sidebar - always via Sheet for both mobile and desktop */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-[260px]">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <AdminSidebar activeSection={activeSection} setActiveSection={handleSectionChange} isMobile />
+        </SheetContent>
+      </Sheet>
 
-      {/* Mobile sidebar sheet */}
-      {isMobile && (
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-[260px]">
-            <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <AdminSidebar activeSection={activeSection} setActiveSection={handleSectionChange} isMobile />
-          </SheetContent>
-        </Sheet>
-      )}
-
-      <div className={`flex-1 flex flex-col min-h-screen ${!isMobile ? "ml-[260px]" : ""}`}>
+      <div className="flex-1 flex flex-col min-h-screen">
         <AdminTopBar user={user} onLogout={handleLogout} isMobile={isMobile} onMenuToggle={() => setSidebarOpen(true)} />
         <main className={`flex-1 overflow-y-auto ${isMobile ? "p-4" : "p-8"}`}>
           {renderSection()}

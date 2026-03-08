@@ -16,11 +16,9 @@ const AdminTopBar = ({ user, onLogout, isMobile, onMenuToggle }: AdminTopBarProp
       <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "px-8 py-4"}`}>
         {/* Left */}
         <div className="flex items-center gap-3">
-          {isMobile && (
-            <button onClick={onMenuToggle} className="w-10 h-10 rounded-xl bg-[hsl(220,20%,97%)] flex items-center justify-center">
-              <Menu className="w-5 h-5 text-[hsl(220,15%,45%)]" />
-            </button>
-          )}
+          <button onClick={onMenuToggle} className="w-10 h-10 rounded-xl bg-[hsl(220,20%,97%)] flex items-center justify-center hover:bg-[hsl(220,20%,94%)] transition-colors">
+            <Menu className="w-5 h-5 text-[hsl(220,15%,45%)]" />
+          </button>
           <div className={`relative ${isMobile ? "w-[180px]" : "w-[340px]"}`}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(220,15%,60%)]" />
             <input
