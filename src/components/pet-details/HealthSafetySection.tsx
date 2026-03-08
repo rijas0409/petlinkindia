@@ -64,6 +64,9 @@ const HealthSafetySection = ({ petId, vaccinated }: HealthSafetySectionProps) =>
     ? new Date(latestVaccination.next_due_date) < new Date()
     : false;
 
+  // Find the latest vaccination record that has a certificate uploaded
+  const latestCertRecord = vaccinations.find(v => v.certificate_url && v.certificate_url.trim().length > 0);
+
   return (
     <>
       <div className="px-5 py-4">
