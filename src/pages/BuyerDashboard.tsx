@@ -203,6 +203,8 @@ const BuyerDashboard = () => {
           )}
         </div>
       </section>
+      {/* Dynamic Banners - Bottom */}
+      <InlineBanners placement="bottom" />
 
       <BottomNavigation variant="buyer" />
     </div>
