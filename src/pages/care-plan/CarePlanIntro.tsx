@@ -12,6 +12,7 @@ const CarePlanIntro = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const petData = location.state?.petData;
+  const flowType = location.state?.flowType || "quick";
 
   if (!petData) {
     navigate(-1);
@@ -62,7 +63,7 @@ const CarePlanIntro = () => {
       {/* Bottom CTA */}
       <div className="px-6 pb-8 pt-2">
         <button
-          onClick={() => navigate("/care-plan/form", { state: { petData } })}
+          onClick={() => navigate("/care-plan/form", { state: { petData, flowType } })}
           className="w-full py-4 rounded-2xl font-bold text-[16px] text-white"
           style={{ background: "linear-gradient(135deg, #EC4899, #8B5CF6)" }}
         >

@@ -204,9 +204,8 @@ const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown", petId,
       {/* Bottom CTA */}
       <div className="px-6 pb-6 pt-3">
         <button
-          onClick={() => navigate("/care-plan/intro", { state: { petData: { id: petId, breed, category, ageMonths, gender, image: petImage } } })}
-          className="w-full py-3.5 rounded-2xl font-bold text-[15px] text-white flex items-center justify-center gap-2 transition-colors"
-          style={{ background: "linear-gradient(135deg, #FF4D6D, #8B5CF6)" }}
+          onClick={() => navigate("/care-plan/intro", { state: { petData: { id: petId, breed, category, ageMonths, gender, image: petImage }, flowType: activeTab } })}
+          className="w-full py-3.5 rounded-2xl bg-[#EDE9FE] text-[#7C3AED] font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#DDD6FE] transition-colors"
         >
           Get Personalised Care Plan
           <ArrowRight className="w-4 h-4" />
