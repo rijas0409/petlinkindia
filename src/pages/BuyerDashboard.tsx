@@ -8,6 +8,7 @@ import CategoryFilter from "@/components/CategoryFilter";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { useWishlist } from "@/hooks/useWishlist";
+import { InlineBanners } from "@/components/DynamicBannerRenderer";
 
 const BuyerDashboard = () => {
   const navigate = useNavigate();
@@ -121,6 +122,9 @@ const BuyerDashboard = () => {
         </div>
       </header>
 
+      {/* Dynamic Banners - Top */}
+      <InlineBanners placement="top" />
+
       {/* Hero Section */}
       <section className="bg-gradient-soft py-12">
         <div className="container mx-auto px-4">
@@ -199,6 +203,8 @@ const BuyerDashboard = () => {
           )}
         </div>
       </section>
+      {/* Dynamic Banners - Bottom */}
+      <InlineBanners placement="bottom" />
 
       <BottomNavigation variant="buyer" />
     </div>
