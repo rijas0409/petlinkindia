@@ -58,6 +58,9 @@ import AuthVet from "./pages/AuthVet";
 import VetOnboarding from "./pages/VetOnboarding";
 import VetPendingApproval from "./pages/VetPendingApproval";
 import VetDashboard from "./pages/VetDashboard";
+import CarePlanIntro from "./pages/care-plan/CarePlanIntro";
+import CarePlanForm from "./pages/care-plan/CarePlanForm";
+import CarePlanReport from "./pages/care-plan/CarePlanReport";
 import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
