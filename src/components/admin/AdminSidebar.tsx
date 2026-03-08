@@ -17,6 +17,7 @@ const navItems = [
   { id: "transport", label: "Transport", icon: Truck },
   { id: "banners", label: "Banners", icon: Image },
   { id: "advertisements", label: "Advertisements", icon: Megaphone },
+  { id: "wallets", label: "Wallets", icon: Wallet },
   { id: "financials", label: "Financials", icon: DollarSign },
 ];
 
