@@ -988,14 +988,14 @@ const ProductProfile = () => {
           {productQty === 0 ? (
             <button onClick={handleAddToCart}
               className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] text-[#A855F7] font-bold text-[14px] flex items-center justify-center"
-              style={{ transition: "all 0.2s ease" }}>
+              style={{ transition: `all ${STEPPER_MORPH_MS}ms ease` }}>
               Add to Cart
             </button>
           ) : (
             <div className="flex-1 h-[48px] rounded-2xl flex items-center justify-between overflow-hidden"
               style={{
                 background: "linear-gradient(90deg, #A855F7, #7C3AED)",
-                animation: "morphButton 0.2s ease-out",
+                animation: `morphButton ${STEPPER_MORPH_MS}ms ease-out`,
                 transform: "scale(1)",
               }}>
               <button onClick={handleRemoveFromCart}
@@ -1011,7 +1011,7 @@ const ProductProfile = () => {
           )}
           <button onClick={handleBuyNow}
             className="flex-1 h-[48px] rounded-2xl text-white font-bold text-[14px] flex items-center justify-center"
-            style={{ background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)" }}>
+            style={{ background: BUY_NOW_GRADIENT }}>
             Buy Now
           </button>
         </div>
