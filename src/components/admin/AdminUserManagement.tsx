@@ -271,15 +271,15 @@ const AdminUserManagement = ({ data, actions }: Props) => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm table-fixed">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b-2 border-[hsl(220,20%,90%)]">
-                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)] w-[30%]">User</th>
-                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)] w-[14%]">Role</th>
-                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)] w-[12%]">Status</th>
-                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)] w-[14%]">Joined</th>
-                <th className="pb-3 pt-1 text-center font-semibold text-[hsl(220,15%,55%)] w-[12%]">View</th>
-                <th className="pb-3 pt-1 text-center font-semibold text-[hsl(220,15%,55%)] w-[12%]">Action</th>
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"28%"}}>User</th>
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"13%"}}>Role</th>
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"12%"}}>Status</th>
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"14%"}}>Joined</th>
+                <th className="pb-3 pt-1 text-center font-semibold text-[hsl(220,15%,55%)]" style={{width:"13%"}}>View</th>
+                <th className="pb-3 pt-1 text-center font-semibold text-[hsl(220,15%,55%)]" style={{width:"13%"}}>Action</th>
               </tr>
             </thead>
             <tbody>
