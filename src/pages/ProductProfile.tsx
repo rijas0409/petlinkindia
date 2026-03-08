@@ -233,32 +233,26 @@ const ProductProfile = () => {
     await toggleProductWishlist({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "", petType: product.pet_type });
   };
 
-  // Fly-to-cart animation — targets the mini cart position (center-bottom above CTA)
+  // Fly-to-cart animation — product drops from just above the mini cart (like grocery apps)
   const triggerFlyToCart = useCallback(() => {
     const imgEl = productImageRef.current;
     if (!imgEl) return;
 
-    const imgRect = imgEl.getBoundingClientRect();
-
-    // Always target the mini-cart landing zone: center of screen, 29px + 54px + 56px from bottom
-    // This is where the mini cart / floating bar lives
-    const cartBarBottom = 56 + 54 + 29; // bottom-nav + CTA + offset
+    // Target: mini cart / floating bar position
+    const cartBarBottom = 56 + 54 + 29;
     let targetX = window.innerWidth / 2;
-    let targetY = window.innerHeight - cartBarBottom - 32; // center of 64px mini cart
+    let targetY = window.innerHeight - cartBarBottom - 32;
 
-    // If floating bar is visible, target the cart icon inside it
     if (cartTargetRef.current) {
       const targetRect = cartTargetRef.current.getBoundingClientRect();
       targetX = targetRect.left + targetRect.width / 2;
       targetY = targetRect.top + targetRect.height / 2;
     }
 
-    // Clone: small thumbnail matching mini cart scale (~44px)
+    // Start position: just ~80px above the cart target, centered
     const CLONE_SIZE = 44;
-    const startCX = imgRect.left + imgRect.width / 2;
-    const startCY = imgRect.top + imgRect.height * 0.4; // slightly above center
-    const startX = startCX - CLONE_SIZE / 2;
-    const startY = startCY - CLONE_SIZE / 2;
+    const startX = targetX - CLONE_SIZE / 2;
+    const startY = targetY - 90;
 
     const clone = document.createElement("img");
     clone.src = imgEl.src;
@@ -267,33 +261,24 @@ const ProductProfile = () => {
       top:${startY}px; left:${startX}px;
       width:${CLONE_SIZE}px; height:${CLONE_SIZE}px;
       object-fit:cover; pointer-events:none;
-      border-radius:12px;
-      box-shadow:0 4px 16px rgba(0,0,0,0.18);
+      border-radius:10px;
+      box-shadow:0 4px 14px rgba(0,0,0,0.18);
       will-change:transform,opacity;
     `;
     document.body.appendChild(clone);
 
-    const dx = targetX - startCX;
-    const dy = targetY - startCY;
-
-    // Bezier arc: rise up first, then curve down into cart
-    const cpX1 = dx * 0.25;
-    const cpY1 = -80; // lift upward
-    const cpX2 = dx * 0.65;
-    const cpY2 = dy * 0.5;
+    const dy = targetY - startY;
 
     clone.animate(
       [
-        { transform: "translate(0,0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
-        { transform: `translate(${cpX1}px,${cpY1}px) scale(0.85) rotate(8deg)`, opacity: 1, offset: 0.3 },
-        { transform: `translate(${cpX2}px,${cpY2}px) scale(0.6) rotate(5deg)`, opacity: 1, offset: 0.6 },
-        { transform: `translate(${dx}px,${dy}px) scale(0.35) rotate(0deg)`, opacity: 0.9, offset: 0.88 },
-        { transform: `translate(${dx}px,${dy}px) scale(0.2) rotate(0deg)`, opacity: 0, offset: 1 },
+        { transform: "translateY(0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
+        { transform: `translateY(${dy * 0.5}px) scale(0.7) rotate(4deg)`, opacity: 1, offset: 0.5 },
+        { transform: `translateY(${dy}px) scale(0.35) rotate(0deg)`, opacity: 0.85, offset: 0.85 },
+        { transform: `translateY(${dy}px) scale(0.2) rotate(0deg)`, opacity: 0, offset: 1 },
       ],
-      { duration: 820, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
+      { duration: 550, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
     ).onfinish = () => {
       clone.remove();
-      // Bounce the cart target
       if (cartTargetRef.current) {
         cartTargetRef.current.animate(
           [
