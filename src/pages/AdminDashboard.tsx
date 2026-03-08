@@ -22,6 +22,7 @@ export interface AdminData {
   pendingSellers: any[];
   pendingPets: any[];
   reVerificationPets: any[];
+  allPets: any[];
   pendingProducts: any[];
   pendingVets: any[];
   requests: any[];
