@@ -14,6 +14,7 @@ import AdminFinancials from "@/components/admin/AdminFinancials";
 import AdminSettings from "@/components/admin/AdminSettings";
 import AdminListings from "@/components/admin/AdminListings";
 import AdminTransport from "@/components/admin/AdminTransport";
+import AdminProfileSettings from "@/components/admin/AdminProfileSettings";
 
 export interface AdminData {
   pendingSellers: any[];
