@@ -131,6 +131,7 @@ const App = () => (
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/product/:id" element={<ProductProfile />} />
           <Route path="/brand/:brandName" element={<BrandProfile />} />
+          <Route path="/seller/:id" element={<SellerProfile />} />
           {/* Vet Dashboard */}
           <Route path="/auth-vet" element={<AuthVet />} />
           <Route path="/vet-onboarding" element={<VetOnboarding />} />
