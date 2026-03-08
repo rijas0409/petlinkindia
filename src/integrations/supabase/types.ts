@@ -57,44 +57,65 @@ export type Database = {
       }
       banners: {
         Row: {
+          banner_style: string
+          border_radius: string | null
           created_at: string
           cta_link: string | null
           cta_text: string | null
+          custom_height: string | null
+          custom_width: string | null
           gradient: string | null
           id: string
           image_url: string | null
           is_active: boolean
+          link_url: string | null
           location: string
+          placement: string
           position: number
           subtitle: string | null
+          target_route: string
           title: string
           updated_at: string
         }
         Insert: {
+          banner_style?: string
+          border_radius?: string | null
           created_at?: string
           cta_link?: string | null
           cta_text?: string | null
+          custom_height?: string | null
+          custom_width?: string | null
           gradient?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          link_url?: string | null
           location?: string
+          placement?: string
           position?: number
           subtitle?: string | null
+          target_route?: string
           title?: string
           updated_at?: string
         }
         Update: {
+          banner_style?: string
+          border_radius?: string | null
           created_at?: string
           cta_link?: string | null
           cta_text?: string | null
+          custom_height?: string | null
+          custom_width?: string | null
           gradient?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          link_url?: string | null
           location?: string
+          placement?: string
           position?: number
           subtitle?: string | null
+          target_route?: string
           title?: string
           updated_at?: string
         }
