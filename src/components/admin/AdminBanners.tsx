@@ -173,6 +173,7 @@ const AdminBanners = () => {
       banner_style: b.banner_style || "full_width", custom_width: b.custom_width || "100%",
       custom_height: b.custom_height || "160px", placement: b.placement || "top",
       border_radius: b.border_radius || "16px", position: b.position, is_active: b.is_active,
+      cta_alignment: (b as any).cta_alignment || "left",
     });
     setEditingId(b.id);
     setShowForm(true);
