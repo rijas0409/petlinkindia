@@ -82,8 +82,11 @@ const ProductProfile = () => {
 
   useEffect(() => { fetchProduct(); }, [id]);
 
-  // Preload all images
+  // Preload images for smoother first paint
   useEffect(() => {
+    const mini = new Image();
+    mini.src = miniCartImage;
+
     if (product?.images) {
       product.images.forEach(src => {
         const img = new Image();
@@ -880,7 +883,7 @@ const ProductProfile = () => {
       {cartPhase !== 'hidden' && (
         <div
           className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none"
-          style={{ bottom: "calc(56px + 54px + 32px)" }}
+          style={{ bottom: "calc(56px + 54px + 29px)" }}
         >
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
@@ -900,6 +903,8 @@ const ProductProfile = () => {
                 src={miniCartImage}
                 alt="Mini cart"
                 className="w-full h-full object-contain select-none pointer-events-none"
+                loading="eager"
+                fetchPriority="high"
                 draggable={false}
               />
             </div>
@@ -975,6 +980,8 @@ const ProductProfile = () => {
                 src={miniCartImage}
                 alt="Mini cart"
                 className="w-full h-full object-contain select-none pointer-events-none"
+                loading="eager"
+                fetchPriority="high"
                 draggable={false}
               />
             </div>
