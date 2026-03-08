@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Settings, Wallet, Sparkles, ArrowRight } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
 
 const CarePlanFormStep2 = () => {
   const navigate = useNavigate();
@@ -15,15 +14,13 @@ const CarePlanFormStep2 = () => {
   const [budgetRange, setBudgetRange] = useState([250]);
   const [emergencyFund, setEmergencyFund] = useState(false);
 
-  if (!petData || !step1Data) {
-    navigate(-1);
-    return null;
-  }
+  if (!petData || !step1Data) { navigate(-1); return null; }
 
   const handleGenerate = () => {
     navigate("/care-plan/report", {
       state: {
         petData,
+        flowType: "deep",
         formData: {
           ...step1Data,
           firstTimePetParent,
@@ -39,7 +36,6 @@ const CarePlanFormStep2 = () => {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col">
-      {/* Header */}
       <div className="flex items-center px-4 pt-4 pb-2">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2">
           <ArrowLeft className="w-5 h-5 text-[#151B32]" />
@@ -47,7 +43,6 @@ const CarePlanFormStep2 = () => {
         <h1 className="flex-1 text-center font-bold text-[17px] text-[#151B32] pr-7">Personalisation Form</h1>
       </div>
 
-      {/* Progress */}
       <div className="px-6 pt-2 pb-1 flex items-center justify-between">
         <span className="text-[15px] font-extrabold text-[#151B32]">Deep Dive</span>
         <span className="text-[13px] font-bold text-[#EC4899]">Step 2 of 2</span>
@@ -60,7 +55,6 @@ const CarePlanFormStep2 = () => {
         <div className="h-full rounded-full bg-[#EC4899] w-full transition-all" />
       </div>
 
-      {/* Form */}
       <div className="flex-1 px-6 pt-5 pb-6 space-y-5 overflow-y-auto">
         {/* Experience */}
         <div className="bg-white rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
@@ -70,7 +64,6 @@ const CarePlanFormStep2 = () => {
             </div>
             <span className="font-bold text-[17px] text-[#151B32]">Experience</span>
           </div>
-
           <div className="bg-[#F9FAFB] rounded-2xl p-4 flex items-center justify-between">
             <div>
               <p className="font-bold text-[14px] text-[#151B32]">First time pet parent?</p>
@@ -88,7 +81,6 @@ const CarePlanFormStep2 = () => {
             </div>
             <span className="font-bold text-[17px] text-[#151B32]">Budget & Readiness</span>
           </div>
-
           <div className="bg-[#F9FAFB] rounded-2xl p-4 mb-4">
             <div className="flex items-center justify-between mb-4">
               <p className="font-bold text-[14px] text-[#151B32]">Monthly Budget Range</p>
@@ -107,7 +99,6 @@ const CarePlanFormStep2 = () => {
               <span>₹80,000+</span>
             </div>
           </div>
-
           <div className="bg-[#F9FAFB] rounded-2xl p-4 flex items-center justify-between">
             <div>
               <p className="font-bold text-[14px] text-[#151B32]">Emergency Fund</p>
@@ -131,13 +122,10 @@ const CarePlanFormStep2 = () => {
         </div>
       </div>
 
-      {/* Bottom CTA */}
       <div className="px-6 pb-8 pt-2">
-        <button
-          onClick={handleGenerate}
+        <button onClick={handleGenerate}
           className="w-full py-4 rounded-2xl font-bold text-[16px] text-white flex items-center justify-center gap-2"
-          style={{ background: "linear-gradient(135deg, #EC4899, #8B5CF6)" }}
-        >
+          style={{ background: "linear-gradient(135deg, #EC4899, #8B5CF6)" }}>
           Generate My Care Plan
           <ArrowRight className="w-4 h-4" />
         </button>
