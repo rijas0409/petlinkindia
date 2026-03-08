@@ -126,7 +126,7 @@ const AuthAdmin = () => {
           <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Admin Portal
           </h1>
-          <p className="text-muted-foreground">PetLink Administration Access</p>
+          <p className="text-muted-foreground">Sruvo Administration Access</p>
         </div>
 
         <Card className="border-0 shadow-card">
@@ -177,7 +177,7 @@ const AuthAdmin = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@petlink.com"
+                  placeholder="admin@sruvo.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required

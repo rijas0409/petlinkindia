@@ -74,7 +74,7 @@ const AdminSidebar = ({ activeSection, setActiveSection, isMobile, collapsed }: 
           </div>
           {!isCollapsed && (
             <div>
-              <h1 className="font-bold text-[15px] text-[hsl(220,20%,15%)]">PetLink</h1>
+              <h1 className="font-bold text-[15px] text-[hsl(220,20%,15%)]">Sruvo</h1>
               <p className="text-[11px] text-[hsl(220,15%,55%)] font-medium uppercase tracking-wider">Super Admin</p>
             </div>
           )}

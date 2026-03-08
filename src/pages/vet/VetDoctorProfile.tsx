@@ -227,7 +227,7 @@ const VetDoctorProfile = () => {
                   if (navigator.share) {
                     navigator.share({
                       title: doctor.name,
-                      text: `Check out ${doctor.name} on PetLink`,
+                      text: `Check out ${doctor.name} on Sruvo`,
                       url: window.location.href,
                     }).catch(() => {});
                   } else {

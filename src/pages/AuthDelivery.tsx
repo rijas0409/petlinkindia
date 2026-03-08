@@ -95,7 +95,7 @@ const AuthDelivery = () => {
 
         if (error) throw error;
 
-        toast.success("Account created! Welcome to PetLink Delivery");
+        toast.success("Account created! Welcome to Sruvo Delivery");
         navigate("/delivery");
       }
     } catch (error: any) {
@@ -117,7 +117,7 @@ const AuthDelivery = () => {
             <Truck className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-4xl font-bold text-emerald-600">
-            PetLink Delivery
+            Sruvo Delivery
           </h1>
           <p className="text-muted-foreground">Delivery Partner Portal</p>
         </div>

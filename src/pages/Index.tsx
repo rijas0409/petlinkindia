@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import sruvoLogo from "@/assets/sruvo-logo.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,9 +45,7 @@ const Index = () => {
       <section className="relative overflow-hidden">
         <div className="container mx-auto px-4 py-20 md:py-32">
           <div className="text-center space-y-8 animate-fade-in">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-primary rounded-3xl shadow-float mb-6 animate-bounce-subtle">
-              <Heart className="w-10 h-10 text-white" />
-            </div>
+            <img src={sruvoLogo} alt="Sruvo" className="w-20 h-20 object-contain mb-6 animate-bounce-subtle" />
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
               Find Your Perfect
