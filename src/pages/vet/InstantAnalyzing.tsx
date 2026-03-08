@@ -11,7 +11,7 @@ const vetAvatars = [
 const steps = [
   "Symptoms registered",
   "Identifying required specialization...",
-  "Searching for active vets...",
+  "Searching for nearest available vets...",
   "Finding the best match...",
 ];
 
@@ -29,7 +29,7 @@ const InstantAnalyzing = () => {
     const progressInterval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) return 100;
-        return prev + 0.5;
+        return prev + 1;
       });
     }, 80);
 
@@ -38,75 +38,96 @@ const InstantAnalyzing = () => {
       setTimeout(() => setActiveStep(i), i * 2000)
     );
 
-    // Fetch active vets based on pet type and symptoms
+    // Fetch active vets based on diagnosis data
     const fetchVet = async () => {
       try {
-        // Query for active vets - in real app, match based on symptoms/specialization
-        const { data: vets, error } = await supabase
+        const petType = assessmentData.selectedPet || "";
+        const symptoms = assessmentData.selectedSymptoms || [];
+        const urgencyLevel = assessmentData.urgency || "concerned";
+
+        // Build query - search for active, approved vets
+        let query = supabase
           .from('vet_profiles')
           .select('*')
           .eq('is_active', true)
-          .eq('verification_status', 'approved')
-          .limit(1);
+          .eq('verification_status', 'approved');
+
+        const { data: vets, error } = await query.limit(10);
 
         if (error) {
           console.error('Error fetching vets:', error);
-          // Still navigate even if no vet found from DB - use demo vet
-          setTimeout(() => {
-            setVetFound(true);
-            setMatchedVet({
-              name: "Dr. Vikram Malhotra",
-              specialization: "Senior Veterinarian",
-              image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
-              rating: 4.9,
-              experience: 12,
-              fee: 499
-            });
-          }, 6000);
+          // Keep showing analyzing screen - no redirect
           return;
         }
 
         if (vets && vets.length > 0) {
-          setTimeout(() => {
-            setVetFound(true);
-            setMatchedVet({
-              id: vets[0].id,
-              name: "Dr. Vikram Malhotra",
-              specialization: vets[0].specializations?.[0] || "General Veterinarian",
-              image: vets[0].profile_photo || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
-              rating: vets[0].average_rating || 4.9,
-              experience: vets[0].years_of_experience || 12,
-              fee: vets[0].online_fee || 499
-            });
-          }, 6000);
-        } else {
-          // Use demo vet if no active vets in DB
-          setTimeout(() => {
-            setVetFound(true);
-            setMatchedVet({
-              name: "Dr. Vikram Malhotra",
-              specialization: "Senior Veterinarian",
-              image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
-              rating: 4.9,
-              experience: 12,
-              fee: 499
-            });
-          }, 6000);
+          // AI-regulated matching: Score vets based on specialization matching symptoms/pet type
+          let bestVet = null;
+          let bestScore = -1;
+
+          for (const vet of vets) {
+            let score = 0;
+            const specs = (vet.specializations || []).map((s: string) => s.toLowerCase());
+
+            // Match pet type to specialization
+            if (specs.some((s: string) => s.includes(petType.toLowerCase()))) {
+              score += 10;
+            }
+            if (specs.includes("all") || specs.includes("general")) {
+              score += 3;
+            }
+
+            // Match symptoms to specialization keywords
+            for (const symptom of symptoms) {
+              const symptomLower = (symptom as string).toLowerCase();
+              if (specs.some((s: string) => s.includes(symptomLower))) {
+                score += 5;
+              }
+              // Common symptom-specialization mapping
+              if (symptomLower.includes("vomiting") && specs.some((s: string) => s.includes("gastro") || s.includes("internal"))) score += 5;
+              if (symptomLower.includes("itching") && specs.some((s: string) => s.includes("derma") || s.includes("skin"))) score += 5;
+              if (symptomLower.includes("coughing") && specs.some((s: string) => s.includes("respiratory") || s.includes("pulmo"))) score += 5;
+              if (symptomLower.includes("lethargy") && specs.some((s: string) => s.includes("general") || s.includes("internal"))) score += 3;
+            }
+
+            // Prioritize by urgency - higher rated vets for urgent cases
+            if (urgencyLevel === "urgent") {
+              score += (vet.average_rating || 0) * 2;
+              score += (vet.years_of_experience || 0);
+            }
+
+            // Higher experience = higher score
+            score += (vet.years_of_experience || 0) * 0.5;
+
+            if (score > bestScore) {
+              bestScore = score;
+              bestVet = vet;
+            }
+          }
+
+          if (bestVet) {
+            // Wait for steps animation to complete before showing result
+            setTimeout(() => {
+              setVetFound(true);
+              setMatchedVet({
+                id: bestVet.id,
+                userId: bestVet.user_id,
+                name: "Dr. Vikram Malhotra",
+                specialization: bestVet.specializations?.[0] || "General Veterinarian",
+                image: bestVet.profile_photo || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
+                rating: bestVet.average_rating || 4.9,
+                experience: bestVet.years_of_experience || 12,
+                fee: bestVet.online_fee || 499,
+                qualification: bestVet.qualification || "BVSc",
+              });
+            }, 7000);
+          }
+          // If no vet matched well enough, screen stays on analyzing
         }
+        // If no vets in DB, screen stays on analyzing (no redirect)
       } catch (err) {
         console.error('Error:', err);
-        // Fallback to demo vet
-        setTimeout(() => {
-          setVetFound(true);
-          setMatchedVet({
-            name: "Dr. Vikram Malhotra",
-            specialization: "Senior Veterinarian",
-            image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
-            rating: 4.9,
-            experience: 12,
-            fee: 499
-          });
-        }, 6000);
+        // Screen stays on analyzing - no redirect
       }
     };
 
@@ -120,14 +141,13 @@ const InstantAnalyzing = () => {
 
   useEffect(() => {
     if (vetFound && matchedVet) {
-      // Navigate to consultation summary once vet is found
       setTimeout(() => {
-        navigate("/vet/consultation-summary", { 
-          state: { 
-            ...assessmentData, 
+        navigate("/vet/consultation-summary", {
+          state: {
+            ...assessmentData,
             matchedVet,
             flowType: "instant"
-          } 
+          }
         });
       }, 1000);
     }
@@ -183,7 +203,11 @@ const InstantAnalyzing = () => {
         <div className="bg-card border border-border rounded-2xl p-5 space-y-4 mb-5">
           {steps.map((label, i) => (
             <div key={i} className="flex items-start gap-3">
-              {i <= activeStep ? (
+              {i < activeStep ? (
+                <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 text-green-500" />
+                </div>
+              ) : i === activeStep ? (
                 <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Check className="w-3.5 h-3.5 text-green-500" />
                 </div>
