@@ -63,16 +63,17 @@ const PaymentFailed = () => {
         </div>
       </div>
 
-      {/* Bottom CTAs */}
-      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border p-4 space-y-3">
+      {/* Fixed Bottom CTAs */}
+      <div className="flex-shrink-0 px-4 pb-4 pt-3 bg-gradient-to-t from-background via-background to-transparent space-y-3">
         <button 
-          onClick={() => navigate("/vet/payment-summary")}
-          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-4 rounded-2xl font-bold text-base shadow-lg hover:shadow-xl transition-all"
+          onClick={() => navigate("/vet/consultation-summary")}
+          className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-lg hover:shadow-xl transition-all"
+          style={{ background: 'linear-gradient(90deg, #FF4D6D, #8B5CF6)' }}
         >
           Retry Payment
         </button>
         <button 
-          onClick={() => navigate("/vet/payment-summary")}
+          onClick={() => navigate("/vet/consultation-summary")}
           className="w-full text-pink-500 font-semibold py-3"
         >
           Try Another Method

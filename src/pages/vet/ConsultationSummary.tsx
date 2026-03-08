@@ -51,7 +51,7 @@ const ConsultationSummary = () => {
         </div>
       </header>
 
-      <div className="px-4 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
         {/* Doctor Card - Moved to top */}
         <div className="bg-card rounded-3xl p-6 border border-border shadow-lg">
           {/* Doctor Avatar */}
