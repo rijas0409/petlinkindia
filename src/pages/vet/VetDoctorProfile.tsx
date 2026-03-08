@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Heart, Share2, Star, BadgeCheck, ChevronRight,
+  ArrowLeft, Heart, Share2, Star, BadgeCheck, ChevronRight, MapPin,
   Stethoscope, Syringe, Scissors, Shield, Clock,
   Dog, Cat, Bird, Rabbit
 } from "lucide-react";
