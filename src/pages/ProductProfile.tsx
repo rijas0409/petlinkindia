@@ -68,6 +68,10 @@ const ProductProfile = () => {
   const prevCartCount = useRef(0);
   const cartAnimationTimersRef = useRef<number[]>([]);
 
+  // Fly-to-cart refs
+  const productImageRef = useRef<HTMLImageElement>(null);
+  const cartTargetRef = useRef<HTMLDivElement>(null);
+
   const clearCartAnimationTimers = useCallback(() => {
     cartAnimationTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
     cartAnimationTimersRef.current = [];
@@ -229,8 +233,75 @@ const ProductProfile = () => {
     await toggleProductWishlist({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "", petType: product.pet_type });
   };
 
+  // Fly-to-cart animation
+  const triggerFlyToCart = useCallback(() => {
+    const imgEl = productImageRef.current;
+    if (!imgEl) return;
+
+    const imgRect = imgEl.getBoundingClientRect();
+
+    // Target: cart target ref if visible, else bottom-right area
+    let targetX = window.innerWidth - 60;
+    let targetY = window.innerHeight - 160;
+    if (cartTargetRef.current) {
+      const targetRect = cartTargetRef.current.getBoundingClientRect();
+      targetX = targetRect.left + targetRect.width / 2;
+      targetY = targetRect.top + targetRect.height / 2;
+    }
+
+    // Create flying clone
+    const clone = document.createElement("img");
+    clone.src = imgEl.src;
+    clone.style.cssText = `
+      position: fixed;
+      z-index: 9999;
+      top: ${imgRect.top}px;
+      left: ${imgRect.left}px;
+      width: ${imgRect.width}px;
+      height: ${imgRect.height}px;
+      object-fit: contain;
+      pointer-events: none;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      will-change: transform, opacity;
+    `;
+    document.body.appendChild(clone);
+
+    const dx = targetX - (imgRect.left + imgRect.width / 2);
+    const dy = targetY - (imgRect.top + imgRect.height / 2);
+
+    // Bezier curve control point (arc upward)
+    const cpX = dx * 0.5;
+    const cpY = dy - Math.abs(dy) * 0.4 - 80;
+
+    clone.animate(
+      [
+        { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
+        { transform: `translate(${cpX}px, ${cpY}px) scale(0.7) rotate(8deg)`, opacity: 1, offset: 0.5 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.35) rotate(5deg)`, opacity: 1, offset: 0.9 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.25) rotate(0deg)`, opacity: 0, offset: 1 },
+      ],
+      { duration: 700, easing: "ease-in-out", fill: "forwards" }
+    ).onfinish = () => {
+      clone.remove();
+      // Bounce the cart target
+      if (cartTargetRef.current) {
+        cartTargetRef.current.animate(
+          [
+            { transform: "scale(1)" },
+            { transform: "scale(1.18)" },
+            { transform: "scale(0.95)" },
+            { transform: "scale(1)" },
+          ],
+          { duration: 300, easing: "ease-out" }
+        );
+      }
+    };
+  }, []);
+
   const handleAddToCart = () => {
     if (!product) return;
+    triggerFlyToCart();
     addToCart({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "" });
   };
 
@@ -464,6 +535,7 @@ const ProductProfile = () => {
             ) : (
               <img
                 key={currentImageIndex}
+                ref={productImageRef}
                 src={currentMedia?.url}
                 alt={product.name}
                 className="max-w-full max-h-full object-contain"
@@ -888,6 +960,7 @@ const ProductProfile = () => {
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
             <div
+              ref={cartPhase === 'mini' ? cartTargetRef : undefined}
               className="pointer-events-auto"
               style={{
                 width: 64,
@@ -958,7 +1031,7 @@ const ProductProfile = () => {
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
+                <div ref={cartTargetRef} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
                   {cartItems[cartItems.length - 1]?.image ? (
                     <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-xl" />
                   ) : (
