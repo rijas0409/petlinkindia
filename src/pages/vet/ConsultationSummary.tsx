@@ -34,7 +34,7 @@ const ConsultationSummary = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg">
         <div className="flex items-center justify-between px-4 py-4">
