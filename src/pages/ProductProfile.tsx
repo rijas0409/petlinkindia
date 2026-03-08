@@ -1016,24 +1016,24 @@ const ProductProfile = () => {
                     <>Add ₹{Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal)} more to unlock <span className="uppercase">FREE DELIVERY</span></>
                   )}
                 </p>
-                <div className="w-full h-[6px] bg-[#EDEDED] rounded-full mt-1.5 overflow-hidden relative">
+                <div className="w-full h-[7px] rounded-full mt-1.5 overflow-hidden relative" style={{ background: "rgba(255,255,255,0.3)" }}>
                   <div
-                    className="h-full rounded-full relative"
+                    className="h-full rounded-full relative overflow-hidden"
                     style={{
                       width: `${deliveryProgress}%`,
-                      backgroundColor: "#1E63E9",
-                      transition: "width 450ms ease-out",
+                      background: "linear-gradient(90deg, #FF4D8D, #D65BFF, #8A5BFF)",
+                      transition: "width 700ms ease-out",
+                      boxShadow: deliveryProgress > 0 ? "0 0 8px 2px rgba(214,91,255,0.5), 0 0 16px 4px rgba(255,77,141,0.25)" : "none",
                     }}
                   >
-                    {deliveryProgress > 0 && deliveryProgress < 100 && (
+                    {/* Shimmer overlay */}
+                    {deliveryProgress > 0 && (
                       <span
-                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full"
+                        className="absolute inset-0"
                         style={{
-                          width: 10,
-                          height: 10,
-                          background: "radial-gradient(circle, rgba(255,255,255,0.95) 30%, rgba(30,99,233,0.5) 70%, transparent 100%)",
-                          boxShadow: "0 0 6px 2px rgba(30,99,233,0.45), 0 0 12px 4px rgba(255,255,255,0.3)",
-                          animation: "sparkle-pulse 1s ease-in-out infinite",
+                          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%)",
+                          backgroundSize: "200% 100%",
+                          animation: "cart-shimmer 2s ease-in-out infinite",
                         }}
                       />
                     )}

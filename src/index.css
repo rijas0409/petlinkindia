@@ -78,3 +78,8 @@ All colors MUST be HSL.
     transform: translate(50%, -50%) scale(1.2);
   }
 }
+
+@keyframes cart-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
