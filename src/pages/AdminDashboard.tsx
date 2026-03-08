@@ -46,7 +46,7 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [data, setData] = useState<AdminData>({
-    pendingSellers: [], pendingPets: [], reVerificationPets: [],
+    pendingSellers: [], pendingPets: [], reVerificationPets: [], allPets: [],
     pendingProducts: [], pendingVets: [], requests: [], partners: [],
     allUsers: [], allVets: [], allProducts: [], allOrders: [],
     sellerEarnings: [], vetEarnings: [],
