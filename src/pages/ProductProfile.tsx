@@ -34,6 +34,7 @@ const STEPPER_MORPH_MS = 200;
 const MINI_APPEAR_DELAY_MS = 200;
 const MINI_POP_MS = 250;
 const MINI_BOUNCE_MS = 140;
+const MINI_VISIBLE_EXTRA_MS = 510; // extra hold so mini cart is visible ~900ms total
 const CART_EXPAND_MS = 300;
 const CART_COLLAPSE_MS = 500;
 
