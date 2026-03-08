@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Stethoscope, Package, DollarSign, Settings, Radio, PawPrint, Truck } from "lucide-react";
+import { LayoutDashboard, Users, Stethoscope, Package, DollarSign, Settings, Radio, PawPrint, Truck, Image } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdminSidebarProps {
