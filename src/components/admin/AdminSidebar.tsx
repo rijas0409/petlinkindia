@@ -3,6 +3,7 @@ import { LayoutDashboard, Users, Stethoscope, Package, DollarSign, Settings, Rad
 interface AdminSidebarProps {
   activeSection: string;
   setActiveSection: (s: string) => void;
+  isMobile?: boolean;
 }
 
 const navItems = [
@@ -19,9 +20,9 @@ const systemItems = [
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
-const AdminSidebar = ({ activeSection, setActiveSection }: AdminSidebarProps) => {
+const AdminSidebar = ({ activeSection, setActiveSection, isMobile }: AdminSidebarProps) => {
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[260px] bg-white border-r border-[hsl(220,20%,92%)] flex flex-col z-50">
+    <aside className={`${isMobile ? "relative w-full h-full" : "fixed left-0 top-0 bottom-0 w-[260px]"} bg-white border-r border-[hsl(220,20%,92%)] flex flex-col z-50`}>
       {/* Logo */}
       <div className="px-6 py-6 flex items-center gap-3">
         <div className="w-10 h-10 bg-[hsl(220,80%,50%)] rounded-xl flex items-center justify-center">
@@ -34,7 +35,7 @@ const AdminSidebar = ({ activeSection, setActiveSection }: AdminSidebarProps) =>
       </div>
 
       {/* Main Nav */}
-      <nav className="flex-1 px-4 mt-2">
+      <nav className="flex-1 px-4 mt-2 overflow-y-auto">
         <div className="space-y-1">
           {navItems.map((item) => {
             const isActive = activeSection === item.id;
