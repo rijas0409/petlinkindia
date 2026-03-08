@@ -122,6 +122,9 @@ const BuyerDashboard = () => {
         </div>
       </header>
 
+      {/* Dynamic Banners - Top */}
+      <InlineBanners placement="top" />
+
       {/* Hero Section */}
       <section className="bg-gradient-soft py-12">
         <div className="container mx-auto px-4">
