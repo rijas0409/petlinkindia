@@ -1,6 +1,7 @@
 import { AdminData } from "@/pages/AdminDashboard";
-import { useState } from "react";
-import { Search, CheckCircle2, XCircle, PawPrint, RefreshCw, Eye, X, MapPin, Calendar, Weight, Ruler, Dna, Heart, FileText, Camera, Syringe, ShieldCheck, List } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Search, CheckCircle2, XCircle, PawPrint, RefreshCw, Eye, X, MapPin, Calendar, Weight, Ruler, Dna, Heart, FileText, Camera, Syringe, ShieldCheck, List, FileImage, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
@@ -9,7 +10,42 @@ interface Props {
   actions: any;
 }
 
-const DocViewer = ({ label, url }: { label: string; url: string | null }) => {
+const DocPreviewPopup = ({ url, label, onClose }: { url: string; label: string; onClose: () => void }) => {
+  const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
+  const isPdf = url.match(/\.(pdf)(\?|$)/i);
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden m-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[hsl(220,20%,92%)]">
+          <h3 className="text-sm font-bold text-[hsl(220,20%,15%)] truncate">{label}</h3>
+          <div className="flex items-center gap-2">
+            <a href={url} target="_blank" rel="noopener noreferrer" download className="px-3 py-1.5 bg-[hsl(220,80%,50%)] text-white text-[11px] font-medium rounded-lg hover:bg-[hsl(220,80%,45%)] flex items-center gap-1">
+              <Download className="w-3 h-3" /> Download
+            </a>
+            <button onClick={onClose} className="w-7 h-7 rounded-lg bg-[hsl(220,20%,96%)] flex items-center justify-center hover:bg-[hsl(220,20%,90%)]">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        <div className="p-4 max-h-[80vh] overflow-auto bg-[hsl(220,20%,97%)] flex items-center justify-center">
+          {isImage ? (
+            <img src={url} alt={label} className="max-w-full max-h-[70vh] object-contain rounded-lg" />
+          ) : isPdf ? (
+            <iframe src={url} className="w-full h-[70vh] rounded-lg border-0" title={label} />
+          ) : (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 mx-auto text-[hsl(220,15%,70%)] mb-3" />
+              <p className="text-sm text-[hsl(220,15%,50%)]">Preview not available for this file type</p>
+              <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-[hsl(220,80%,50%)] hover:underline mt-2 inline-block">Open in new tab ↗</a>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ClickableDoc = ({ label, url, onPreview }: { label: string; url: string | null; onPreview: (url: string, label: string) => void }) => {
   if (!url) return (
     <div className="flex items-center gap-2 p-3 bg-[hsl(0,50%,97%)] rounded-xl border border-[hsl(0,40%,90%)]">
       <FileText className="w-4 h-4 text-[hsl(0,50%,60%)]" />
@@ -18,22 +54,23 @@ const DocViewer = ({ label, url }: { label: string; url: string | null }) => {
   );
   const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i);
   return (
-    <div className="rounded-xl border border-[hsl(220,20%,90%)] overflow-hidden">
+    <button onClick={() => onPreview(url, label)} className="w-full text-left rounded-xl border border-[hsl(220,20%,90%)] overflow-hidden hover:border-[hsl(220,60%,70%)] hover:shadow-md transition-all group">
       <div className="flex items-center justify-between px-3 py-2 bg-[hsl(220,20%,97%)]">
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[hsl(220,80%,50%)]" />
+          <FileImage className="w-4 h-4 text-[hsl(220,80%,50%)]" />
           <span className="text-sm font-medium text-[hsl(220,20%,25%)]">{label}</span>
         </div>
-        <a href={url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-[hsl(220,80%,50%)] hover:underline">Open Full</a>
+        <span className="text-[10px] font-medium text-[hsl(220,80%,50%)] opacity-0 group-hover:opacity-100 transition-opacity">Click to preview</span>
       </div>
       {isImage ? (
-        <img src={url} alt={label} className="w-full max-h-[200px] object-contain bg-[hsl(220,20%,98%)]" />
+        <img src={url} alt={label} className="w-full max-h-[120px] object-contain bg-[hsl(220,20%,98%)]" />
       ) : (
-        <div className="p-4 bg-[hsl(220,20%,98%)] text-center">
-          <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-[hsl(220,80%,50%)] hover:underline">View Document ↗</a>
+        <div className="p-3 bg-[hsl(220,20%,98%)] flex items-center gap-2">
+          <FileText className="w-5 h-5 text-[hsl(220,80%,50%)]" />
+          <span className="text-[12px] text-[hsl(220,80%,50%)]">Click to view document</span>
         </div>
       )}
-    </div>
+    </button>
   );
 };
 
@@ -57,6 +94,29 @@ const AdminListings = ({ data, actions }: Props) => {
   const [tab, setTab] = useState<"all" | "pending" | "reverify">("all");
   const [selectedPet, setSelectedPet] = useState<any>(null);
   const [search, setSearch] = useState("");
+  const [vaccinations, setVaccinations] = useState<any[]>([]);
+  const [petDocuments, setPetDocuments] = useState<any[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<{ url: string; label: string } | null>(null);
+
+  useEffect(() => {
+    if (!selectedPet) {
+      setVaccinations([]);
+      setPetDocuments([]);
+      return;
+    }
+    const fetchPetDetails = async () => {
+      setLoadingDocs(true);
+      const [vaccRes, docRes] = await Promise.all([
+        supabase.from("pet_vaccinations").select("*").eq("pet_id", selectedPet.id).order("date_administered", { ascending: false }),
+        supabase.from("pet_documents").select("*").eq("pet_id", selectedPet.id).order("uploaded_at", { ascending: false }),
+      ]);
+      setVaccinations(vaccRes.data || []);
+      setPetDocuments(docRes.data || []);
+      setLoadingDocs(false);
+    };
+    fetchPetDetails();
+  }, [selectedPet?.id]);
 
   const getItems = () => {
     let items: any[] = [];
@@ -81,12 +141,17 @@ const AdminListings = ({ data, actions }: Props) => {
   const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
   const isPending = (pet: any) => pet.verification_status === "pending";
 
+  const openPreview = (url: string, label: string) => setPreviewDoc({ url, label });
+
   return (
     <div>
       <div className="mb-8">
         <h1 className="text-[28px] font-bold text-[hsl(220,20%,15%)]">Pet Listings</h1>
         <p className="text-sm text-[hsl(220,15%,55%)] mt-1">View all pets, verify new listings and re-verification requests</p>
       </div>
+
+      {/* Document Preview Popup */}
+      {previewDoc && <DocPreviewPopup url={previewDoc.url} label={previewDoc.label} onClose={() => setPreviewDoc(null)} />}
 
       {/* Pet Detail Modal */}
       {selectedPet && (
@@ -103,19 +168,21 @@ const AdminListings = ({ data, actions }: Props) => {
             </div>
 
             <div className="p-6 space-y-6">
+              {/* Pet Photos */}
               {selectedPet.images && selectedPet.images.length > 0 && (
                 <div>
                   <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-3 flex items-center gap-2"><Camera className="w-4 h-4" /> Pet Photos ({selectedPet.images.length})</h4>
                   <div className="grid grid-cols-3 gap-2">
                     {selectedPet.images.map((img: string, i: number) => (
-                      <a key={i} href={img} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-xl overflow-hidden bg-[hsl(220,20%,94%)] hover:opacity-80 transition-opacity">
+                      <button key={i} onClick={() => openPreview(img, `Pet Photo ${i + 1}`)} className="aspect-square rounded-xl overflow-hidden bg-[hsl(220,20%,94%)] hover:opacity-80 transition-opacity">
                         <img src={img} alt={`Pet ${i + 1}`} className="w-full h-full object-cover" />
-                      </a>
+                      </button>
                     ))}
                   </div>
                 </div>
               )}
 
+              {/* Videos */}
               {selectedPet.videos && selectedPet.videos.length > 0 && (
                 <div>
                   <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-3">Videos ({selectedPet.videos.length})</h4>
@@ -127,6 +194,7 @@ const AdminListings = ({ data, actions }: Props) => {
                 </div>
               )}
 
+              {/* Pet Details */}
               <div className="bg-[hsl(220,20%,97%)] rounded-xl p-4">
                 <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-3 flex items-center gap-2"><PawPrint className="w-4 h-4" /> Pet Details</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -145,6 +213,7 @@ const AdminListings = ({ data, actions }: Props) => {
                 </div>
               </div>
 
+              {/* Pricing & Location */}
               <div className="bg-[hsl(145,30%,97%)] rounded-xl p-4">
                 <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-3">Pricing & Location</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -156,6 +225,7 @@ const AdminListings = ({ data, actions }: Props) => {
                 </div>
               </div>
 
+              {/* Health Information */}
               <div className="bg-[hsl(40,40%,97%)] rounded-xl p-4">
                 <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-3 flex items-center gap-2"><Syringe className="w-4 h-4" /> Health Information</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -164,6 +234,71 @@ const AdminListings = ({ data, actions }: Props) => {
                 </div>
               </div>
 
+              {/* Vaccination Records */}
+              <div className="bg-[hsl(200,40%,97%)] rounded-xl p-4">
+                <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-3 flex items-center gap-2">
+                  <Syringe className="w-4 h-4 text-[hsl(200,70%,45%)]" /> Vaccination Records
+                  {!loadingDocs && <span className="text-[11px] font-normal text-[hsl(220,15%,55%)]">({vaccinations.length} records)</span>}
+                </h4>
+                {loadingDocs ? (
+                  <div className="py-4 text-center text-sm text-[hsl(220,15%,60%)]">Loading records...</div>
+                ) : vaccinations.length === 0 ? (
+                  <div className="py-4 text-center text-sm text-[hsl(220,15%,60%)]">No vaccination records uploaded</div>
+                ) : (
+                  <div className="space-y-3">
+                    {vaccinations.map((v: any) => (
+                      <div key={v.id} className="bg-white rounded-xl border border-[hsl(200,30%,90%)] p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-semibold text-[hsl(220,20%,15%)]">{v.vaccine_type}</span>
+                              <span className="px-2 py-0.5 bg-[hsl(200,60%,93%)] text-[hsl(200,70%,35%)] text-[10px] font-bold rounded-md">{v.dose_number}</span>
+                            </div>
+                            <div className="flex items-center gap-3 mt-1 text-[12px] text-[hsl(220,15%,55%)]">
+                              <span>Date: {new Date(v.date_administered).toLocaleDateString("en-IN")}</span>
+                              {v.next_due_date && <span>Next Due: {new Date(v.next_due_date).toLocaleDateString("en-IN")}</span>}
+                            </div>
+                          </div>
+                          {v.certificate_url && (
+                            <button
+                              onClick={() => openPreview(v.certificate_url, v.certificate_name || `${v.vaccine_type} Certificate`)}
+                              className="px-3 py-1.5 bg-[hsl(200,60%,93%)] text-[hsl(200,70%,40%)] text-[11px] font-medium rounded-lg hover:bg-[hsl(200,60%,88%)] flex items-center gap-1 shrink-0"
+                            >
+                              <Eye className="w-3 h-3" /> View Certificate
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Uploaded Documents (Bloodline, Health Certificates etc.) */}
+              <div className="bg-[hsl(270,30%,97%)] rounded-xl p-4">
+                <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-3 flex items-center gap-2">
+                  <FileImage className="w-4 h-4 text-[hsl(270,50%,50%)]" /> Uploaded Documents
+                  {!loadingDocs && <span className="text-[11px] font-normal text-[hsl(220,15%,55%)]">({petDocuments.length} documents)</span>}
+                </h4>
+                {loadingDocs ? (
+                  <div className="py-4 text-center text-sm text-[hsl(220,15%,60%)]">Loading documents...</div>
+                ) : petDocuments.length === 0 ? (
+                  <div className="py-4 text-center text-sm text-[hsl(220,15%,60%)]">No documents uploaded by breeder</div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {petDocuments.map((doc: any) => (
+                      <ClickableDoc
+                        key={doc.id}
+                        label={doc.document_type?.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()) || "Document"}
+                        url={doc.file_url}
+                        onPreview={openPreview}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Description */}
               {selectedPet.description && (
                 <div className="bg-[hsl(220,20%,97%)] rounded-xl p-4">
                   <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-2">Description</h4>
@@ -171,6 +306,7 @@ const AdminListings = ({ data, actions }: Props) => {
                 </div>
               )}
 
+              {/* Seller Information */}
               <div className="bg-[hsl(270,30%,97%)] rounded-xl p-4">
                 <h4 className="text-sm font-bold text-[hsl(220,20%,15%)] mb-2">Seller Information</h4>
                 <InfoRow icon={PawPrint} label="Seller Name" value={selectedPet.owner?.name} />
@@ -185,7 +321,7 @@ const AdminListings = ({ data, actions }: Props) => {
               )}
             </div>
 
-            {/* Action Footer - only show for pending pets */}
+            {/* Action Footer */}
             {isPending(selectedPet) && (
               <div className="sticky bottom-0 bg-white border-t border-[hsl(220,20%,92%)] px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
                 <button onClick={() => { actions.rejectPet(selectedPet.id); setSelectedPet(null); }} className="px-6 py-2.5 border border-[hsl(0,60%,70%)] text-[hsl(0,65%,50%)] text-sm font-medium rounded-xl hover:bg-[hsl(0,60%,97%)] flex items-center gap-2">
@@ -215,12 +351,7 @@ const AdminListings = ({ data, actions }: Props) => {
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[hsl(220,15%,60%)]" />
-          <Input
-            placeholder="Search name, breed, city..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 rounded-xl border-[hsl(220,20%,90%)]"
-          />
+          <Input placeholder="Search name, breed, city..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 rounded-xl border-[hsl(220,20%,90%)]" />
         </div>
       </div>
 
