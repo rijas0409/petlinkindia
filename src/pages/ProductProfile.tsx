@@ -114,10 +114,10 @@ const ProductProfile = () => {
         window.setTimeout(() => setCartPhase("mini"), MINI_APPEAR_DELAY_MS),
       );
       cartAnimationTimersRef.current.push(
-        window.setTimeout(() => setCartPhase("expanding"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS),
+        window.setTimeout(() => setCartPhase("expanding"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + MINI_VISIBLE_EXTRA_MS),
       );
       cartAnimationTimersRef.current.push(
-        window.setTimeout(() => setCartPhase("full"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + CART_EXPAND_MS),
+        window.setTimeout(() => setCartPhase("full"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + MINI_VISIBLE_EXTRA_MS + CART_EXPAND_MS),
       );
     } else if (cartCount === 0 && prevCartCount.current > 0) {
       clearCartAnimationTimers();
