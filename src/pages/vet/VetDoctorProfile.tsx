@@ -121,7 +121,7 @@ const doctorsData: Record<string, {
 
 const ServiceIcon = ({ type }: { type: string }) => {
   const iconClass = "w-5 h-5";
-  const color = "#FF8C5A";
+  const color = "#E8599C";
   switch (type) {
     case "checkup": return <Stethoscope className={iconClass} style={{ color }} />;
     case "vaccination": return <Syringe className={iconClass} style={{ color }} />;
