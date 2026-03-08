@@ -156,6 +156,7 @@ const AdminDashboard = () => {
       case "banners": return <AdminBanners />;
       case "advertisements": return <AdminAdvertisements />;
       case "wallets": return <AdminWallets />;
+      case "notifications": return <AdminNotifications />;
       case "settings": return <AdminSettings />;
       case "listings": return <AdminListings data={data} actions={actions} />;
       case "transport": return <AdminTransport data={data} actions={actions} />;

@@ -20,6 +20,7 @@ const navItems = [
   { id: "advertisements", label: "Advertisements", icon: Megaphone },
   { id: "wallets", label: "Wallets", icon: Wallet },
   { id: "financials", label: "Financials", icon: DollarSign },
+  { id: "notifications", label: "Notifications", icon: Bell },
 ];
 
 const systemItems = [
