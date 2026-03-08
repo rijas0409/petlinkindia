@@ -57,7 +57,7 @@ const VetPendingApproval = () => {
     <div className="min-h-screen bg-gradient-soft flex flex-col">
       <header className="bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <img src={sruvoLogo} alt="Sruvo" className="w-12 h-12 object-contain" />
             <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Sruvo</span>
           </div>
