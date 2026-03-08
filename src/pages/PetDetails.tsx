@@ -65,6 +65,7 @@ const PetDetails = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const { togglePetWishlist, isPetInWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
   const isInWishlist = isPetInWishlist(id || "");
 
