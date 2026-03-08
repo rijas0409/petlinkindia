@@ -1048,27 +1048,30 @@ const ProductProfile = () => {
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                {/* Stacked product cards — vertical stack by quantity, max 3 */}
-                <div className="relative" ref={cartTargetRef} style={{ width: 38, height: 58 }}>
+                {/* Stacked square cards — vertical stack by quantity, max 3 */}
+                <div className="relative" ref={cartTargetRef} style={{ width: 36, height: 44 }}>
                   {(() => {
                     const stackedItems = cartItems
                       .flatMap((item) => Array.from({ length: item.quantity }, () => item))
                       .slice(-3);
-
                     const total = stackedItems.length;
                     return stackedItems.map((item, idx) => (
                       <div
                         key={`${item.id}-${idx}-${thumbnailPop}`}
-                        className="absolute left-0 w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center overflow-hidden border border-white/50 flex-shrink-0"
+                        className="absolute left-0 overflow-hidden flex items-center justify-center"
                         style={{
-                          bottom: idx * 10,
+                          width: 32,
+                          height: 32,
+                          borderRadius: 6,
+                          bottom: idx * 6,
                           zIndex: idx + 1,
-                          boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                          border: "1.5px solid rgba(255,255,255,0.5)",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
                           animation: idx === total - 1 && thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
                         }}
                       >
                         {item.image ? (
-                          <img src={item.image} alt="" className="w-full h-full object-cover rounded-lg" />
+                          <img src={item.image} alt="" className="w-full h-full object-cover" style={{ borderRadius: 5 }} />
                         ) : (
                           <ShoppingCart className="w-4 h-4 text-white" />
                         )}
