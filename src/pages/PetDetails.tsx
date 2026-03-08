@@ -214,7 +214,14 @@ const PetDetails = () => {
         <SellerInfoCard seller={pet.profiles || null} />
       </div>
 
-      <BottomCTA price={pet.price} onBuyNow={handleBuyNow} />
+      <BottomCTA price={pet.price} onBuyNow={handleBuyNow} onAddToCart={() => {
+        addToCart({
+          id: pet.id,
+          name: `${pet.name} (${pet.breed})`,
+          price: pet.price,
+          image: pet.images?.[0] || '/placeholder.svg',
+        });
+      }} />
       <BottomNavigation variant="buyer" />
     </div>
   );
