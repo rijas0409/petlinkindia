@@ -883,14 +883,24 @@ const ProductProfile = () => {
         >
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
-            <div className="pointer-events-auto" style={{
-              width: 56, height: 56, borderRadius: 28,
-              background: "linear-gradient(135deg, #1565C0, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.5)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              animation: "miniCartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            }}>
-              <ShoppingCart className="w-6 h-6 text-white" />
+            <div
+              className="pointer-events-auto"
+              style={{
+                width: 64,
+                height: 64,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                animation: `miniCartPopBounce ${MINI_POP_MS + MINI_BOUNCE_MS}ms ease-out forwards`,
+                transformOrigin: "center",
+              }}
+            >
+              <img
+                src={miniCartImage}
+                alt="Mini cart"
+                className="w-full h-full object-contain select-none pointer-events-none"
+                draggable={false}
+              />
             </div>
           )}
 
@@ -898,8 +908,8 @@ const ProductProfile = () => {
           {cartPhase === 'expanding' && (
             <div className="pointer-events-auto mx-3" style={{
               width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
-              background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
+              background: BUY_NOW_GRADIENT,
+              boxShadow: "0 6px 24px rgba(139,92,246,0.35)",
               animation: "expandCart 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
               opacity: 0,
             }} />
@@ -912,8 +922,8 @@ const ProductProfile = () => {
               onClick={() => navigate("/cart")}
               style={{
                 width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
-                background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
-                boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
+                background: BUY_NOW_GRADIENT,
+                boxShadow: "0 6px 24px rgba(139,92,246,0.35)",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "0 16px",
                 animation: "fadeIn 0.2s ease-out",
@@ -956,13 +966,16 @@ const ProductProfile = () => {
           {/* Collapsing phase */}
           {cartPhase === 'collapsing' && (
             <div className="pointer-events-auto" style={{
-              width: 56, height: 56, borderRadius: 28,
-              background: "linear-gradient(135deg, #1565C0, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.3)",
+              width: 64, height: 64,
               display: "flex", alignItems: "center", justifyContent: "center",
               animation: "collapseCart 0.4s ease-in forwards",
             }}>
-              <ShoppingCart className="w-6 h-6 text-white" />
+              <img
+                src={miniCartImage}
+                alt="Mini cart"
+                className="w-full h-full object-contain select-none pointer-events-none"
+                draggable={false}
+              />
             </div>
           )}
         </div>
