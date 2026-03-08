@@ -205,7 +205,7 @@ const DeliveryDashboard = () => {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
               <img src={sruvoLogo} alt="Sruvo" className="w-12 h-12 object-contain" />
               <div>
                 <h1 className="font-bold text-lg">Sruvo Delivery</h1>
