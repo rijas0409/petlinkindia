@@ -39,8 +39,9 @@ const AdminDashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile sheet
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop collapsed
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [data, setData] = useState<AdminData>({
     pendingSellers: [], pendingPets: [], reVerificationPets: [],
     pendingProducts: [], pendingVets: [], requests: [], partners: [],
