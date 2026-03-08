@@ -112,7 +112,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6 animate-fade-in">
         <div className="text-center space-y-2">
-          <img src={sruvoLogo} alt="Sruvo" className="w-16 h-16 object-contain mb-4" />
+          <img src={sruvoLogo} alt="Sruvo" className="w-24 h-24 object-contain mb-4 mx-auto" />
           <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Sruvo
           </h1>

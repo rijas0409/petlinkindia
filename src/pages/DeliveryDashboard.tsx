@@ -206,7 +206,7 @@ const DeliveryDashboard = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={sruvoLogo} alt="Sruvo" className="w-10 h-10 object-contain" />
+              <img src={sruvoLogo} alt="Sruvo" className="w-12 h-12 object-contain" />
               <div>
                 <h1 className="font-bold text-lg">Sruvo Delivery</h1>
                 <p className="text-xs text-muted-foreground">Partner Dashboard</p>
