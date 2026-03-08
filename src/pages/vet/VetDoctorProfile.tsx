@@ -92,6 +92,7 @@ const doctorsData: Record<string, {
   "elite-1": {
     name: "Dr. Amara S.",
     title: "Senior Orthopedic Specialist",
+    clinic: "Bombay Veterinary Hospital, Indore",
     rating: 4.9,
     reviews: 200,
     yearsExp: 12,
