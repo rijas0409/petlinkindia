@@ -90,7 +90,7 @@ export const InlineBanners = ({ placement = "top" }: { placement?: "top" | "bott
         .select("*")
         .eq("is_active", true)
         .eq("placement", placement)
-        .neq("banner_style", "carousel")
+        .eq("location", "custom")
         .order("position");
 
       if (!data) { setBanners([]); return; }
