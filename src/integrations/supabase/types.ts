@@ -55,6 +55,51 @@ export type Database = {
           },
         ]
       }
+      banners: {
+        Row: {
+          created_at: string
+          cta_link: string | null
+          cta_text: string | null
+          gradient: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          location: string
+          position: number
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          gradient?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          location?: string
+          position?: number
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          cta_link?: string | null
+          cta_text?: string | null
+          gradient?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          location?: string
+          position?: number
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chats: {
         Row: {
           buyer_id: string | null
