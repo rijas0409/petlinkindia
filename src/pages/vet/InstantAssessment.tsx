@@ -414,52 +414,38 @@ function Step4({ photoUploaded, setPhotoUploaded }: any) {
 /* ── Step 5: Review ── */
 function Step5({ selectedPet, petName, years, months, selectedSymptoms, duration, urgency, additionalDetails }: any) {
   return (
-    <div className="space-y-5 pt-4">
-      <div className="text-center mb-2">
-        <h2 className="text-xl font-bold text-foreground">Review Your Information</h2>
-        <p className="text-sm text-muted-foreground mt-1">Confirm the details before AI analysis</p>
-      </div>
+    <div className="space-y-4 pt-4">
+      <h3 className="text-lg font-bold text-foreground flex items-center gap-2 mb-2">
+        <span className="w-1 h-5 rounded-full" style={{ background: '#8B5CF6' }} />
+        Review Your Assessment
+      </h3>
 
       <div className="bg-muted/30 rounded-2xl p-4 space-y-3">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground text-sm">Pet Type</span>
-          <span className="font-semibold text-foreground capitalize">{selectedPet}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground text-sm">Pet Name</span>
-          <span className="font-semibold text-foreground">{petName || "Not provided"}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground text-sm">Age</span>
-          <span className="font-semibold text-foreground">{years || 0} yrs {months || 0} months</span>
-        </div>
+        <Row label="Pet Type" value={selectedPet.charAt(0).toUpperCase() + selectedPet.slice(1)} />
+        {petName && <Row label="Name" value={petName} />}
+        <Row label="Age" value={`${years || 0} yrs ${months || 0} months`} />
+        <Row label="Symptoms" value={selectedSymptoms.length ? selectedSymptoms.join(", ") : "None selected"} />
+        <Row label="Duration" value={duration} />
+        <Row label="Urgency" value={urgency.charAt(0).toUpperCase() + urgency.slice(1)} />
+        {additionalDetails && <Row label="Details" value={additionalDetails} />}
       </div>
 
-      <div className="bg-muted/30 rounded-2xl p-4 space-y-3">
+      <div className="bg-green-50 rounded-2xl p-4 flex gap-3 items-start">
+        <span className="text-2xl">🩺</span>
         <div>
-          <span className="text-muted-foreground text-sm">Symptoms</span>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {selectedSymptoms.length > 0 ? selectedSymptoms.map((s: string) => (
-              <span key={s} className="px-2.5 py-1 rounded-full text-xs font-medium text-white" style={{ background: 'linear-gradient(90deg, #FF4D6D, #c44dff)' }}>{s}</span>
-            )) : <span className="text-sm text-muted-foreground">None selected</span>}
-          </div>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground text-sm">Duration</span>
-          <span className="font-semibold text-foreground">{duration}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground text-sm">Urgency</span>
-          <span className={`font-semibold capitalize ${urgency === 'urgent' ? 'text-red-500' : urgency === 'concerned' ? 'text-amber-500' : 'text-green-500'}`}>{urgency}</span>
+          <p className="font-bold text-foreground text-sm">Ready for Analysis</p>
+          <p className="text-xs text-muted-foreground mt-1">Our AI will analyze your pet's symptoms and connect you with the best-matched veterinarian.</p>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {additionalDetails && (
-        <div className="bg-muted/30 rounded-2xl p-4">
-          <span className="text-muted-foreground text-sm">Additional Details</span>
-          <p className="text-sm text-foreground mt-1">{additionalDetails}</p>
-        </div>
-      )}
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between items-start">
+      <span className="text-xs text-muted-foreground font-medium">{label}</span>
+      <span className="text-sm font-semibold text-foreground text-right max-w-[60%]">{value}</span>
     </div>
   );
 }
