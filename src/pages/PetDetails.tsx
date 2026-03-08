@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
+import useBuyerActivityTracker from "@/hooks/useBuyerActivityTracker";
 import PetImageHeader from "@/components/pet-details/PetImageHeader";
 import PetInfoSection from "@/components/pet-details/PetInfoSection";
 import AIInsightsCard from "@/components/pet-details/AIInsightsCard";
