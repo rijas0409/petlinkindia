@@ -883,7 +883,7 @@ const ProductProfile = () => {
       {cartPhase !== 'hidden' && (
         <div
           className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none"
-          style={{ bottom: "calc(56px + 54px + 32px)" }}
+          style={{ bottom: "calc(56px + 54px + 29px)" }}
         >
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
