@@ -12,6 +12,9 @@ const HealthCertificatePreview = ({ certificateUrl, certificateName, onBack }: H
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Determine file type from URL or name
+  const isPdf = (certificateUrl?.toLowerCase().endsWith(".pdf") || certificateName?.toLowerCase().endsWith(".pdf")) ?? false;
+
   useEffect(() => {
     const getUrl = async () => {
       try {
@@ -22,6 +25,7 @@ const HealthCertificatePreview = ({ certificateUrl, certificateName, onBack }: H
           setSignedUrl(data.signedUrl);
         }
       } catch {
+        // If signed URL fails, try using it as a direct URL
         setSignedUrl(certificateUrl);
       } finally {
         setLoading(false);
@@ -66,12 +70,21 @@ const HealthCertificatePreview = ({ certificateUrl, certificateName, onBack }: H
               <p className="text-[#999] text-sm">Loading certificate...</p>
             </div>
           ) : signedUrl ? (
-            <img
-              src={signedUrl}
-              alt="Health Certificate"
-              className="w-full rounded-2xl"
-              style={{ maxHeight: "none", height: "auto" }}
-            />
+            isPdf ? (
+              <iframe
+                src={signedUrl}
+                title="Health Certificate PDF"
+                className="w-full rounded-2xl border-0"
+                style={{ minHeight: "500px", height: "70vh" }}
+              />
+            ) : (
+              <img
+                src={signedUrl}
+                alt="Health Certificate"
+                className="w-full rounded-2xl"
+                style={{ maxHeight: "none", height: "auto" }}
+              />
+            )
           ) : (
             <div className="aspect-[3/4] bg-[#F5F5F7] rounded-2xl flex items-center justify-center">
               <p className="text-[#999] text-sm">Certificate not available</p>
@@ -94,7 +107,7 @@ const HealthCertificatePreview = ({ certificateUrl, certificateName, onBack }: H
             }}
           >
             <Download className="w-5 h-5" />
-            Download PDF Certificate
+            Download Certificate
           </button>
         </div>
 

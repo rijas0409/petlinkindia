@@ -64,6 +64,9 @@ const HealthSafetySection = ({ petId, vaccinated }: HealthSafetySectionProps) =>
     ? new Date(latestVaccination.next_due_date) < new Date()
     : false;
 
+  // Find the latest vaccination record that has a certificate uploaded
+  const latestCertRecord = vaccinations.find(v => v.certificate_url && v.certificate_url.trim().length > 0);
+
   return (
     <>
       <div className="px-5 py-4">
@@ -137,26 +140,26 @@ const HealthSafetySection = ({ petId, vaccinated }: HealthSafetySectionProps) =>
           })}
         </div>
 
-        {/* Task J: Preview button instead of download */}
+        {/* Preview button - uses latest certificate across all records */}
         <button
-          onClick={() => latestVaccination.certificate_url && setShowPreview(true)}
-          disabled={!latestVaccination.certificate_url}
+          onClick={() => latestCertRecord && setShowPreview(true)}
+          disabled={!latestCertRecord}
           className={`w-full mt-2 py-3 rounded-xl border flex items-center justify-center gap-2 text-[13px] font-bold transition-colors ${
-            latestVaccination.certificate_url
+            latestCertRecord
               ? "border-[#D8B4FE] text-[#A855F7] bg-[#FAF5FF] hover:bg-[#F3E8FF]"
               : "border-[#E5E7EB] text-[#9CA3AF] bg-[#F9FAFB] cursor-not-allowed"
           }`}
         >
           <FileText className="w-4 h-4" />
-          Preview Health Certificate (PDF)
+          Preview Health Certificate
         </button>
       </div>
 
       {/* Certificate Preview Screen */}
-      {showPreview && latestVaccination.certificate_url && (
+      {showPreview && latestCertRecord?.certificate_url && (
         <HealthCertificatePreview
-          certificateUrl={latestVaccination.certificate_url}
-          certificateName={latestVaccination.certificate_name}
+          certificateUrl={latestCertRecord.certificate_url}
+          certificateName={latestCertRecord.certificate_name}
           onBack={() => setShowPreview(false)}
         />
       )}
