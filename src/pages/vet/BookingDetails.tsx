@@ -141,7 +141,72 @@ const BookingDetails = () => {
           </div>
         </div>
 
-        {/* Summary */}
+        {/* Booking Schedule */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-bold text-foreground">Select Date</h3>
+            <span className="text-sm font-semibold" style={{ color: '#A78BFA' }}>
+              {format(selectedDate, "MMMM yyyy")}
+            </span>
+          </div>
+          <div className="grid grid-cols-4 gap-3 mb-5">
+            {dates.map((date) => {
+              const isSelected = format(date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
+              return (
+                <button
+                  key={date.toISOString()}
+                  onClick={() => setSelectedDate(date)}
+                  className="flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-all"
+                  style={isSelected ? {
+                    background: 'linear-gradient(135deg, #C084FC, #F472B6)',
+                    border: '2px solid transparent',
+                    color: 'white',
+                  } : {
+                    border: '2px solid hsl(var(--border))',
+                    background: 'hsl(var(--background))',
+                  }}
+                >
+                  <span className={`text-xs font-medium ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
+                    {format(date, "EEE")}
+                  </span>
+                  <span className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
+                    {format(date, "d")}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <h3 className="text-base font-bold text-foreground mb-3">Available Slots</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {allSlots.map((slot) => {
+              const isDisabled = disabledSlots.includes(slot);
+              const isSelected = selectedSlot === slot && !isDisabled;
+              return (
+                <button
+                  key={slot}
+                  disabled={isDisabled}
+                  onClick={() => setSelectedSlot(slot)}
+                  className="py-3 rounded-2xl text-sm font-semibold transition-all border-2"
+                  style={isSelected ? {
+                    background: 'linear-gradient(135deg, #C084FC, #F472B6)',
+                    border: '2px solid transparent',
+                    color: 'white',
+                  } : isDisabled ? {
+                    border: '2px dashed hsl(var(--border))',
+                    color: 'hsl(var(--muted-foreground))',
+                    opacity: 0.5,
+                    textDecoration: 'line-through',
+                  } : {
+                    border: '2px solid hsl(var(--border))',
+                    color: 'hsl(var(--foreground))',
+                  }}
+                >
+                  {slot}
+                </button>
+              );
+            })}
+          </div>
         <div>
           <h3 className="text-base font-bold text-foreground mb-3">Summary</h3>
           <div className="bg-muted/30 rounded-2xl p-4 space-y-2">
