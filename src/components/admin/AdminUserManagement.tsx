@@ -60,6 +60,9 @@ const AdminUserManagement = ({ data, actions }: Props) => {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [selectedSeller, setSelectedSeller] = useState<any>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   const filtered = data.allUsers.filter((u: any) => {
     const matchSearch = !search || u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase());
@@ -68,6 +71,24 @@ const AdminUserManagement = ({ data, actions }: Props) => {
   });
 
   const pendingApprovals = data.pendingSellers;
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    setDeleting(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("delete-user", {
+        body: { user_id: userId },
+      });
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      toast({ title: "User Deleted", description: `${userName} has been permanently removed from the platform.` });
+      setDeleteTarget(null);
+      actions.fetchData();
+    } catch (err: any) {
+      toast({ title: "Delete Failed", description: err.message || "Something went wrong", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div>
