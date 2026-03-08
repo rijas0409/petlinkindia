@@ -14,7 +14,17 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const { breed, category, ageMonths, gender } = petData;
-    const { living, hasChildren, freeTime, budgetMin, budgetMax } = formData;
+    const {
+      homeType, cityType, hasKids, otherPets,
+      freeTime, workSchedule, travelFrequency,
+      firstTimePetParent, budgetMin, emergencyFund,
+      // Legacy fields for backward compatibility
+      living, hasChildren, budgetMax,
+    } = formData;
+
+    const livingDesc = homeType || living || "unknown";
+    const kidsDesc = (hasKids ?? hasChildren) ? "Yes" : "No";
+    const budgetINR = budgetMin ? `₹${(budgetMin * 80).toLocaleString("en-IN")}` : (budgetMax ? `₹${budgetMax}` : "not specified");
 
     const prompt = `You are a professional pet care advisor. Generate a PERSONALIZED care compatibility report.
 
@@ -25,10 +35,16 @@ PET DETAILS:
 - Gender: ${gender || "unknown"}
 
 USER'S LIFESTYLE:
-- Living situation: ${living}
-- Has children under 18: ${hasChildren ? "Yes" : "No"}
-- Daily free time: ${freeTime}
-- Monthly budget range: ₹${budgetMin} - ₹${budgetMax}
+- Home type: ${livingDesc}
+- City type: ${cityType || "unknown"}
+- Has children: ${kidsDesc}
+- Other pets at home: ${otherPets ? "Yes" : "No"}
+- Daily free time: ${freeTime || "unknown"}
+- Work schedule: ${workSchedule || "unknown"}
+- Travel frequency: ${travelFrequency || "unknown"}
+- First time pet parent: ${firstTimePetParent ? "Yes" : "No"}
+- Monthly budget: ${budgetINR}
+- Emergency fund ready: ${emergencyFund ? "Yes" : "No"}
 
 Based on real, factual breed-specific data and the user's lifestyle inputs, generate a care compatibility report. Be honest — if the pet is NOT a good match for the user's lifestyle, say so clearly. Consider space needs, exercise requirements, child-friendliness, time commitment, and realistic monthly costs for Indian market.
 
@@ -58,30 +74,42 @@ You MUST respond using the suggest_care_plan tool.`;
                   },
                   tagline: {
                     type: "string",
-                    description: "A short 3-5 word personality tagline for this breed, e.g. 'Smart & Loyal Companion'",
+                    description: "A short 3-5 word personality tagline for this breed.",
                   },
                   feeding: {
                     type: "string",
-                    description: "Brief feeding recommendation for this breed at this age, e.g. 'High-quality puppy food, 3 meals/day'",
+                    description: "Detailed feeding recommendation for this breed at this age. 2-3 sentences covering food type, frequency, and portion guidance.",
                   },
                   exercise: {
                     type: "string",
-                    description: "Exercise needs based on breed and user's available time, e.g. '60 mins of active play and walks'",
+                    description: "Exercise needs based on breed and user's available time. 2-3 sentences with specific duration and activity types.",
                   },
                   grooming: {
                     type: "string",
-                    description: "Grooming needs for this breed, e.g. 'Weekly brushing required'",
+                    description: "Grooming needs for this breed. 2-3 sentences covering brushing, professional grooming frequency, and special care.",
                   },
                   monthlyCost: {
                     type: "string",
-                    description: "Realistic monthly cost estimate in INR for this breed in Indian market, e.g. '₹3,000 - ₹5,000'",
+                    description: "Realistic monthly cost range in INR for this breed in Indian market, e.g. '₹3,000 - ₹5,000'",
+                  },
+                  monthlyCostNote: {
+                    type: "string",
+                    description: "Brief note about what the monthly cost includes, e.g. 'Includes premium food, insurance, and routine preventatives.'",
+                  },
+                  healthConsiderations: {
+                    type: "string",
+                    description: "2-3 sentences about breed-specific health issues to watch for and recommended vet check-up schedule.",
+                  },
+                  beginnerTips: {
+                    type: "string",
+                    description: "2-3 practical tips for the owner, especially if first-time pet parent. Cover socialization, training approach, etc.",
                   },
                   verdict: {
                     type: "string",
                     description: "One sentence suitability verdict based on user's lifestyle. Be honest if it's not a good match.",
                   },
                 },
-                required: ["compatibilityScore", "tagline", "feeding", "exercise", "grooming", "monthlyCost", "verdict"],
+                required: ["compatibilityScore", "tagline", "feeding", "exercise", "grooming", "monthlyCost", "monthlyCostNote", "healthConsiderations", "beginnerTips", "verdict"],
                 additionalProperties: false,
               },
             },
@@ -97,6 +125,12 @@ You MUST respond using the suggest_care_plan tool.`;
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded" }), {
           status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required" }), {
+          status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }

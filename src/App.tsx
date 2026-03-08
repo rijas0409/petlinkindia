@@ -61,6 +61,7 @@ import VetDashboard from "./pages/VetDashboard";
 import CarePlanIntro from "./pages/care-plan/CarePlanIntro";
 import CarePlanForm from "./pages/care-plan/CarePlanForm";
 import CarePlanReport from "./pages/care-plan/CarePlanReport";
+import CarePlanFormStep2 from "./pages/care-plan/CarePlanFormStep2";
 import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
@@ -135,6 +136,7 @@ const App = () => (
           {/* Care Plan Flow */}
           <Route path="/care-plan/intro" element={<CarePlanIntro />} />
           <Route path="/care-plan/form" element={<CarePlanForm />} />
+          <Route path="/care-plan/form-step2" element={<CarePlanFormStep2 />} />
           <Route path="/care-plan/report" element={<CarePlanReport />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
