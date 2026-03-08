@@ -13,6 +13,7 @@ const doctorsData: Record<string, {
   rating: number;
   reviews: number;
   yearsExp: number;
+  clinic: string;
   patients: string;
   support: string;
   about: string;
