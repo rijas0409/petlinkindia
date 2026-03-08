@@ -75,12 +75,18 @@ const SIZE_PRESETS = [
   { label: "Wide", w: "100%", h: "200px", r: "16px" },
 ];
 
+const CTA_ALIGNMENTS = [
+  { id: "left", label: "Left", icon: "◀" },
+  { id: "center", label: "Center", icon: "●" },
+  { id: "right", label: "Right", icon: "▶" },
+];
+
 const emptyBanner = {
   title: "", subtitle: "", image_url: "", gradient: GRADIENT_PRESETS[0],
   cta_text: "Shop Now", cta_link: "", link_url: "", location: "custom",
   target_route: "/buyer-dashboard", banner_style: "full_width",
   custom_width: "100%", custom_height: "160px", placement: "top",
-  border_radius: "16px", position: 0, is_active: true,
+  border_radius: "16px", position: 0, is_active: true, cta_alignment: "left",
 };
 
 const AdminBanners = () => {
