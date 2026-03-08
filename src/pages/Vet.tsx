@@ -451,7 +451,7 @@ const Vet = () => {
             <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">ELITE</span>
           </div>
           {eliteDoctors.map((doctor) => (
-            <div key={doctor.id} className="bg-gradient-to-br from-white to-pink-50 rounded-3xl p-5 shadow-lg border border-pink-100">
+            <div key={doctor.id} onClick={() => navigate(`/vet/doctor/elite-${doctor.id}`)} className="bg-gradient-to-br from-white to-pink-50 rounded-3xl p-5 shadow-lg border border-pink-100 cursor-pointer">
               <div className="flex items-start gap-4">
                 <div className="relative">
                   <div className="w-20 h-20 rounded-2xl overflow-hidden">

@@ -116,6 +116,7 @@ const App = () => (
           <Route path="/vet/ai-assessment" element={<AIVetAssessment />} />
           <Route path="/vet/ai-analyzing" element={<AIAnalyzingCondition />} />
           <Route path="/vet/booking-details" element={<BookingDetails />} />
+          <Route path="/vet/doctor/:id" element={<VetDoctorProfile />} />
           {/* Products */}
           <Route path="/auth-products" element={<AuthProducts />} />
           <Route path="/products-onboarding" element={<ProductsOnboarding />} />
