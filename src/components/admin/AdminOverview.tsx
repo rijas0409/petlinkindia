@@ -105,28 +105,6 @@ const AdminOverview = ({ data, actions, setActiveSection }: Props) => {
     }));
   }, [data.allUsers, data.allOrders, days]);
 
-  // Revenue chart data
-  const revenueChartData = useMemo(() => {
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - days * 86400000);
-    const map: Record<string, number> = {};
-
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * 86400000);
-      const key = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-      map[key] = 0;
-    }
-
-    [...data.sellerEarnings, ...data.vetEarnings].forEach((e: any) => {
-      const d = new Date(e.created_at);
-      if (d >= cutoff) {
-        const key = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-        if (map[key] !== undefined) map[key] += (e.amount || 0);
-      }
-    });
-
-    return Object.entries(map).map(([name, revenue]) => ({ name, revenue }));
-  }, [data.sellerEarnings, data.vetEarnings, days]);
 
   const pendingTasks = [
     ...data.pendingVets.map((v: any) => ({
