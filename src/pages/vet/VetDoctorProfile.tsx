@@ -335,18 +335,13 @@ const VetDoctorProfile = () => {
       </div>
 
       {/* Sticky Bottom Booking Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-4 flex items-center justify-between z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        <div>
-          <p className="text-xs text-muted-foreground">Consultation Fee</p>
-          <p className="text-xl font-bold text-foreground">₹{doctor.fee.toLocaleString()}</p>
-        </div>
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-4 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <button
           onClick={() => navigate("/vet/booking-details")}
-          className="px-6 py-3.5 rounded-2xl text-white font-semibold text-sm flex items-center gap-2 shadow-lg"
-          style={{ background: "linear-gradient(135deg, #8E7CFF, #A78BFA)" }}
+          className="w-full py-4 rounded-2xl text-white font-semibold text-base shadow-lg"
+          style={{ background: "linear-gradient(135deg, #FF4D6D, #8B5CF6)" }}
         >
-          Confirm Booking
-          <ChevronRight className="w-4 h-4" />
+          Book Appointment
         </button>
       </div>
     </div>
