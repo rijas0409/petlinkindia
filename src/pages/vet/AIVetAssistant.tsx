@@ -32,6 +32,10 @@ const features = [
 const AIVetAssistant = () => {
   const navigate = useNavigate();
 
+  const handleStartAssessment = () => {
+    sessionStorage.setItem("vet_flow_mode", "smart_match");
+    navigate("/vet/ai-assessment");
+  };
   return (
     <div className="h-screen bg-gradient-to-b from-pink-50/50 via-white to-white flex flex-col overflow-hidden">
       {/* Header - Fixed */}
