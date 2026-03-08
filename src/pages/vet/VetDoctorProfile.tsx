@@ -133,7 +133,7 @@ const ServiceIcon = ({ type }: { type: string }) => {
 
 const AnimalIcon = ({ type }: { type: string }) => {
   const iconClass = "w-5 h-5";
-  const color = "#FF8C5A";
+  const color = "#9B6FE8";
   switch (type) {
     case "dog": return <Dog className={iconClass} style={{ color }} />;
     case "cat": return <Cat className={iconClass} style={{ color }} />;
