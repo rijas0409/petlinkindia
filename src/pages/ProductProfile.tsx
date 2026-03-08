@@ -1043,48 +1043,34 @@ const ProductProfile = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <div className="flex flex-col items-center mr-1">
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                {/* Stacked product thumbnails — show up to 3 unique items */}
-                <div className="flex items-center -space-x-2.5" ref={cartTargetRef}>
+                {/* Stacked product cards — vertical stack, bottom to top, max 3 */}
+                <div className="relative" ref={cartTargetRef} style={{ width: 40, height: 48 }}>
                   {(() => {
-                    // Get unique cart items (by id), last added first, max 3
-                    const uniqueItems = [...cartItems].reverse().filter((item, idx, arr) => arr.findIndex(i => i.id === item.id) === idx).slice(0, 3);
+                    const uniqueItems = [...cartItems].reverse().filter((item, idx, arr) => arr.findIndex(i => i.id === item.id) === idx).slice(0, 3).reverse();
+                    const total = uniqueItems.length;
                     return uniqueItems.map((item, idx) => (
                       <div
                         key={`${item.id}-${thumbnailPop}`}
-                        className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-2 border-white/50 flex-shrink-0"
+                        className="absolute left-0 w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center overflow-hidden border border-white/50 flex-shrink-0"
                         style={{
-                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                          zIndex: 10 - idx,
-                          animation: idx === 0 && thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
+                          bottom: idx * 6,
+                          zIndex: idx + 1,
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+                          animation: idx === total - 1 && thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
                         }}
                       >
                         {item.image ? (
-                          <img src={item.image} alt="" className="w-full h-full object-cover rounded-full" />
+                          <img src={item.image} alt="" className="w-full h-full object-cover rounded-lg" />
                         ) : (
                           <ShoppingCart className="w-4 h-4 text-white" />
                         )}
                       </div>
                     ));
-                  })()}
-                  {/* Extra count badge if more than 3 unique items */}
-                  {(() => {
-                    const uniqueCount = new Set(cartItems.map(i => i.id)).size;
-                    if (uniqueCount > 3) {
-                      return (
-                        <div
-                          className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center border-2 border-white/50 flex-shrink-0"
-                          style={{ zIndex: 7 }}
-                        >
-                          <span className="text-white text-[10px] font-bold">+{uniqueCount - 3}</span>
-                        </div>
-                      );
-                    }
-                    return null;
                   })()}
                 </div>
               </div>
