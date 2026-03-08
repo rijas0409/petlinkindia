@@ -3,9 +3,10 @@ import cartPlusIcon from "@/assets/cart-plus-icon.png";
 interface BottomCTAProps {
   price: number;
   onBuyNow: () => void;
+  onAddToCart?: () => void;
 }
 
-const BottomCTA = ({ price, onBuyNow }: BottomCTAProps) => {
+const BottomCTA = ({ price, onBuyNow, onAddToCart }: BottomCTAProps) => {
   const emiPrice = Math.round(price / 6);
   const formatPrice = (p: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(p);
