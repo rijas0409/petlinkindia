@@ -1016,22 +1016,21 @@ const ProductProfile = () => {
                     <>Add ₹{Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal)} more to unlock <span className="uppercase">FREE DELIVERY</span></>
                   )}
                 </p>
-                <div className="w-full h-[7px] rounded-full mt-1.5 overflow-hidden relative" style={{ background: "rgba(255,255,255,0.3)" }}>
+                <div className="w-full h-[7px] rounded-full mt-1.5 overflow-hidden relative" style={{ background: "rgba(255,255,255,0.25)" }}>
                   <div
                     className="h-full rounded-full relative overflow-hidden"
                     style={{
                       width: `${deliveryProgress}%`,
-                      background: "linear-gradient(90deg, #FF4D8D, #D65BFF, #8A5BFF)",
+                      background: "rgba(255,255,255,0.95)",
                       transition: "width 700ms ease-out",
-                      boxShadow: deliveryProgress > 0 ? "0 0 8px 2px rgba(214,91,255,0.5), 0 0 16px 4px rgba(255,77,141,0.25)" : "none",
+                      boxShadow: deliveryProgress > 0 ? "0 0 8px rgba(255,255,255,0.8), 0 0 16px rgba(255,255,255,0.4)" : "none",
                     }}
                   >
-                    {/* Shimmer overlay */}
                     {deliveryProgress > 0 && (
                       <span
                         className="absolute inset-0"
                         style={{
-                          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%)",
+                          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,1) 50%, transparent 100%)",
                           backgroundSize: "200% 100%",
                           animation: "cart-shimmer 2s ease-in-out infinite",
                         }}
