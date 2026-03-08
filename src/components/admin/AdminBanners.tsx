@@ -56,7 +56,11 @@ const AdminBanners = () => {
       .select("*")
       .order("location")
       .order("position");
-    if (error) toast({ title: "Error fetching banners", variant: "destructive" });
+    if (error) {
+      console.error("Banner fetch error:", error);
+      toast({ title: "Error fetching banners", description: error.message, variant: "destructive" });
+    }
+    console.log("Fetched banners:", data?.length, data);
     setBanners((data as Banner[]) || []);
     setLoading(false);
   };
