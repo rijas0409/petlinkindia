@@ -202,22 +202,34 @@ const VetDoctorProfile = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
 
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg"
-            >
-              <ArrowLeft className="w-5 h-5 text-foreground" />
+          {/* Top bar - same as ProductProfile */}
+          <div className="absolute top-10 left-4 right-4 flex justify-between z-10">
+            <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-[#F3F0F9] flex items-center justify-center">
+              <ArrowLeft className="w-5 h-5 text-[#6B7280]" />
             </button>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsFavorite(!isFavorite)}
-                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg"
+            <div className="flex gap-2.5">
+              <button 
+                onClick={() => setIsFavorite(!isFavorite)} 
+                className="w-10 h-10 rounded-full bg-[#F3F0F9] flex items-center justify-center"
               >
-                <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-foreground"}`} />
+                <Heart className={`w-5 h-5 ${isFavorite ? "fill-[#A855F7] text-[#A855F7]" : "text-[#6B7280]"}`} />
               </button>
-              <button className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
-                <Share2 className="w-5 h-5 text-foreground" />
+              <button 
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: doctor.name,
+                      text: `Check out ${doctor.name} on PetLink`,
+                      url: window.location.href,
+                    }).catch(() => {});
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Link copied!");
+                  }
+                }}
+                className="w-10 h-10 rounded-full bg-[#F3F0F9] flex items-center justify-center"
+              >
+                <Share2 className="w-5 h-5 text-[#6B7280]" />
               </button>
             </div>
           </div>
