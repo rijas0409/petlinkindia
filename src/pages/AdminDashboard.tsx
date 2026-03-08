@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopBar from "@/components/admin/AdminTopBar";
@@ -33,10 +34,12 @@ export interface AdminData {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile sheet
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop collapsed
   const [data, setData] = useState<AdminData>({
     pendingSellers: [], pendingPets: [], reVerificationPets: [],
     pendingProducts: [], pendingVets: [], requests: [], partners: [],
@@ -107,6 +110,14 @@ const AdminDashboard = () => {
     setSidebarOpen(false);
   };
 
+  const handleMenuToggle = () => {
+    if (isMobile) {
+      setSidebarOpen(true);
+    } else {
+      setSidebarCollapsed(prev => !prev);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[hsl(220,20%,97%)] flex items-center justify-center">
@@ -129,18 +140,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const sidebarWidth = sidebarCollapsed ? "72px" : "260px";
+
   return (
     <div className="min-h-screen bg-[hsl(220,20%,97%)] flex">
-      {/* Sidebar - always via Sheet for both mobile and desktop */}
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="p-0 w-[260px]">
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <AdminSidebar activeSection={activeSection} setActiveSection={handleSectionChange} isMobile />
-        </SheetContent>
-      </Sheet>
+      {/* Desktop sidebar - always visible, toggles between full and collapsed */}
+      {!isMobile && (
+        <AdminSidebar
+          activeSection={activeSection}
+          setActiveSection={handleSectionChange}
+          collapsed={sidebarCollapsed}
+        />
+      )}
 
-      <div className="flex-1 flex flex-col min-h-screen">
-        <AdminTopBar user={user} onLogout={handleLogout} onMenuToggle={() => setSidebarOpen(true)} />
+      {/* Mobile sidebar - Sheet drawer */}
+      {isMobile && (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent side="left" className="p-0 w-[260px]">
+            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            <AdminSidebar activeSection={activeSection} setActiveSection={handleSectionChange} isMobile />
+          </SheetContent>
+        </Sheet>
+      )}
+
+      <div
+        className="flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out"
+        style={!isMobile ? { marginLeft: sidebarWidth } : undefined}
+      >
+        <AdminTopBar user={user} onLogout={handleLogout} onMenuToggle={handleMenuToggle} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {renderSection()}
         </main>
