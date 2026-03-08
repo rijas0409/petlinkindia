@@ -1030,7 +1030,7 @@ const ProductProfile = () => {
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
+                <div ref={cartTargetRef} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
                   {cartItems[cartItems.length - 1]?.image ? (
                     <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-xl" />
                   ) : (
