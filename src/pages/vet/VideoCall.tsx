@@ -1,140 +1,145 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Mic, MicOff, RefreshCw, PhoneOff, PawPrint } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Loader2, Mic, MicOff, PhoneOff } from "lucide-react";
+
+declare global {
+  interface Window {
+    JitsiMeetExternalAPI?: any;
+  }
+}
 
 const VideoCall = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const jitsiRef = useRef<any>(null);
+
+  const [isLoading, setIsLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCallDuration(prev => prev + 1);
-    }, 1000);
+  const matchedVet = (location.state as any)?.matchedVet;
+  const doctorName = matchedVet?.name || "Veterinarian";
 
-    return () => clearInterval(timer);
-  }, []);
+  const roomName = useMemo(() => {
+    const paymentId = (location.state as any)?.paymentId;
+    return `petlink-${paymentId || Date.now()}`;
+  }, [location.state]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isLoading) setCallDuration((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
+  useEffect(() => {
+    let disposed = false;
+
+    const initCall = () => {
+      if (!window.JitsiMeetExternalAPI || !containerRef.current || disposed) return;
+
+      const api = new window.JitsiMeetExternalAPI("meet.jit.si", {
+        roomName,
+        parentNode: containerRef.current,
+        width: "100%",
+        height: "100%",
+        userInfo: { displayName: "Pet Parent" },
+        configOverwrite: {
+          prejoinPageEnabled: false,
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          disableDeepLinking: true,
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: ["microphone", "camera", "chat", "fullscreen", "hangup"],
+          SHOW_CHROME_EXTENSION_BANNER: false,
+        },
+      });
+
+      api.addEventListener("videoConferenceJoined", () => setIsLoading(false));
+      api.addEventListener("readyToClose", () => {
+        navigate("/vet/preparing-prescription", { replace: true, state: location.state });
+      });
+
+      jitsiRef.current = api;
+    };
+
+    if (window.JitsiMeetExternalAPI) {
+      initCall();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://meet.jit.si/external_api.js";
+      script.async = true;
+      script.onload = initCall;
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      disposed = true;
+      if (jitsiRef.current) {
+        jitsiRef.current.dispose();
+      }
+    };
+  }, [navigate, roomName, location.state]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleToggleMute = () => {
+    if (!jitsiRef.current) return;
+    jitsiRef.current.executeCommand("toggleAudio");
+    setIsMuted((prev) => !prev);
   };
 
   const handleEndCall = () => {
-    navigate("/vet/prescription");
+    if (jitsiRef.current) {
+      jitsiRef.current.executeCommand("hangup");
+    }
+    navigate("/vet/preparing-prescription", { replace: true, state: location.state });
   };
 
   return (
     <div className="h-screen w-screen relative overflow-hidden bg-black">
-      {/* Doctor Video (Full Screen Background) */}
-      <div className="absolute inset-0">
-        <img 
-          src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=800&h=1200&fit=crop"
-          alt="Dr. Vikram"
-          className="w-full h-full object-cover"
-        />
-        {/* Gradient overlay for better readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
-      </div>
+      <div ref={containerRef} className="absolute inset-0" />
 
-      {/* Top Bar - Doctor Info */}
       <div className="absolute top-4 left-4 right-4 z-20">
-        <div className="bg-black/50 backdrop-blur-md rounded-2xl p-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-pink-400">
-              <img 
-                src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=100&h=100&fit=crop"
-                alt="Dr. Vikram"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <h3 className="font-bold text-white">Dr. Vikram Malhotra</h3>
-              <div className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-green-400" />
-                <span className="text-xs text-white/80">LIVE CONSULTATION</span>
-              </div>
-            </div>
+        <div className="bg-black/60 backdrop-blur-md rounded-2xl p-3 flex items-center justify-between">
+          <div>
+            <h3 className="font-bold text-white">{doctorName}</h3>
+            <p className="text-xs text-white/70">Live consultation</p>
           </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl px-3 py-2">
+          <div className="bg-white/20 rounded-xl px-3 py-2">
             <span className="text-white font-mono font-semibold">{formatTime(callDuration)}</span>
           </div>
         </div>
       </div>
 
-      {/* User Video (Small PIP) */}
-      <div className="absolute top-28 right-4 z-20">
-        <div className="w-28 h-36 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/30">
-          <div className="relative w-full h-full bg-gradient-to-br from-pink-100 to-purple-100">
-            <img 
-              src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=300&fit=crop"
-              alt="You"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
-              <span className="text-[10px] text-white">👤 YOU</span>
-            </div>
+      {isLoading && (
+        <div className="absolute inset-0 z-30 bg-black/70 flex items-center justify-center">
+          <div className="flex items-center gap-2 text-white">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Connecting call...
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Bottom Controls */}
       <div className="absolute bottom-8 left-4 right-4 z-20">
-        {/* Status Pill */}
-        <div className="flex justify-center mb-4">
-          <div className="bg-gradient-to-r from-pink-400/90 to-purple-400/90 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2">
-            <PawPrint className="w-4 h-4 text-white" />
-            <span className="text-sm text-white font-medium">Dr. Vikram is reviewing Luna's chart</span>
-          </div>
-        </div>
-
-        {/* Control Buttons */}
         <div className="flex items-center justify-center gap-6">
-          {/* Mute Button */}
           <button
-            onClick={() => setIsMuted(!isMuted)}
-            className={cn(
-              "w-14 h-14 rounded-full flex items-center justify-center transition-all",
-              isMuted 
-                ? "bg-red-500 shadow-lg" 
-                : "bg-gray-700/80 backdrop-blur-sm"
-            )}
+            onClick={handleToggleMute}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${isMuted ? "bg-red-500" : "bg-white/20"}`}
           >
-            {isMuted ? (
-              <MicOff className="w-6 h-6 text-white" />
-            ) : (
-              <Mic className="w-6 h-6 text-white" />
-            )}
+            {isMuted ? <MicOff className="w-6 h-6 text-white" /> : <Mic className="w-6 h-6 text-white" />}
           </button>
-          <p className="absolute bottom-0 left-14 text-[10px] text-white/60 mt-1">MUTE</p>
 
-          {/* End Call Button */}
-          <button
-            onClick={handleEndCall}
-            className="relative"
-          >
-            <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform">
-              <PhoneOff className="w-7 h-7 text-white" />
-            </div>
-            {/* Paw prints decoration */}
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-              <div className="flex gap-0.5">
-                <span className="text-pink-300 text-xs">🐾</span>
-                <span className="text-pink-300 text-xs">🐾</span>
-              </div>
-            </div>
+          <button onClick={handleEndCall} className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+            <PhoneOff className="w-7 h-7 text-white" />
           </button>
-          <p className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] text-red-400 font-semibold">END</p>
-
-          {/* Flip Camera Button */}
-          <button
-            className="w-14 h-14 rounded-full bg-gray-700/80 backdrop-blur-sm flex items-center justify-center"
-          >
-            <RefreshCw className="w-6 h-6 text-white" />
-          </button>
-          <p className="absolute bottom-0 right-14 text-[10px] text-white/60">FLIP</p>
         </div>
       </div>
     </div>
