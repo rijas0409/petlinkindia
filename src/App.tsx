@@ -55,6 +55,7 @@ import ProductsDashboard from "./pages/ProductsDashboard";
 import AddProduct from "./pages/AddProduct";
 import ProductProfile from "./pages/ProductProfile";
 import BrandProfile from "./pages/BrandProfile";
+import SellerProfile from "./pages/SellerProfile";
 import AuthVet from "./pages/AuthVet";
 import VetOnboarding from "./pages/VetOnboarding";
 import VetPendingApproval from "./pages/VetPendingApproval";
