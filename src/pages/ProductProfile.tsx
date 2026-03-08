@@ -980,6 +980,8 @@ const ProductProfile = () => {
                 src={miniCartImage}
                 alt="Mini cart"
                 className="w-full h-full object-contain select-none pointer-events-none"
+                loading="eager"
+                fetchPriority="high"
                 draggable={false}
               />
             </div>
