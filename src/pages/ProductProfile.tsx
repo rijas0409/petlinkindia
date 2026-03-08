@@ -246,14 +246,17 @@ const ProductProfile = () => {
       if (cartTargetRef.current) {
         const targetRect = cartTargetRef.current.getBoundingClientRect();
         targetX = targetRect.left + targetRect.width / 2;
-        targetY = targetRect.top + targetRect.height / 2;
+        // Land slightly above center so it visually goes "inside" mini cart, never below it
+        targetY = targetRect.top + targetRect.height * 0.42;
       }
 
-      // Clone: small thumbnail, starts ~70px above the mini cart center
+      // Clone: small thumbnail, starts just above the mini cart
       const CLONE_SIZE = 40;
       const startX = targetX - CLONE_SIZE / 2;
-      const startY = targetY - 70;
-      const dy = 70; // exactly the distance to travel down
+      const startY = targetY - 72;
+
+      // Center-corrected travel so final frame aligns inside cart (not below)
+      const dy = targetY - (startY + CLONE_SIZE / 2);
 
       const clone = document.createElement("img");
       clone.src = imgEl.src;
@@ -271,8 +274,8 @@ const ProductProfile = () => {
       clone.animate(
         [
           { transform: "translateY(0) scale(1)", opacity: 1, offset: 0 },
-          { transform: `translateY(${dy * 0.6}px) scale(0.65)`, opacity: 1, offset: 0.55 },
-          { transform: `translateY(${dy}px) scale(0.3)`, opacity: 0.7, offset: 0.9 },
+          { transform: `translateY(${dy * 0.62}px) scale(0.65)`, opacity: 1, offset: 0.56 },
+          { transform: `translateY(${dy}px) scale(0.32)`, opacity: 0.82, offset: 0.9 },
           { transform: `translateY(${dy}px) scale(0.15)`, opacity: 0, offset: 1 },
         ],
         { duration: 450, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
