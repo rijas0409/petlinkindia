@@ -89,7 +89,7 @@ const AdminOverview = ({ data, actions, setActiveSection }: Props) => {
       </div>
 
       {/* Chart + Pending Tasks */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 md:gap-6 mb-6 md:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 md:gap-6 mb-6 md:mb-8">
         {/* Analytics Chart */}
         <div className="bg-white rounded-2xl border border-[hsl(220,20%,92%)] p-4 md:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
