@@ -10,7 +10,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import shopPromoBanner from "@/assets/shop-promo-banner.png";
 
-const PROMO_SLIDES = [
+const FALLBACK_SLIDES = [
   {
     gradient: "linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)",
     title: "Summer Pet\nCare Deals",
