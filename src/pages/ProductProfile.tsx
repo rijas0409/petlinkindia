@@ -233,59 +233,64 @@ const ProductProfile = () => {
     await toggleProductWishlist({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "", petType: product.pet_type });
   };
 
-  // Fly-to-cart animation
+  // Fly-to-cart animation — targets the mini cart position (center-bottom above CTA)
   const triggerFlyToCart = useCallback(() => {
     const imgEl = productImageRef.current;
     if (!imgEl) return;
 
     const imgRect = imgEl.getBoundingClientRect();
 
-    // Target: mini cart / floating bar cart icon, else center-bottom
+    // Always target the mini-cart landing zone: center of screen, 29px + 54px + 56px from bottom
+    // This is where the mini cart / floating bar lives
+    const cartBarBottom = 56 + 54 + 29; // bottom-nav + CTA + offset
     let targetX = window.innerWidth / 2;
-    let targetY = window.innerHeight - 160;
+    let targetY = window.innerHeight - cartBarBottom - 32; // center of 64px mini cart
+
+    // If floating bar is visible, target the cart icon inside it
     if (cartTargetRef.current) {
       const targetRect = cartTargetRef.current.getBoundingClientRect();
       targetX = targetRect.left + targetRect.width / 2;
       targetY = targetRect.top + targetRect.height / 2;
     }
 
-    // Clone starts as a small thumbnail (64px) from center of product image
-    const CLONE_SIZE = 64;
-    const startX = imgRect.left + imgRect.width / 2 - CLONE_SIZE / 2;
-    const startY = imgRect.top + imgRect.height / 2 - CLONE_SIZE / 2;
+    // Clone: small thumbnail matching mini cart scale (~44px)
+    const CLONE_SIZE = 44;
+    const startCX = imgRect.left + imgRect.width / 2;
+    const startCY = imgRect.top + imgRect.height * 0.4; // slightly above center
+    const startX = startCX - CLONE_SIZE / 2;
+    const startY = startCY - CLONE_SIZE / 2;
 
     const clone = document.createElement("img");
     clone.src = imgEl.src;
     clone.style.cssText = `
-      position: fixed;
-      z-index: 9999;
-      top: ${startY}px;
-      left: ${startX}px;
-      width: ${CLONE_SIZE}px;
-      height: ${CLONE_SIZE}px;
-      object-fit: cover;
-      pointer-events: none;
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-      will-change: transform, opacity;
+      position:fixed; z-index:9999;
+      top:${startY}px; left:${startX}px;
+      width:${CLONE_SIZE}px; height:${CLONE_SIZE}px;
+      object-fit:cover; pointer-events:none;
+      border-radius:12px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.18);
+      will-change:transform,opacity;
     `;
     document.body.appendChild(clone);
 
-    const dx = targetX - (startX + CLONE_SIZE / 2);
-    const dy = targetY - (startY + CLONE_SIZE / 2);
+    const dx = targetX - startCX;
+    const dy = targetY - startCY;
 
-    // Curve control point — arc slightly upward
-    const cpX = dx * 0.4;
-    const cpY = Math.min(dy * 0.3, -60);
+    // Bezier arc: rise up first, then curve down into cart
+    const cpX1 = dx * 0.25;
+    const cpY1 = -80; // lift upward
+    const cpX2 = dx * 0.65;
+    const cpY2 = dy * 0.5;
 
     clone.animate(
       [
-        { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
-        { transform: `translate(${cpX}px, ${cpY}px) scale(0.75) rotate(8deg)`, opacity: 1, offset: 0.45 },
-        { transform: `translate(${dx}px, ${dy}px) scale(0.45) rotate(3deg)`, opacity: 1, offset: 0.85 },
-        { transform: `translate(${dx}px, ${dy}px) scale(0.3) rotate(0deg)`, opacity: 0, offset: 1 },
+        { transform: "translate(0,0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
+        { transform: `translate(${cpX1}px,${cpY1}px) scale(0.85) rotate(8deg)`, opacity: 1, offset: 0.3 },
+        { transform: `translate(${cpX2}px,${cpY2}px) scale(0.6) rotate(5deg)`, opacity: 1, offset: 0.6 },
+        { transform: `translate(${dx}px,${dy}px) scale(0.35) rotate(0deg)`, opacity: 0.9, offset: 0.88 },
+        { transform: `translate(${dx}px,${dy}px) scale(0.2) rotate(0deg)`, opacity: 0, offset: 1 },
       ],
-      { duration: 650, easing: "ease-in-out", fill: "forwards" }
+      { duration: 820, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
     ).onfinish = () => {
       clone.remove();
       // Bounce the cart target
@@ -293,11 +298,11 @@ const ProductProfile = () => {
         cartTargetRef.current.animate(
           [
             { transform: "scale(1)" },
-            { transform: "scale(1.2)" },
-            { transform: "scale(0.92)" },
+            { transform: "scale(1.18)" },
+            { transform: "scale(0.94)" },
             { transform: "scale(1)" },
           ],
-          { duration: 300, easing: "ease-out" }
+          { duration: 350, easing: "ease-out" }
         );
       }
     };
