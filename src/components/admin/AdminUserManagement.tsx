@@ -1,6 +1,8 @@
 import { AdminData } from "@/pages/AdminDashboard";
 import { useState } from "react";
-import { Search, CheckCircle2, XCircle, Users, Shield, ShoppingBag, Truck as TruckIcon, Stethoscope, Eye, X, FileText, Camera, MapPin, Phone, Mail, Building } from "lucide-react";
+import { Search, CheckCircle2, XCircle, Users, Shield, ShoppingBag, Truck as TruckIcon, Stethoscope, Eye, X, FileText, Camera, MapPin, Phone, Mail, Building, Trash2, AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   data: AdminData;
