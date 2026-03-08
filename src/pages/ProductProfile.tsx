@@ -1048,17 +1048,20 @@ const ProductProfile = () => {
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                {/* Stacked product cards — vertical stack, bottom to top, max 3 */}
-                <div className="relative" ref={cartTargetRef} style={{ width: 40, height: 48 }}>
+                {/* Stacked product cards — vertical stack by quantity, max 3 */}
+                <div className="relative" ref={cartTargetRef} style={{ width: 38, height: 58 }}>
                   {(() => {
-                    const uniqueItems = [...cartItems].reverse().filter((item, idx, arr) => arr.findIndex(i => i.id === item.id) === idx).slice(0, 3).reverse();
-                    const total = uniqueItems.length;
-                    return uniqueItems.map((item, idx) => (
+                    const stackedItems = cartItems
+                      .flatMap((item) => Array.from({ length: item.quantity }, () => item))
+                      .slice(-3);
+
+                    const total = stackedItems.length;
+                    return stackedItems.map((item, idx) => (
                       <div
-                        key={`${item.id}-${thumbnailPop}`}
-                        className="absolute left-0 w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center overflow-hidden border border-white/50 flex-shrink-0"
+                        key={`${item.id}-${idx}-${thumbnailPop}`}
+                        className="absolute left-0 w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center overflow-hidden border border-white/50 flex-shrink-0"
                         style={{
-                          bottom: idx * 6,
+                          bottom: idx * 10,
                           zIndex: idx + 1,
                           boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
                           animation: idx === total - 1 && thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
