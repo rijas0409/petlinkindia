@@ -960,6 +960,7 @@ const ProductProfile = () => {
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
             <div
+              ref={cartPhase === 'mini' ? cartTargetRef : undefined}
               className="pointer-events-auto"
               style={{
                 width: 64,
