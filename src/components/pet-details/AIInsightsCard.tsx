@@ -203,7 +203,10 @@ const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown", petId,
 
       {/* Bottom CTA */}
       <div className="px-6 pb-6 pt-3">
-        <button className="w-full py-3.5 rounded-2xl bg-[#EDE9FE] text-[#7C3AED] font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#DDD6FE] transition-colors">
+        <button
+          onClick={() => navigate("/care-plan/intro", { state: { petData: { id: petId, breed, category, ageMonths, gender, image: petImage } } })}
+          className="w-full py-3.5 rounded-2xl bg-[#EDE9FE] text-[#7C3AED] font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#DDD6FE] transition-colors"
+        >
           Get Personalised Care Plan
           <ArrowRight className="w-4 h-4" />
         </button>
