@@ -1043,25 +1043,49 @@ const ProductProfile = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="flex flex-col items-center">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex flex-col items-center mr-1">
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                <div
-                  key={thumbnailPop}
-                  ref={cartTargetRef}
-                  className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-2 border-white/40"
-                  style={{
-                    boxShadow: "0 2px 10px rgba(0,0,0,0.2), 0 0 12px rgba(255,255,255,0.25)",
-                    animation: thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
-                  }}
-                >
-                  {cartItems[cartItems.length - 1]?.image ? (
-                    <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-full" />
-                  ) : (
-                    <ShoppingCart className="w-5 h-5 text-white" />
-                  )}
+                {/* Stacked product thumbnails — show up to 3 unique items */}
+                <div className="flex items-center -space-x-2.5" ref={cartTargetRef}>
+                  {(() => {
+                    // Get unique cart items (by id), last added first, max 3
+                    const uniqueItems = [...cartItems].reverse().filter((item, idx, arr) => arr.findIndex(i => i.id === item.id) === idx).slice(0, 3);
+                    return uniqueItems.map((item, idx) => (
+                      <div
+                        key={`${item.id}-${thumbnailPop}`}
+                        className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-2 border-white/50 flex-shrink-0"
+                        style={{
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                          zIndex: 10 - idx,
+                          animation: idx === 0 && thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
+                        }}
+                      >
+                        {item.image ? (
+                          <img src={item.image} alt="" className="w-full h-full object-cover rounded-full" />
+                        ) : (
+                          <ShoppingCart className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                    ));
+                  })()}
+                  {/* Extra count badge if more than 3 unique items */}
+                  {(() => {
+                    const uniqueCount = new Set(cartItems.map(i => i.id)).size;
+                    if (uniqueCount > 3) {
+                      return (
+                        <div
+                          className="w-9 h-9 rounded-full bg-white/30 flex items-center justify-center border-2 border-white/50 flex-shrink-0"
+                          style={{ zIndex: 7 }}
+                        >
+                          <span className="text-white text-[10px] font-bold">+{uniqueCount - 3}</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               </div>
             </div>
