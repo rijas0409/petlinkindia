@@ -1,6 +1,6 @@
 import { AdminData } from "@/pages/AdminDashboard";
 import { Users, Stethoscope, DollarSign, TrendingUp, TrendingDown, Download, Power } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useState, useMemo } from "react";
 
 interface Props {
@@ -105,28 +105,6 @@ const AdminOverview = ({ data, actions, setActiveSection }: Props) => {
     }));
   }, [data.allUsers, data.allOrders, days]);
 
-  // Revenue chart data
-  const revenueChartData = useMemo(() => {
-    const now = new Date();
-    const cutoff = new Date(now.getTime() - days * 86400000);
-    const map: Record<string, number> = {};
-
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * 86400000);
-      const key = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-      map[key] = 0;
-    }
-
-    [...data.sellerEarnings, ...data.vetEarnings].forEach((e: any) => {
-      const d = new Date(e.created_at);
-      if (d >= cutoff) {
-        const key = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-        if (map[key] !== undefined) map[key] += (e.amount || 0);
-      }
-    });
-
-    return Object.entries(map).map(([name, revenue]) => ({ name, revenue }));
-  }, [data.sellerEarnings, data.vetEarnings, days]);
 
   const pendingTasks = [
     ...data.pendingVets.map((v: any) => ({
@@ -305,28 +283,6 @@ const AdminOverview = ({ data, actions, setActiveSection }: Props) => {
         </div>
       </div>
 
-      {/* Revenue Chart */}
-      <div className="bg-white rounded-2xl border border-[hsl(220,20%,92%)] p-4 md:p-6 mb-6 md:mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h2 className="text-base md:text-lg font-bold text-[hsl(220,20%,15%)]">Revenue Trend</h2>
-            <p className="text-xs md:text-sm text-[hsl(220,15%,55%)]">Daily earnings (last {days} days)</p>
-          </div>
-        </div>
-        <div className="h-[180px] md:h-[220px] mt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={revenueChartData}>
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(220,15%,60%)" }} interval={days > 30 ? 6 : days > 7 ? 2 : 0} />
-              <YAxis hide />
-              <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid hsl(220,20%,92%)", fontSize: 13 }}
-                formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, "Revenue"]}
-              />
-              <Bar dataKey="revenue" fill="hsl(270,60%,55%)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
 
       {/* Recent Transactions */}
       <div className="bg-white rounded-2xl border border-[hsl(220,20%,92%)] p-4 md:p-6">
