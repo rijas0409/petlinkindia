@@ -34,6 +34,7 @@ const STEPPER_MORPH_MS = 200;
 const MINI_APPEAR_DELAY_MS = 200;
 const MINI_POP_MS = 250;
 const MINI_BOUNCE_MS = 140;
+const MINI_VISIBLE_EXTRA_MS = 510; // extra hold so mini cart is visible ~900ms total
 const CART_EXPAND_MS = 300;
 const CART_COLLAPSE_MS = 500;
 
@@ -113,10 +114,10 @@ const ProductProfile = () => {
         window.setTimeout(() => setCartPhase("mini"), MINI_APPEAR_DELAY_MS),
       );
       cartAnimationTimersRef.current.push(
-        window.setTimeout(() => setCartPhase("expanding"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS),
+        window.setTimeout(() => setCartPhase("expanding"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + MINI_VISIBLE_EXTRA_MS),
       );
       cartAnimationTimersRef.current.push(
-        window.setTimeout(() => setCartPhase("full"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + CART_EXPAND_MS),
+        window.setTimeout(() => setCartPhase("full"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + MINI_VISIBLE_EXTRA_MS + CART_EXPAND_MS),
       );
     } else if (cartCount === 0 && prevCartCount.current > 0) {
       clearCartAnimationTimers();
@@ -879,7 +880,7 @@ const ProductProfile = () => {
       {cartPhase !== 'hidden' && (
         <div
           className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none"
-          style={{ bottom: "calc(56px + 54px + 16px)" }}
+          style={{ bottom: "calc(56px + 54px + 32px)" }}
         >
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
