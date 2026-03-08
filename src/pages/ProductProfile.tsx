@@ -1016,12 +1016,13 @@ const ProductProfile = () => {
                     <>Add ₹{Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal)} more to unlock <span className="uppercase">FREE DELIVERY</span></>
                   )}
                 </p>
-                <div className="w-full h-[3px] bg-white/30 rounded-full mt-1.5">
+                <div className="w-full h-[6px] bg-[#F5F5F5] rounded-full mt-1.5 overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all duration-300"
+                    className="h-full rounded-full"
                     style={{
                       width: `${deliveryProgress}%`,
-                      backgroundColor: deliveryUnlocked ? "#4ADE80" : "#FFFFFF",
+                      backgroundColor: deliveryUnlocked ? "#22C55E" : "#22C55E",
+                      transition: "width 450ms ease-out",
                     }}
                   />
                 </div>
