@@ -177,7 +177,7 @@ const AuthAdmin = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@petlink.com"
+                  placeholder="admin@sruvo.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required

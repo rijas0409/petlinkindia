@@ -83,9 +83,7 @@ const ProfileMenu = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white" />
-            </div>
+            <img src={sruvoLogo} alt="Sruvo" className="w-10 h-10 object-contain" />
             <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Profile
             </span>

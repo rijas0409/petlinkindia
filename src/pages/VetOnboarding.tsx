@@ -151,11 +151,9 @@ const VetOnboarding = () => {
       <header className="bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white" />
-            </div>
+            <img src={sruvoLogo} alt="Sruvo" className="w-10 h-10 object-contain" />
             <div>
-              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">PetLink</span>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Sruvo</span>
               <p className="text-xs text-muted-foreground">Vet Doctor Verification</p>
             </div>
           </div>

@@ -57,10 +57,8 @@ const VetPendingApproval = () => {
       <header className="bg-card/80 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-primary rounded-2xl flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">PetLink</span>
+            <img src={sruvoLogo} alt="Sruvo" className="w-10 h-10 object-contain" />
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Sruvo</span>
           </div>
           <Button variant="ghost" size="icon" onClick={handleLogout}><LogOut className="w-5 h-5" /></Button>
         </div>
