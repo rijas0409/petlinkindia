@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Utensils, Activity, Heart, HeartPulse, Brain, Sparkles, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import rjStar from "@/assets/rj-star.png";
@@ -8,6 +9,8 @@ interface AIInsightsCardProps {
   category: string;
   ageMonths: number;
   gender?: string;
+  petId?: string;
+  petImage?: string;
 }
 
 interface InsightsData {
@@ -23,7 +26,8 @@ interface InsightsData {
   };
 }
 
-const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIInsightsCardProps) => {
+const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown", petId, petImage }: AIInsightsCardProps) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"quick" | "deep">("quick");
   const [insights, setInsights] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -199,7 +203,10 @@ const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIIn
 
       {/* Bottom CTA */}
       <div className="px-6 pb-6 pt-3">
-        <button className="w-full py-3.5 rounded-2xl bg-[#EDE9FE] text-[#7C3AED] font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#DDD6FE] transition-colors">
+        <button
+          onClick={() => navigate("/care-plan/intro", { state: { petData: { id: petId, breed, category, ageMonths, gender, image: petImage } } })}
+          className="w-full py-3.5 rounded-2xl bg-[#EDE9FE] text-[#7C3AED] font-bold text-[15px] flex items-center justify-center gap-2 hover:bg-[#DDD6FE] transition-colors"
+        >
           Get Personalised Care Plan
           <ArrowRight className="w-4 h-4" />
         </button>

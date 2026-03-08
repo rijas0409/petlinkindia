@@ -58,6 +58,9 @@ import AuthVet from "./pages/AuthVet";
 import VetOnboarding from "./pages/VetOnboarding";
 import VetPendingApproval from "./pages/VetPendingApproval";
 import VetDashboard from "./pages/VetDashboard";
+import CarePlanIntro from "./pages/care-plan/CarePlanIntro";
+import CarePlanForm from "./pages/care-plan/CarePlanForm";
+import CarePlanReport from "./pages/care-plan/CarePlanReport";
 import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
@@ -129,6 +132,10 @@ const App = () => (
           <Route path="/vet-onboarding" element={<VetOnboarding />} />
           <Route path="/vet-pending-approval" element={<VetPendingApproval />} />
           <Route path="/vet-dashboard" element={<VetDashboard />} />
+          {/* Care Plan Flow */}
+          <Route path="/care-plan/intro" element={<CarePlanIntro />} />
+          <Route path="/care-plan/form" element={<CarePlanForm />} />
+          <Route path="/care-plan/report" element={<CarePlanReport />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
