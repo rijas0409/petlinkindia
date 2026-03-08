@@ -34,7 +34,6 @@ export interface AdminData {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("overview");
