@@ -76,7 +76,11 @@ const AdminDashboard = () => {
       supabase.from("seller_earnings").select("*").order("created_at", { ascending: false }),
       supabase.from("vet_earnings").select("*").order("created_at", { ascending: false }),
     ]);
-    const pendingVetsData = (allVetsRes.data || []).filter((v: any) => v.verification_status === "pending" && v.profile?.is_onboarding_complete);
+    const pendingVetsData = (allVetsRes.data || []).filter((v: any) => v.verification_status === "pending" && v.profile?.is_onboarding_complete).sort((a: any, b: any) => {
+      const aPriority = a.profile?.priority_fee_paid ? 1 : 0;
+      const bPriority = b.profile?.priority_fee_paid ? 1 : 0;
+      return bPriority - aPriority;
+    });
     const allPets = petsRes.data || [];
     const newListings = allPets.filter((pet: any) => !pet.updated_at || pet.created_at === pet.updated_at);
     const reVerifications = allPets.filter((pet: any) => pet.updated_at && pet.created_at !== pet.updated_at);
