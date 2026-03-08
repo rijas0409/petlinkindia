@@ -22,6 +22,7 @@ export interface AdminData {
   pendingSellers: any[];
   pendingPets: any[];
   reVerificationPets: any[];
+  allPets: any[];
   pendingProducts: any[];
   pendingVets: any[];
   requests: any[];
@@ -45,7 +46,7 @@ const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [data, setData] = useState<AdminData>({
-    pendingSellers: [], pendingPets: [], reVerificationPets: [],
+    pendingSellers: [], pendingPets: [], reVerificationPets: [], allPets: [],
     pendingProducts: [], pendingVets: [], requests: [], partners: [],
     allUsers: [], allVets: [], allProducts: [], allOrders: [],
     sellerEarnings: [], vetEarnings: [],
@@ -72,11 +73,12 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [requestsRes, partnersRes, sellersRes, petsRes, productsRes, allUsersRes, allVetsRes, allProductsRes, ordersRes, sellerEarnRes, vetEarnRes] = await Promise.all([
+    const [requestsRes, partnersRes, sellersRes, petsRes, allPetsRes, productsRes, allUsersRes, allVetsRes, allProductsRes, ordersRes, sellerEarnRes, vetEarnRes] = await Promise.all([
       supabase.from("transport_requests").select("*, pet:pets(name, breed, images), seller:profiles!transport_requests_seller_id_fkey(name, phone), buyer:profiles!transport_requests_buyer_id_fkey(name, phone), partner:profiles!transport_requests_assigned_partner_id_fkey(name, phone)").order("created_at", { ascending: false }),
       supabase.from("profiles").select("id, name, phone, email").eq("role", "delivery_partner"),
       supabase.from("profiles").select("*").in("role", ["seller", "product_seller"]).eq("is_onboarding_complete", true).eq("is_admin_approved", false).order("priority_fee_paid", { ascending: false }).order("created_at", { ascending: false }),
       supabase.from("pets").select("*, owner:profiles!pets_owner_id_fkey(name, phone)").eq("verification_status", "pending").order("priority_fee_paid", { ascending: false }).order("created_at", { ascending: false }),
+      supabase.from("pets").select("*, owner:profiles!pets_owner_id_fkey(name, phone)").order("priority_fee_paid", { ascending: false }).order("created_at", { ascending: false }),
       supabase.from("shop_products").select("*, seller:profiles!shop_products_seller_id_fkey(name, phone)").eq("verification_status", "pending").order("priority_fee_paid", { ascending: false }).order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("vet_profiles").select("*, profile:profiles!vet_profiles_user_id_fkey(name, email, phone, is_admin_approved, is_onboarding_complete, profile_photo)").order("created_at", { ascending: false }),
@@ -90,13 +92,14 @@ const AdminDashboard = () => {
       const bPriority = b.profile?.priority_fee_paid ? 1 : 0;
       return bPriority - aPriority;
     });
-    const allPets = petsRes.data || [];
-    const newListings = allPets.filter((pet: any) => !pet.updated_at || pet.created_at === pet.updated_at);
-    const reVerifications = allPets.filter((pet: any) => pet.updated_at && pet.created_at !== pet.updated_at);
+    const pendingPets = petsRes.data || [];
+    const newListings = pendingPets.filter((pet: any) => !pet.updated_at || pet.created_at === pet.updated_at);
+    const reVerifications = pendingPets.filter((pet: any) => pet.updated_at && pet.created_at !== pet.updated_at);
     setData({
       requests: requestsRes.data || [], partners: partnersRes.data || [],
       pendingSellers: sellersRes.data || [], pendingPets: newListings,
-      reVerificationPets: reVerifications, pendingProducts: productsRes.data || [],
+      reVerificationPets: reVerifications, allPets: allPetsRes.data || [],
+      pendingProducts: productsRes.data || [],
       pendingVets: pendingVetsData, allUsers: allUsersRes.data || [],
       allVets: allVetsRes.data || [], allProducts: allProductsRes.data || [],
       allOrders: ordersRes.data || [], sellerEarnings: sellerEarnRes.data || [],
