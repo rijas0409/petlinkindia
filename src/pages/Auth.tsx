@@ -111,11 +111,9 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-soft flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6 animate-fade-in">
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-primary rounded-3xl shadow-float mb-4">
-            <Heart className="w-8 h-8 text-white" />
-          </div>
+          <img src={sruvoLogo} alt="Sruvo" className="w-16 h-16 object-contain mb-4" />
           <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            PetLink
+            Sruvo
           </h1>
           <p className="text-muted-foreground">Find your perfect companion</p>
         </div>
