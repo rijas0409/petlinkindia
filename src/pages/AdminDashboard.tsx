@@ -147,6 +147,7 @@ const AdminDashboard = () => {
   const renderSection = () => {
     switch (activeSection) {
       case "overview": return <AdminOverview data={data} actions={actions} setActiveSection={handleSectionChange} />;
+      case "buyers": return <AdminBuyers />;
       case "users": return <AdminUserManagement data={data} actions={actions} />;
       case "vets": return <AdminVets data={data} actions={actions} />;
       case "products": return <AdminProducts data={data} actions={actions} />;

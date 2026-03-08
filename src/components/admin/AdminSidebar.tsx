@@ -10,6 +10,7 @@ interface AdminSidebarProps {
 
 const navItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "buyers", label: "Buyers", icon: ShoppingBag },
   { id: "users", label: "User Management", icon: Users },
   { id: "vets", label: "Vets", icon: Stethoscope },
   { id: "listings", label: "Listings", icon: PawPrint },
