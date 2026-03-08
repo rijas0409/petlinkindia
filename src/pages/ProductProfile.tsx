@@ -405,15 +405,17 @@ const ProductProfile = () => {
               <div className="w-full h-full relative flex items-center justify-center" onClick={resetControlsTimer}>
                 <video
                   ref={videoRef}
-                  src={currentMedia.url}
                   className="max-w-full max-h-full object-contain rounded-lg"
                   playsInline
+                  preload="metadata"
                   muted={isMuted}
                   onTimeUpdate={handleTimeUpdate}
                   onLoadedMetadata={handleLoadedMetadata}
                   onEnded={() => { setIsPlaying(false); setShowVideoControls(true); }}
                   onError={() => setVideoError(true)}
-                />
+                >
+                  <source src={currentMedia.url} type={getVideoMimeType(currentMedia.url)} />
+                </video>
                 {/* Duration badge */}
                 {videoDuration && !isPlaying && (
                   <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[11px] font-medium z-10">
@@ -424,7 +426,7 @@ const ProductProfile = () => {
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none rounded-b-lg" />
                 {/* Play button */}
                 {!isPlaying && (
-                  <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center z-10">
+                  <button onClick={(event) => { void togglePlay(event); }} className="absolute inset-0 flex items-center justify-center z-10">
                     <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg" style={{ boxShadow: "0 0 20px rgba(244,114,182,0.3)" }}>
                       <Play className="w-7 h-7 text-[#333] ml-1" fill="#333" />
                     </div>
@@ -433,16 +435,16 @@ const ProductProfile = () => {
                 {/* Controls */}
                 {isPlaying && showVideoControls && (
                   <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 z-10" style={{ animation: "fadeIn 0.15s ease-out" }}>
-                    <button onClick={togglePlay} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={(event) => { void togglePlay(event); }} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       <Pause className="w-4 h-4 text-white" />
                     </button>
                     <div className="flex-1 h-[3px] bg-white/30 rounded-full cursor-pointer" onClick={handleSeek}>
                       <div className="h-full bg-white rounded-full transition-all" style={{ width: `${videoProgress}%` }} />
                     </div>
-                    <button onClick={toggleMute} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={(event) => toggleMute(event)} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       {isMuted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
                     </button>
-                    <button onClick={handleFullscreen} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={(event) => { void handleFullscreen(event); }} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       <Maximize className="w-4 h-4 text-white" />
                     </button>
                   </div>
