@@ -233,70 +233,73 @@ const ProductProfile = () => {
     await toggleProductWishlist({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "", petType: product.pet_type });
   };
 
-  // Fly-to-cart animation — product drops from just above the mini cart (like grocery apps)
-  const triggerFlyToCart = useCallback(() => {
-    const imgEl = productImageRef.current;
-    if (!imgEl) return;
+  // Fly-to-cart animation — waits for mini cart to be visible, then drops product into it
+  const triggerFlyToCart = useCallback((delayMs: number) => {
+    setTimeout(() => {
+      const imgEl = productImageRef.current;
+      if (!imgEl) return;
 
-    // Target: mini cart / floating bar position
-    const cartBarBottom = 56 + 54 + 29;
-    let targetX = window.innerWidth / 2;
-    let targetY = window.innerHeight - cartBarBottom - 32;
+      // Target: the mini cart element if visible, else fallback position
+      let targetX = window.innerWidth / 2;
+      let targetY = window.innerHeight - (56 + 54 + 29) - 32;
 
-    if (cartTargetRef.current) {
-      const targetRect = cartTargetRef.current.getBoundingClientRect();
-      targetX = targetRect.left + targetRect.width / 2;
-      targetY = targetRect.top + targetRect.height / 2;
-    }
-
-    // Start position: just ~80px above the cart target, centered
-    const CLONE_SIZE = 44;
-    const startX = targetX - CLONE_SIZE / 2;
-    const startY = targetY - 90;
-
-    const clone = document.createElement("img");
-    clone.src = imgEl.src;
-    clone.style.cssText = `
-      position:fixed; z-index:9999;
-      top:${startY}px; left:${startX}px;
-      width:${CLONE_SIZE}px; height:${CLONE_SIZE}px;
-      object-fit:cover; pointer-events:none;
-      border-radius:10px;
-      box-shadow:0 4px 14px rgba(0,0,0,0.18);
-      will-change:transform,opacity;
-    `;
-    document.body.appendChild(clone);
-
-    const dy = targetY - startY;
-
-    clone.animate(
-      [
-        { transform: "translateY(0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
-        { transform: `translateY(${dy * 0.5}px) scale(0.7) rotate(4deg)`, opacity: 1, offset: 0.5 },
-        { transform: `translateY(${dy}px) scale(0.35) rotate(0deg)`, opacity: 0.85, offset: 0.85 },
-        { transform: `translateY(${dy}px) scale(0.2) rotate(0deg)`, opacity: 0, offset: 1 },
-      ],
-      { duration: 550, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
-    ).onfinish = () => {
-      clone.remove();
       if (cartTargetRef.current) {
-        cartTargetRef.current.animate(
-          [
-            { transform: "scale(1)" },
-            { transform: "scale(1.18)" },
-            { transform: "scale(0.94)" },
-            { transform: "scale(1)" },
-          ],
-          { duration: 350, easing: "ease-out" }
-        );
+        const targetRect = cartTargetRef.current.getBoundingClientRect();
+        targetX = targetRect.left + targetRect.width / 2;
+        targetY = targetRect.top + targetRect.height / 2;
       }
-    };
+
+      // Clone: small thumbnail, starts ~70px above the mini cart center
+      const CLONE_SIZE = 40;
+      const startX = targetX - CLONE_SIZE / 2;
+      const startY = targetY - 70;
+      const dy = 70; // exactly the distance to travel down
+
+      const clone = document.createElement("img");
+      clone.src = imgEl.src;
+      clone.style.cssText = `
+        position:fixed; z-index:9999;
+        top:${startY}px; left:${startX}px;
+        width:${CLONE_SIZE}px; height:${CLONE_SIZE}px;
+        object-fit:cover; pointer-events:none;
+        border-radius:10px;
+        box-shadow:0 3px 12px rgba(0,0,0,0.15);
+        will-change:transform,opacity;
+      `;
+      document.body.appendChild(clone);
+
+      clone.animate(
+        [
+          { transform: "translateY(0) scale(1)", opacity: 1, offset: 0 },
+          { transform: `translateY(${dy * 0.6}px) scale(0.65)`, opacity: 1, offset: 0.55 },
+          { transform: `translateY(${dy}px) scale(0.3)`, opacity: 0.7, offset: 0.9 },
+          { transform: `translateY(${dy}px) scale(0.15)`, opacity: 0, offset: 1 },
+        ],
+        { duration: 450, easing: "cubic-bezier(0.4, 0, 0.2, 1)", fill: "forwards" }
+      ).onfinish = () => {
+        clone.remove();
+        if (cartTargetRef.current) {
+          cartTargetRef.current.animate(
+            [
+              { transform: "scale(1)" },
+              { transform: "scale(1.15)" },
+              { transform: "scale(0.95)" },
+              { transform: "scale(1)" },
+            ],
+            { duration: 300, easing: "ease-out" }
+          );
+        }
+      };
+    }, delayMs);
   }, []);
 
   const handleAddToCart = () => {
     if (!product) return;
-    triggerFlyToCart();
+    // If cart is empty (mini cart not yet visible), wait for mini cart to pop first
+    const isFirstAdd = cartCount === 0;
+    const flyDelay = isFirstAdd ? MINI_APPEAR_DELAY_MS + MINI_POP_MS + 50 : 0;
     addToCart({ id: product.id, name: product.name, price: product.price, image: product.images?.[0] || "" });
+    triggerFlyToCart(flyDelay);
   };
 
   const handleRemoveFromCart = () => {
