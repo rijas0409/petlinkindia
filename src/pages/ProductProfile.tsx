@@ -67,6 +67,7 @@ const ProductProfile = () => {
   const [cartPhase, setCartPhase] = useState<'hidden' | 'mini' | 'expanding' | 'full' | 'collapsing'>('hidden');
   const prevCartCount = useRef(0);
   const cartAnimationTimersRef = useRef<number[]>([]);
+  const [thumbnailPop, setThumbnailPop] = useState(0);
 
   // Fly-to-cart refs
   const productImageRef = useRef<HTMLImageElement>(null);
