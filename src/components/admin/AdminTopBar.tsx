@@ -36,19 +36,17 @@ const AdminTopBar = ({ user, onLogout, onMenuToggle }: AdminTopBarProps) => {
             <Bell className="w-[18px] h-[18px] text-[hsl(220,15%,45%)]" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-[hsl(0,75%,55%)] rounded-full"></span>
           </button>
-          {!isMobile && (
+          <div className="hidden md:flex">
             <button className="w-10 h-10 rounded-xl bg-[hsl(220,20%,97%)] flex items-center justify-center hover:bg-[hsl(220,20%,94%)] transition-colors">
               <LayoutGrid className="w-[18px] h-[18px] text-[hsl(220,15%,45%)]" />
             </button>
-          )}
-          {!isMobile && <div className="h-8 w-px bg-[hsl(220,20%,90%)]" />}
+          </div>
+          <div className="hidden md:block h-8 w-px bg-[hsl(220,20%,90%)]" />
           <div className="flex items-center gap-2 md:gap-3">
-            {!isMobile && (
-              <div className="text-right">
-                <p className="text-sm font-semibold text-[hsl(220,20%,15%)]">{user?.user_metadata?.name || "Admin"}</p>
-                <p className="text-[11px] text-[hsl(220,15%,55%)]">System Administrator</p>
-              </div>
-            )}
+            <div className="hidden md:block text-right">
+              <p className="text-sm font-semibold text-[hsl(220,20%,15%)]">{user?.user_metadata?.name || "Admin"}</p>
+              <p className="text-[11px] text-[hsl(220,15%,55%)]">System Administrator</p>
+            </div>
             <button onClick={onLogout} className="w-10 h-10 rounded-full bg-[hsl(220,20%,94%)] flex items-center justify-center text-[hsl(220,15%,45%)] hover:bg-[hsl(220,20%,90%)] transition-colors" title="Logout">
               <LogOut className="w-4 h-4" />
             </button>
