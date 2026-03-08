@@ -257,7 +257,7 @@ const VetDoctorProfile = () => {
                 <span
                   key={spec}
                   className="px-3.5 py-1.5 rounded-full text-xs font-medium"
-                  style={{ backgroundColor: "#FFF0E8", color: "#E8734A" }}
+                  style={{ backgroundColor: "#FDE7EC", color: "#E8599C" }}
                 >
                   {spec}
                 </span>
