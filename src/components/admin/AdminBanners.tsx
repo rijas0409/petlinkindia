@@ -146,6 +146,7 @@ const AdminBanners = () => {
       banner_style: form.banner_style, custom_width: form.custom_width,
       custom_height: form.custom_height, placement: form.placement,
       border_radius: form.border_radius, position: form.position, is_active: form.is_active,
+      cta_alignment: form.cta_alignment,
       updated_at: new Date().toISOString(),
     };
 
