@@ -95,7 +95,7 @@ const AuthDelivery = () => {
 
         if (error) throw error;
 
-        toast.success("Account created! Welcome to PetLink Delivery");
+        toast.success("Account created! Welcome to Sruvo Delivery");
         navigate("/delivery");
       }
     } catch (error: any) {
