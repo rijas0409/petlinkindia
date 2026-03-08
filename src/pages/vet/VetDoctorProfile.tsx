@@ -231,8 +231,11 @@ const VetDoctorProfile = () => {
             </div>
             <div className="w-px h-10 bg-border" />
             <div className="flex-1 text-center">
-              <p className="text-lg font-bold text-foreground">{doctor.support}</p>
-              <p className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">Support</p>
+              <div className="flex items-center justify-center gap-1">
+                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                <p className="text-lg font-bold text-foreground">{doctor.rating}</p>
+              </div>
+              <p className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">Rating</p>
             </div>
           </div>
         </div>
