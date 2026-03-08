@@ -70,6 +70,51 @@ const Vet = () => {
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [searchCity, setSearchCity] = useState("");
   const { totalWishlistCount } = useWishlist();
+  const [realVets, setRealVets] = useState<RealVet[]>([]);
+
+  useEffect(() => {
+    const fetchVets = async () => {
+      const { data: vetProfiles } = await supabase
+        .from("vet_profiles")
+        .select("id, user_id, specializations, years_of_experience, online_fee, average_rating, verification_status, is_active, profile_photo")
+        .eq("verification_status", "verified")
+        .eq("is_active", true);
+
+      if (!vetProfiles || vetProfiles.length === 0) {
+        setRealVets([]);
+        return;
+      }
+
+      const userIds = vetProfiles.map((v) => v.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, full_name, profile_photo")
+        .in("id", userIds);
+
+      const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
+      const vets: RealVet[] = vetProfiles.map((vp) => {
+        const profile = profileMap.get(vp.user_id);
+        const name = profile?.full_name || profile?.name || "Doctor";
+        const specs = vp.specializations || [];
+        return {
+          id: vp.id,
+          name: `Dr. ${name}`,
+          specialty: specs[0] || "General Veterinarian",
+          experience: `${vp.years_of_experience || 0} yrs exp.`,
+          rating: vp.average_rating || 0,
+          price: vp.online_fee || 500,
+          image: vp.profile_photo || profile?.profile_photo || "",
+          verified: vp.verification_status === "verified",
+          isActive: vp.is_active ?? true,
+        };
+      });
+
+      setRealVets(vets);
+    };
+
+    fetchVets();
+  }, []);
 
   const filteredCities = cities.filter(city =>
     city.name.toLowerCase().includes(searchCity.toLowerCase()) ||
