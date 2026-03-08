@@ -50,7 +50,7 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => { checkUser(); }, []);
-  useEffect(() => { if (user) fetchData(); }, [user]);
+  useEffect(() => { if (user) { fetchData(); fetchProfilePhoto(); } }, [user]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
