@@ -66,7 +66,7 @@ const AdminDashboard = () => {
     const [requestsRes, partnersRes, sellersRes, petsRes, productsRes, allUsersRes, allVetsRes, allProductsRes, ordersRes, sellerEarnRes, vetEarnRes] = await Promise.all([
       supabase.from("transport_requests").select("*, pet:pets(name, breed, images), seller:profiles!transport_requests_seller_id_fkey(name, phone), buyer:profiles!transport_requests_buyer_id_fkey(name, phone), partner:profiles!transport_requests_assigned_partner_id_fkey(name, phone)").order("created_at", { ascending: false }),
       supabase.from("profiles").select("id, name, phone, email").eq("role", "delivery_partner"),
-      supabase.from("profiles").select("*").in("role", ["seller", "product_seller"]).eq("is_onboarding_complete", true).eq("is_admin_approved", false).order("created_at", { ascending: false }),
+      supabase.from("profiles").select("*").in("role", ["seller", "product_seller"]).eq("is_onboarding_complete", true).eq("is_admin_approved", false).order("priority_fee_paid", { ascending: false }).order("created_at", { ascending: false }),
       supabase.from("pets").select("*, owner:profiles!pets_owner_id_fkey(name, phone)").eq("verification_status", "pending").order("priority_fee_paid", { ascending: false }).order("created_at", { ascending: false }),
       supabase.from("shop_products").select("*, seller:profiles!shop_products_seller_id_fkey(name, phone)").eq("verification_status", "pending").order("priority_fee_paid", { ascending: false }).order("created_at", { ascending: false }),
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
@@ -76,7 +76,11 @@ const AdminDashboard = () => {
       supabase.from("seller_earnings").select("*").order("created_at", { ascending: false }),
       supabase.from("vet_earnings").select("*").order("created_at", { ascending: false }),
     ]);
-    const pendingVetsData = (allVetsRes.data || []).filter((v: any) => v.verification_status === "pending" && v.profile?.is_onboarding_complete);
+    const pendingVetsData = (allVetsRes.data || []).filter((v: any) => v.verification_status === "pending" && v.profile?.is_onboarding_complete).sort((a: any, b: any) => {
+      const aPriority = a.profile?.priority_fee_paid ? 1 : 0;
+      const bPriority = b.profile?.priority_fee_paid ? 1 : 0;
+      return bPriority - aPriority;
+    });
     const allPets = petsRes.data || [];
     const newListings = allPets.filter((pet: any) => !pet.updated_at || pet.created_at === pet.updated_at);
     const reVerifications = allPets.filter((pet: any) => pet.updated_at && pet.created_at !== pet.updated_at);
