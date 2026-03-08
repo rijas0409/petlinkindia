@@ -75,12 +75,18 @@ const SIZE_PRESETS = [
   { label: "Wide", w: "100%", h: "200px", r: "16px" },
 ];
 
+const CTA_ALIGNMENTS = [
+  { id: "left", label: "Left", icon: "◀" },
+  { id: "center", label: "Center", icon: "●" },
+  { id: "right", label: "Right", icon: "▶" },
+];
+
 const emptyBanner = {
   title: "", subtitle: "", image_url: "", gradient: GRADIENT_PRESETS[0],
   cta_text: "Shop Now", cta_link: "", link_url: "", location: "custom",
   target_route: "/buyer-dashboard", banner_style: "full_width",
   custom_width: "100%", custom_height: "160px", placement: "top",
-  border_radius: "16px", position: 0, is_active: true,
+  border_radius: "16px", position: 0, is_active: true, cta_alignment: "left",
 };
 
 const AdminBanners = () => {
@@ -140,6 +146,7 @@ const AdminBanners = () => {
       banner_style: form.banner_style, custom_width: form.custom_width,
       custom_height: form.custom_height, placement: form.placement,
       border_radius: form.border_radius, position: form.position, is_active: form.is_active,
+      cta_alignment: form.cta_alignment,
       updated_at: new Date().toISOString(),
     };
 
@@ -166,6 +173,7 @@ const AdminBanners = () => {
       banner_style: b.banner_style || "full_width", custom_width: b.custom_width || "100%",
       custom_height: b.custom_height || "160px", placement: b.placement || "top",
       border_radius: b.border_radius || "16px", position: b.position, is_active: b.is_active,
+      cta_alignment: (b as any).cta_alignment || "left",
     });
     setEditingId(b.id);
     setShowForm(true);
@@ -370,6 +378,19 @@ const AdminBanners = () => {
                 </div>
               </div>
 
+              {/* CTA Alignment */}
+              <div>
+                <label className="text-sm font-semibold text-[hsl(220,20%,25%)] mb-2 block">🔘 CTA Button Alignment</label>
+                <div className="flex gap-2">
+                  {CTA_ALIGNMENTS.map(a => (
+                    <button key={a.id} onClick={() => setForm(f => ({ ...f, cta_alignment: a.id }))}
+                      className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border flex items-center justify-center gap-2 ${form.cta_alignment === a.id ? "border-[hsl(220,80%,50%)] bg-[hsl(220,80%,97%)] text-[hsl(220,80%,50%)]" : "border-[hsl(220,20%,90%)] text-[hsl(220,20%,30%)] hover:bg-[hsl(220,20%,97%)]"}`}>
+                      <span className="text-xs">{a.icon}</span> {a.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Active Toggle */}
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))}
@@ -394,8 +415,8 @@ const AdminBanners = () => {
                     <div className="flex items-center h-full relative">
                       {form.image_url && <img src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />}
                       {form.image_url && <div className="absolute inset-0" style={{ background: `${form.gradient.split(')')[0]}, 0.5)` }} />}
-                      <div className="relative z-10 flex items-center w-full h-full p-4">
-                        <div className="flex-1">
+                      <div className={`relative z-10 flex items-center w-full h-full p-4 ${form.cta_alignment === "center" ? "justify-center text-center" : form.cta_alignment === "right" ? "justify-end text-right" : "justify-start text-left"}`}>
+                        <div className={form.cta_alignment === "center" ? "" : "flex-1"}>
                           {form.title && <h3 className="text-white text-base font-bold leading-tight whitespace-pre-line">{form.title}</h3>}
                           {form.subtitle && <p className="text-white/80 text-xs mt-1 whitespace-pre-line">{form.subtitle}</p>}
                           {form.cta_text && <button className="mt-2 bg-white text-black text-xs font-semibold px-3 py-1 rounded-full">{form.cta_text}</button>}

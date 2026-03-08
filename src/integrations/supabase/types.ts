@@ -60,6 +60,7 @@ export type Database = {
           banner_style: string
           border_radius: string | null
           created_at: string
+          cta_alignment: string
           cta_link: string | null
           cta_text: string | null
           custom_height: string | null
@@ -81,6 +82,7 @@ export type Database = {
           banner_style?: string
           border_radius?: string | null
           created_at?: string
+          cta_alignment?: string
           cta_link?: string | null
           cta_text?: string | null
           custom_height?: string | null
@@ -102,6 +104,7 @@ export type Database = {
           banner_style?: string
           border_radius?: string | null
           created_at?: string
+          cta_alignment?: string
           cta_link?: string | null
           cta_text?: string | null
           custom_height?: string | null

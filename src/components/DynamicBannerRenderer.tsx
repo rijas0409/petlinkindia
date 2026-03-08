@@ -17,6 +17,7 @@ interface DynBanner {
   placement: string;
   border_radius: string;
   position: number;
+  cta_alignment: string;
 }
 
 const EXCLUDED_PREFIXES = ["/admin", "/auth", "/seller", "/products-", "/vet-", "/delivery"];
@@ -56,8 +57,8 @@ const BannerCard = ({ b, navigate }: { b: DynBanner; navigate: (path: string) =>
           <div className="absolute inset-0"
             style={{ background: `${b.gradient.split(')')[0]}, 0.5)`, borderRadius: b.border_radius || "16px" }} />
         )}
-        <div className="relative z-10 flex items-center w-full h-full p-4">
-          <div className="flex-1 min-w-0">
+        <div className={`relative z-10 flex items-center w-full h-full p-4 ${b.cta_alignment === "center" ? "justify-center text-center" : b.cta_alignment === "right" ? "justify-end text-right" : "justify-start text-left"}`}>
+          <div className={b.cta_alignment === "center" ? "" : "flex-1 min-w-0"}>
             {b.title && <h3 className="text-white text-sm md:text-base font-bold leading-tight whitespace-pre-line">{b.title}</h3>}
             {b.subtitle && <p className="text-white/80 text-[11px] mt-0.5 whitespace-pre-line">{b.subtitle}</p>}
             {b.cta_text && <button className="mt-1.5 bg-white text-black text-[11px] font-semibold px-3 py-1 rounded-full">{b.cta_text}</button>}
