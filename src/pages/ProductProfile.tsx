@@ -68,6 +68,10 @@ const ProductProfile = () => {
   const prevCartCount = useRef(0);
   const cartAnimationTimersRef = useRef<number[]>([]);
 
+  // Fly-to-cart refs
+  const productImageRef = useRef<HTMLImageElement>(null);
+  const cartTargetRef = useRef<HTMLDivElement>(null);
+
   const clearCartAnimationTimers = useCallback(() => {
     cartAnimationTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
     cartAnimationTimersRef.current = [];
