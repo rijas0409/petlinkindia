@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  ArrowLeft, Heart, Share2, Star, BadgeCheck, ChevronRight,
+  ArrowLeft, Heart, Share2, Star, BadgeCheck, ChevronRight, MapPin,
   Stethoscope, Syringe, Scissors, Shield, Clock,
   Dog, Cat, Bird, Rabbit
 } from "lucide-react";
@@ -211,7 +211,10 @@ const VetDoctorProfile = () => {
               <div className="flex-1 min-w-0">
                 <h1 className="text-lg font-bold text-foreground">{doctor.name}</h1>
                 <p className="text-sm font-medium" style={{ color: "#8E7CFF" }}>{doctor.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{doctor.clinic}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  {doctor.clinic}
+                </p>
               </div>
             </div>
           </div>
