@@ -63,6 +63,11 @@ const AdminDashboard = () => {
     setUser(session.user);
   };
 
+  const fetchProfilePhoto = async () => {
+    const { data } = await supabase.from("profiles").select("profile_photo").eq("id", user.id).maybeSingle();
+    if (data?.profile_photo) setProfilePhoto(data.profile_photo);
+  };
+
   const fetchData = async () => {
     setLoading(true);
     const [requestsRes, partnersRes, sellersRes, petsRes, productsRes, allUsersRes, allVetsRes, allProductsRes, ordersRes, sellerEarnRes, vetEarnRes] = await Promise.all([
