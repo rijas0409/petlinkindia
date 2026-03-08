@@ -1014,8 +1014,8 @@ const ProductProfile = () => {
               }}
             >
               {/* Top row: delivery text + CART label + cards */}
-              <div className="flex items-start justify-between w-full" style={{ marginBottom: 4 }}>
-                <p className="text-white text-[12px] font-bold leading-tight flex-1 mr-2 mt-0.5">
+              <div className="flex items-start justify-between w-full" style={{ marginBottom: 2 }}>
+                <p className="text-white text-[11.5px] font-bold leading-tight flex-1 mr-2 mt-0">
                   {deliveryUnlocked ? (
                     <span className="text-[#A5F3AB]">🎉 FREE DELIVERY UNLOCKED</span>
                   ) : (
@@ -1023,12 +1023,12 @@ const ProductProfile = () => {
                   )}
                 </p>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <div className="flex flex-col items-end">
-                    <span className="text-white text-[12px] font-extrabold leading-none">CART</span>
-                    <span className="text-white/90 text-[9px] font-semibold leading-none mt-0.5">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
+                  <div className="flex flex-col items-end" style={{ marginTop: -1 }}>
+                    <span className="text-white text-[11px] font-extrabold leading-none">CART</span>
+                    <span className="text-white/90 text-[8.5px] font-semibold leading-none mt-0.5">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                   </div>
                   {/* Stacked vertical rectangle cards — right to left stack, max 3 */}
-                  <div className="relative" ref={cartTargetRef} style={{ width: 40, height: 30 }}>
+                  <div className="relative" ref={cartTargetRef} style={{ width: 36, height: 26 }}>
                     {(() => {
                       const stackedItems = cartItems
                         .flatMap((item) => Array.from({ length: item.quantity }, () => item))
@@ -1039,10 +1039,10 @@ const ProductProfile = () => {
                           key={`${item.id}-${idx}-${thumbnailPop}`}
                           className="absolute top-0 overflow-hidden flex items-center justify-center"
                           style={{
-                            width: 22,
-                            height: 30,
-                            borderRadius: 5,
-                            right: idx * 6,
+                            width: 19,
+                            height: 26,
+                            borderRadius: 4,
+                            right: idx * 5,
                             zIndex: idx + 1,
                             border: "1.5px solid rgba(255,255,255,0.5)",
                             boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
@@ -1050,9 +1050,9 @@ const ProductProfile = () => {
                           }}
                         >
                           {item.image ? (
-                            <img src={item.image} alt="" className="w-full h-full object-cover" style={{ borderRadius: 4 }} />
+                            <img src={item.image} alt="" className="w-full h-full object-cover" style={{ borderRadius: 3 }} />
                           ) : (
-                            <ShoppingCart className="w-3 h-3 text-white" />
+                            <ShoppingCart className="w-2.5 h-2.5 text-white" />
                           )}
                         </div>
                       ));
@@ -1060,8 +1060,8 @@ const ProductProfile = () => {
                   </div>
                 </div>
               </div>
-              {/* Progress bar — full width under everything */}
-              <div className="h-[6px] rounded-full overflow-hidden relative w-[90%]" style={{ background: "rgba(255,255,255,0.25)" }}>
+              {/* Progress bar — under cards, slightly reduced width */}
+              <div className="h-[5px] rounded-full overflow-hidden relative w-[85%]" style={{ background: "rgba(255,255,255,0.25)" }}>
                 <div
                   className="h-full rounded-full relative overflow-hidden"
                   style={{
