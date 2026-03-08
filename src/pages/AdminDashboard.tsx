@@ -11,6 +11,7 @@ import AdminUserManagement from "@/components/admin/AdminUserManagement";
 import AdminVets from "@/components/admin/AdminVets";
 import AdminProducts from "@/components/admin/AdminProducts";
 import AdminFinancials from "@/components/admin/AdminFinancials";
+import AdminBanners from "@/components/admin/AdminBanners";
 import AdminSettings from "@/components/admin/AdminSettings";
 import AdminListings from "@/components/admin/AdminListings";
 import AdminTransport from "@/components/admin/AdminTransport";
