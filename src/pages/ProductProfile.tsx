@@ -11,6 +11,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
+import miniCartImage from "@/assets/mini-cart.png";
 
 interface Product {
   id: string; name: string; brand: string; description: string | null;
@@ -28,6 +29,12 @@ interface Product {
 }
 
 const FREE_DELIVERY_THRESHOLD = 499;
+const STEPPER_MORPH_MS = 200;
+const MINI_APPEAR_DELAY_MS = 200;
+const MINI_POP_MS = 250;
+const MINI_BOUNCE_MS = 140;
+const CART_EXPAND_MS = 300;
+const CART_COLLAPSE_MS = 500;
 
 const ProductProfile = () => {
   const { id } = useParams<{ id: string }>();
