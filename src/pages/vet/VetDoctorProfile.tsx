@@ -208,9 +208,8 @@ const VetDoctorProfile = () => {
                 <h1 className="text-lg font-bold text-foreground">{doctor.name}</h1>
                 <p className="text-sm font-medium" style={{ color: "#8E7CFF" }}>{doctor.title}</p>
                 <div className="flex items-center gap-1.5 mt-1.5">
-                  <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   <span className="text-sm font-semibold text-foreground">{doctor.rating}</span>
-                  <span className="text-xs text-muted-foreground">({doctor.reviews}+ Reviews)</span>
+                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                 </div>
               </div>
             </div>
