@@ -43,13 +43,9 @@ const CarePlanFormStep2 = () => {
         <h1 className="flex-1 text-center font-bold text-[17px] text-[#151B32] pr-7">Personalisation Form</h1>
       </div>
 
-      <div className="px-6 pt-2 pb-1 flex items-center justify-between">
-        <span className="text-[15px] font-extrabold text-[#151B32]">Deep Dive</span>
-        <span className="text-[13px] font-bold text-[#EC4899]">Step 2 of 2</span>
-      </div>
-      <div className="px-6 flex items-center justify-between mb-1">
-        <span className="text-[12px] text-[#9CA3AF]">Almost there!</span>
-        <span className="text-[12px] font-semibold text-[#151B32]">100%</span>
+      <div className="px-6 pt-2 pb-4 flex items-center justify-between">
+        <span className="text-[13px] font-bold text-[#EC4899]">Deep Dive</span>
+        <span className="text-[12px] text-[#9CA3AF] font-medium">STEP 2 OF 2</span>
       </div>
       <div className="mx-6 h-1.5 rounded-full bg-[#FDE2EC]">
         <div className="h-full rounded-full bg-[#EC4899] w-full transition-all" />
