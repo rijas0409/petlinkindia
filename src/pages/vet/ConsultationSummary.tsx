@@ -156,8 +156,8 @@ const ConsultationSummary = () => {
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border p-4 space-y-4">
+      {/* Fixed Bottom CTA */}
+      <div className="flex-shrink-0 px-4 pb-4 pt-3 bg-gradient-to-t from-background via-background to-transparent">
         <button 
           onClick={handlePayment}
           disabled={isProcessing}
@@ -174,24 +174,6 @@ const ConsultationSummary = () => {
             </>
           )}
         </button>
-        
-        <div className="text-center space-y-2">
-          <p className="text-xs text-muted-foreground">
-            By continuing, you agree to the <span className="text-teal-600 font-medium">Terms of Service</span>.
-          </p>
-          <p className="text-xs text-muted-foreground">Please enable camera permissions on the next screen.</p>
-        </div>
-
-        <div className="flex items-center justify-center gap-4">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Shield className="w-3 h-3" />
-            SECURE SSL
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <BadgeCheckIcon className="w-3 h-3" />
-            CERTIFIED VETS
-          </div>
-        </div>
       </div>
     </div>
   );
