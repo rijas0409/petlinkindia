@@ -61,6 +61,7 @@ import VetDashboard from "./pages/VetDashboard";
 import CarePlanIntro from "./pages/care-plan/CarePlanIntro";
 import CarePlanForm from "./pages/care-plan/CarePlanForm";
 import CarePlanReport from "./pages/care-plan/CarePlanReport";
+import CarePlanFormStep2 from "./pages/care-plan/CarePlanFormStep2";
 import { CartProvider } from "./contexts/CartContext";
 
 const queryClient = new QueryClient();
