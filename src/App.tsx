@@ -136,6 +136,7 @@ const App = () => (
           {/* Care Plan Flow */}
           <Route path="/care-plan/intro" element={<CarePlanIntro />} />
           <Route path="/care-plan/form" element={<CarePlanForm />} />
+          <Route path="/care-plan/form-step2" element={<CarePlanFormStep2 />} />
           <Route path="/care-plan/report" element={<CarePlanReport />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
