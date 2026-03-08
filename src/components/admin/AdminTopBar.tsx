@@ -4,16 +4,15 @@ import { useState } from "react";
 interface AdminTopBarProps {
   user: any;
   onLogout: () => void;
-  isMobile?: boolean;
   onMenuToggle?: () => void;
 }
 
-const AdminTopBar = ({ user, onLogout, isMobile, onMenuToggle }: AdminTopBarProps) => {
+const AdminTopBar = ({ user, onLogout, onMenuToggle }: AdminTopBarProps) => {
   const [search, setSearch] = useState("");
 
   return (
     <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-[hsl(220,20%,92%)]">
-      <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "px-8 py-4"}`}>
+      <div className="flex items-center justify-between px-4 py-3 md:px-8 md:py-4">
         {/* Left */}
         <div className="flex items-center gap-3">
           <button onClick={onMenuToggle} className="w-10 h-10 rounded-xl bg-[hsl(220,20%,97%)] flex items-center justify-center hover:bg-[hsl(220,20%,94%)] transition-colors">
