@@ -179,7 +179,7 @@ const AdminDashboard = () => {
         className="flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out"
         style={!isMobile ? { marginLeft: sidebarWidth } : undefined}
       >
-        <AdminTopBar user={user} onLogout={handleLogout} onMenuToggle={handleMenuToggle} />
+        <AdminTopBar user={user} profilePhoto={profilePhoto} onLogout={handleLogout} onMenuToggle={handleMenuToggle} onProfileSettings={() => handleSectionChange("profile")} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {renderSection()}
         </main>
