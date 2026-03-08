@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import sruvoLogo from "@/assets/sruvo-logo.png";
+import sruvoLogo from "@/assets/sruvo-logo.png"; // rebrand
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart, Search, ShoppingCart } from "lucide-react";
