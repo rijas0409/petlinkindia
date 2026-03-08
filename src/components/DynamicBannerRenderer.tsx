@@ -17,6 +17,7 @@ interface DynBanner {
   placement: string;
   border_radius: string;
   position: number;
+  cta_alignment: string;
 }
 
 const EXCLUDED_PREFIXES = ["/admin", "/auth", "/seller", "/products-", "/vet-", "/delivery"];
