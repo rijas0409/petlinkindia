@@ -271,61 +271,63 @@ const AdminUserManagement = ({ data, actions }: Props) => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
-              <tr className="border-b border-[hsl(220,20%,92%)]">
-                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">User</th>
-                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Role</th>
-                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Status</th>
-                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Joined</th>
-                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">View</th>
-                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Action</th>
+              <tr className="border-b-2 border-[hsl(220,20%,90%)]">
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"28%"}}>User</th>
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"13%"}}>Role</th>
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"12%"}}>Status</th>
+                <th className="pb-3 pt-1 text-left font-semibold text-[hsl(220,15%,55%)]" style={{width:"14%"}}>Joined</th>
+                <th className="pb-3 pt-1 text-center font-semibold text-[hsl(220,15%,55%)]" style={{width:"13%"}}>View</th>
+                <th className="pb-3 pt-1 text-center font-semibold text-[hsl(220,15%,55%)]" style={{width:"13%"}}>Action</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
                 <tr><td colSpan={6} className="py-8 text-center text-[hsl(220,15%,60%)]">No users found</td></tr>
               ) : (
-                filtered.slice(0, 50).map((u: any) => {
+                filtered.slice(0, 50).map((u: any, idx: number) => {
                   const rl = roleLabels[u.role] || roleLabels.buyer;
                   return (
-                    <tr key={u.id} className="border-b border-[hsl(220,20%,95%)] hover:bg-[hsl(220,20%,98%)]">
-                      <td className="py-3">
+                    <tr key={u.id} className={`border-b border-[hsl(220,20%,94%)] hover:bg-[hsl(220,30%,97%)] transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-[hsl(220,20%,99%)]"}`}>
+                      <td className="py-3.5 pr-2">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[hsl(220,20%,94%)] flex items-center justify-center text-[12px] font-bold text-[hsl(220,15%,45%)] overflow-hidden">
+                          <div className="w-9 h-9 rounded-full bg-[hsl(220,20%,94%)] flex items-center justify-center text-[12px] font-bold text-[hsl(220,15%,45%)] overflow-hidden shrink-0">
                             {u.profile_photo || u.selfie_file ? (
                               <img src={u.profile_photo || u.selfie_file} className="w-full h-full object-cover" />
                             ) : (u.name || "U")[0].toUpperCase()}
                           </div>
-                          <div>
-                            <p className="font-medium text-[hsl(220,20%,15%)]">{u.name}</p>
-                            <p className="text-[11px] text-[hsl(220,15%,60%)]">{u.email}</p>
+                          <div className="min-w-0">
+                            <p className="font-medium text-[hsl(220,20%,15%)] truncate">{u.name}</p>
+                            <p className="text-[11px] text-[hsl(220,15%,60%)] truncate">{u.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3">
-                        <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold" style={{ backgroundColor: `${rl.color}15`, color: rl.color }}>{rl.label}</span>
+                      <td className="py-3.5">
+                        <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap" style={{ backgroundColor: `${rl.color}15`, color: rl.color }}>{rl.label}</span>
                       </td>
-                      <td className="py-3">
-                        <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold ${u.is_admin_approved ? "bg-[hsl(145,50%,92%)] text-[hsl(145,60%,35%)]" : u.is_onboarding_complete ? "bg-[hsl(40,60%,92%)] text-[hsl(40,70%,35%)]" : "bg-[hsl(220,20%,94%)] text-[hsl(220,15%,55%)]"}`}>
+                      <td className="py-3.5">
+                        <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap ${u.is_admin_approved ? "bg-[hsl(145,50%,92%)] text-[hsl(145,60%,35%)]" : u.is_onboarding_complete ? "bg-[hsl(40,60%,92%)] text-[hsl(40,70%,35%)]" : "bg-[hsl(220,20%,94%)] text-[hsl(220,15%,55%)]"}`}>
                           {u.is_admin_approved ? "Approved" : u.is_onboarding_complete ? "Pending" : "Active"}
                         </span>
                       </td>
-                      <td className="py-3 text-[hsl(220,15%,60%)]">{new Date(u.created_at).toLocaleDateString()}</td>
-                      <td className="py-3">
+                      <td className="py-3.5 text-[hsl(220,15%,55%)] text-[13px]">{new Date(u.created_at).toLocaleDateString()}</td>
+                      <td className="py-3.5 text-center">
                         {(u.role === "seller" || u.role === "product_seller") && u.is_onboarding_complete ? (
-                          <button onClick={() => setSelectedSeller(u)} className="text-[12px] text-[hsl(220,80%,50%)] font-medium hover:underline flex items-center gap-1">
+                          <button onClick={() => setSelectedSeller(u)} className="inline-flex items-center gap-1 px-3 py-1.5 text-[12px] text-[hsl(220,80%,50%)] font-medium rounded-lg border border-[hsl(220,80%,85%)] hover:bg-[hsl(220,80%,96%)] transition-colors">
                             <Eye className="w-3.5 h-3.5" /> View
                           </button>
                         ) : (
-                          <span className="text-[11px] text-[hsl(220,15%,70%)]">—</span>
+                          <span className="text-[12px] text-[hsl(220,15%,78%)]">—</span>
                         )}
                       </td>
-                      <td className="py-3">
-                        {u.role !== "admin" && (
-                          <button onClick={() => setDeleteTarget(u)} className="text-[12px] text-[hsl(0,65%,50%)] font-medium hover:underline flex items-center gap-1">
+                      <td className="py-3.5 text-center">
+                        {u.role !== "admin" ? (
+                          <button onClick={() => setDeleteTarget(u)} className="inline-flex items-center gap-1 px-3 py-1.5 text-[12px] text-[hsl(0,65%,50%)] font-medium rounded-lg border border-[hsl(0,50%,85%)] hover:bg-[hsl(0,60%,97%)] transition-colors">
                             <Trash2 className="w-3.5 h-3.5" /> Delete
                           </button>
+                        ) : (
+                          <span className="text-[12px] text-[hsl(220,15%,78%)]">—</span>
                         )}
                       </td>
                     </tr>
