@@ -61,6 +61,7 @@ const doctorsData: Record<string, {
   "2": {
     name: "Dr. Rohan Sharma",
     title: "Paws & Claws Specialist",
+    clinic: "Happy Paws Clinic, Delhi",
     rating: 4.8,
     reviews: 85,
     yearsExp: 5,
