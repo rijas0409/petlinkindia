@@ -64,6 +64,12 @@ const ProductProfile = () => {
   // Cart animation state
   const [cartPhase, setCartPhase] = useState<'hidden' | 'mini' | 'expanding' | 'full' | 'collapsing'>('hidden');
   const prevCartCount = useRef(0);
+  const cartAnimationTimersRef = useRef<number[]>([]);
+
+  const clearCartAnimationTimers = useCallback(() => {
+    cartAnimationTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+    cartAnimationTimersRef.current = [];
+  }, []);
 
   // Swipe refs
   const touchStartX = useRef(0);
@@ -86,6 +92,10 @@ const ProductProfile = () => {
 
   // Auto-pause video when swiping to another slide
   useEffect(() => {
+    setVideoError(false);
+    setVideoProgress(0);
+    setShowVideoControls(true);
+
     if (videoRef.current) {
       videoRef.current.pause();
       setIsPlaying(false);
@@ -95,17 +105,38 @@ const ProductProfile = () => {
   // Cart animation logic
   useEffect(() => {
     if (cartCount > 0 && prevCartCount.current === 0) {
-      // Items added from 0
-      setCartPhase('mini');
-      setTimeout(() => setCartPhase('expanding'), 400);
-      setTimeout(() => setCartPhase('full'), 700);
+      clearCartAnimationTimers();
+      setCartPhase("hidden");
+
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("mini"), MINI_APPEAR_DELAY_MS),
+      );
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("expanding"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS),
+      );
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("full"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + CART_EXPAND_MS),
+      );
     } else if (cartCount === 0 && prevCartCount.current > 0) {
-      // Cart emptied
-      setCartPhase('collapsing');
-      setTimeout(() => setCartPhase('hidden'), 500);
+      clearCartAnimationTimers();
+      setCartPhase("collapsing");
+
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("hidden"), CART_COLLAPSE_MS),
+      );
     }
+
     prevCartCount.current = cartCount;
-  }, [cartCount]);
+  }, [cartCount, clearCartAnimationTimers]);
+
+  useEffect(() => {
+    return () => {
+      clearCartAnimationTimers();
+      if (controlsTimeout.current) {
+        clearTimeout(controlsTimeout.current);
+      }
+    };
+  }, [clearCartAnimationTimers]);
 
   const resetControlsTimer = useCallback(() => {
     setShowVideoControls(true);
