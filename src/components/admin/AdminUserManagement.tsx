@@ -278,7 +278,8 @@ const AdminUserManagement = ({ data, actions }: Props) => {
                 <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Role</th>
                 <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Status</th>
                 <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Joined</th>
-                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Actions</th>
+                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">View</th>
+                <th className="pb-3 text-left font-semibold text-[hsl(220,15%,55%)]">Action</th>
               </tr>
             </thead>
             <tbody>
