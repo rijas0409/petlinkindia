@@ -10,11 +10,11 @@ const ConsultationSummary = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const vet = matchedVet || {
-    name: "Dr. Vikram Malhotra",
-    specialization: "Senior Veterinarian",
-    image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
-    rating: 4.9,
-    experience: 12,
+    name: "Doctor",
+    specialization: "Veterinarian",
+    image: "",
+    rating: 0,
+    experience: 0,
     fee: 499
   };
 
