@@ -10,7 +10,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import shopPromoBanner from "@/assets/shop-promo-banner.png";
 
-const PROMO_SLIDES = [
+const FALLBACK_SLIDES = [
   {
     gradient: "linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)",
     title: "Summer Pet\nCare Deals",
@@ -56,10 +56,31 @@ const PET_OPTIONS = [
 // Promo Carousel Component
 const PromoCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [slides, setSlides] = useState<any[]>([]);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
     [Autoplay({ delay: 4000, stopOnInteraction: false })]
   );
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      const { data } = await supabase
+        .from("banners")
+        .select("*")
+        .eq("location", "shop_home")
+        .eq("is_active", true)
+        .order("position");
+      if (data && data.length > 0) {
+        setSlides(data.map((b: any) => ({
+          gradient: b.gradient, title: b.title, subtitle: b.subtitle,
+          cta: b.cta_text, image: b.image_url,
+        })));
+      } else {
+        setSlides(FALLBACK_SLIDES);
+      }
+    };
+    fetchBanners();
+  }, []);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -72,11 +93,13 @@ const PromoCarousel = () => {
     onSelect();
   }, [emblaApi, onSelect]);
 
+  if (slides.length === 0) return null;
+
   return (
     <div>
       <div className="relative overflow-hidden rounded-2xl" ref={emblaRef}>
         <div className="flex">
-          {PROMO_SLIDES.map((slide, index) => (
+          {slides.map((slide, index) => (
             <div key={index} className="flex-[0_0_100%] min-w-0">
               <div className="relative rounded-2xl overflow-hidden" style={{ background: slide.gradient }}>
                 <div className="flex items-center">
@@ -85,9 +108,11 @@ const PromoCarousel = () => {
                     <p className="text-white/80 text-xs mt-1 whitespace-pre-line">{slide.subtitle}</p>
                     <button className="mt-3 bg-white text-foreground text-xs font-semibold px-4 py-1.5 rounded-full">{slide.cta}</button>
                   </div>
-                  <div className="w-36 h-32 flex-shrink-0">
-                    <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
-                  </div>
+                  {slide.image && (
+                    <div className="w-36 h-32 flex-shrink-0">
+                      <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -95,7 +120,7 @@ const PromoCarousel = () => {
         </div>
       </div>
       <div className="flex justify-center gap-1.5 mt-2.5">
-        {PROMO_SLIDES.map((_, index) => (
+        {slides.map((_, index) => (
           <button key={index} onClick={() => emblaApi?.scrollTo(index)}
             className={`h-1.5 rounded-full transition-all ${index === currentIndex ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30"}`} />
         ))}

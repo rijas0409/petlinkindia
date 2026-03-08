@@ -1,13 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { supabase } from "@/integrations/supabase/client";
 
-const BANNER_SLIDES = [
+const FALLBACK_SLIDES = [
   {
     id: 1,
     image: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800",
@@ -40,10 +36,31 @@ const BANNER_SLIDES = [
 
 const ShopCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [slides, setSlides] = useState<any[]>([]);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true },
     [Autoplay({ delay: 4000, stopOnInteraction: false })]
   );
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      const { data } = await supabase
+        .from("banners")
+        .select("*")
+        .eq("location", "buyer_home")
+        .eq("is_active", true)
+        .order("position");
+      if (data && data.length > 0) {
+        setSlides(data.map((b: any) => ({
+          id: b.id, image: b.image_url, gradient: b.gradient,
+          title: b.title, subtitle: b.subtitle, useCustomGradient: true,
+        })));
+      } else {
+        setSlides(FALLBACK_SLIDES);
+      }
+    };
+    fetchBanners();
+  }, []);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -56,22 +73,23 @@ const ShopCarousel = () => {
     onSelect();
   }, [emblaApi, onSelect]);
 
+  if (slides.length === 0) return null;
+
   return (
     <div className="w-full px-4 py-4">
       <div className="relative overflow-hidden rounded-2xl" ref={emblaRef}>
         <div className="flex">
-          {BANNER_SLIDES.map((slide) => (
-            <div
-              key={slide.id}
-              className="flex-[0_0_100%] min-w-0"
-            >
+          {slides.map((slide) => (
+            <div key={slide.id} className="flex-[0_0_100%] min-w-0">
               <div className="relative h-40 rounded-2xl overflow-hidden">
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient}`} />
+                {slide.image && (
+                  <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
+                )}
+                {slide.useCustomGradient ? (
+                  <div className="absolute inset-0" style={{ background: slide.gradient }} />
+                ) : (
+                  <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient}`} />
+                )}
                 <div className="absolute inset-0 flex flex-col justify-center px-6">
                   <h3 className="text-white text-xl font-bold">{slide.title}</h3>
                   <p className="text-white/90 text-sm mt-1">{slide.subtitle}</p>
@@ -82,16 +100,13 @@ const ShopCarousel = () => {
         </div>
       </div>
       
-      {/* Pagination dots */}
       <div className="flex justify-center gap-2 mt-3">
-        {BANNER_SLIDES.map((_, index) => (
+        {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => emblaApi?.scrollTo(index)}
             className={`w-2 h-2 rounded-full transition-all ${
-              index === currentIndex
-                ? "bg-primary w-6"
-                : "bg-muted-foreground/30"
+              index === currentIndex ? "bg-primary w-6" : "bg-muted-foreground/30"
             }`}
           />
         ))}
