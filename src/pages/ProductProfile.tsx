@@ -243,45 +243,72 @@ const ProductProfile = () => {
   };
 
   // Video controls
-  const togglePlay = () => {
-    if (!videoRef.current) return;
+  const togglePlay = async (event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    if (!videoRef.current || videoError) return;
+
     if (isPlaying) {
       videoRef.current.pause();
       setIsPlaying(false);
       setShowVideoControls(true);
-    } else {
-      videoRef.current.play();
+      return;
+    }
+
+    try {
+      await videoRef.current.play();
       setIsPlaying(true);
       resetControlsTimer();
+    } catch {
+      setIsPlaying(false);
+      setShowVideoControls(true);
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = (event?: React.MouseEvent) => {
+    event?.stopPropagation();
     if (!videoRef.current) return;
     videoRef.current.muted = !isMuted;
     setIsMuted(!isMuted);
   };
 
-  const handleFullscreen = () => {
+  const handleFullscreen = async (event?: React.MouseEvent) => {
+    event?.stopPropagation();
     if (!videoRef.current) return;
-    if (videoRef.current.requestFullscreen) videoRef.current.requestFullscreen();
+
+    try {
+      if (videoRef.current.requestFullscreen) {
+        await videoRef.current.requestFullscreen();
+      }
+    } catch {
+      // silent fallback
+    }
   };
 
   const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !Number.isFinite(videoRef.current.duration) || videoRef.current.duration <= 0) return;
     setVideoProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
   };
 
   const handleLoadedMetadata = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !Number.isFinite(videoRef.current.duration)) return;
     const dur = videoRef.current.duration;
-    setVideoDuration(`${Math.floor(dur / 60)}:${Math.floor(dur % 60).toString().padStart(2, '0')}`);
+    setVideoDuration(`${Math.floor(dur / 60)}:${Math.floor(dur % 60).toString().padStart(2, "0")}`);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!videoRef.current) return;
+    e.stopPropagation();
+    if (!videoRef.current || !Number.isFinite(videoRef.current.duration) || videoRef.current.duration <= 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
     videoRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * videoRef.current.duration;
+  };
+
+  const getVideoMimeType = (videoUrl: string) => {
+    const lowerUrl = videoUrl.toLowerCase();
+    if (lowerUrl.endsWith(".webm")) return "video/webm";
+    if (lowerUrl.endsWith(".ogg")) return "video/ogg";
+    if (lowerUrl.endsWith(".m3u8")) return "application/x-mpegURL";
+    if (lowerUrl.endsWith(".ts")) return "video/mp2t";
+    return "video/mp4";
   };
 
   // Touch swipe handlers
