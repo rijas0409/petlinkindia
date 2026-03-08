@@ -1,6 +1,6 @@
 import { AdminData } from "@/pages/AdminDashboard";
 import { Users, Stethoscope, DollarSign, TrendingUp, TrendingDown, Download, Power } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useState, useMemo } from "react";
 
 interface Props {
