@@ -305,28 +305,6 @@ const AdminOverview = ({ data, actions, setActiveSection }: Props) => {
         </div>
       </div>
 
-      {/* Revenue Chart */}
-      <div className="bg-white rounded-2xl border border-[hsl(220,20%,92%)] p-4 md:p-6 mb-6 md:mb-8">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h2 className="text-base md:text-lg font-bold text-[hsl(220,20%,15%)]">Revenue Trend</h2>
-            <p className="text-xs md:text-sm text-[hsl(220,15%,55%)]">Daily earnings (last {days} days)</p>
-          </div>
-        </div>
-        <div className="h-[180px] md:h-[220px] mt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={revenueChartData}>
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(220,15%,60%)" }} interval={days > 30 ? 6 : days > 7 ? 2 : 0} />
-              <YAxis hide />
-              <Tooltip
-                contentStyle={{ borderRadius: 12, border: "1px solid hsl(220,20%,92%)", fontSize: 13 }}
-                formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, "Revenue"]}
-              />
-              <Bar dataKey="revenue" fill="hsl(270,60%,55%)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
 
       {/* Recent Transactions */}
       <div className="bg-white rounded-2xl border border-[hsl(220,20%,92%)] p-4 md:p-6">
