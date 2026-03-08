@@ -989,6 +989,75 @@ export type Database = {
           },
         ]
       }
+      user_advertisements: {
+        Row: {
+          ad_type: string
+          clicks: number | null
+          created_at: string
+          daily_cost: number
+          description: string | null
+          end_date: string | null
+          id: string
+          image_url: string | null
+          impressions: number | null
+          placement: string | null
+          start_date: string
+          status: string
+          target_entity_id: string | null
+          target_entity_type: string | null
+          target_route: string | null
+          title: string
+          total_cost: number
+          updated_at: string
+          user_id: string
+          user_role: string
+        }
+        Insert: {
+          ad_type?: string
+          clicks?: number | null
+          created_at?: string
+          daily_cost?: number
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number | null
+          placement?: string | null
+          start_date?: string
+          status?: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          target_route?: string | null
+          title?: string
+          total_cost?: number
+          updated_at?: string
+          user_id: string
+          user_role?: string
+        }
+        Update: {
+          ad_type?: string
+          clicks?: number | null
+          created_at?: string
+          daily_cost?: number
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          impressions?: number | null
+          placement?: string | null
+          start_date?: string
+          status?: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          target_route?: string | null
+          title?: string
+          total_cost?: number
+          updated_at?: string
+          user_id?: string
+          user_role?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

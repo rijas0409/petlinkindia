@@ -16,6 +16,7 @@ import AdminSettings from "@/components/admin/AdminSettings";
 import AdminListings from "@/components/admin/AdminListings";
 import AdminTransport from "@/components/admin/AdminTransport";
 import AdminProfileSettings from "@/components/admin/AdminProfileSettings";
+import AdminAdvertisements from "@/components/admin/AdminAdvertisements";
 
 export interface AdminData {
   pendingSellers: any[];
@@ -146,6 +147,7 @@ const AdminDashboard = () => {
       case "products": return <AdminProducts data={data} actions={actions} />;
       case "financials": return <AdminFinancials data={data} />;
       case "banners": return <AdminBanners />;
+      case "advertisements": return <AdminAdvertisements />;
       case "settings": return <AdminSettings />;
       case "listings": return <AdminListings data={data} actions={actions} />;
       case "transport": return <AdminTransport data={data} actions={actions} />;
