@@ -82,8 +82,11 @@ const ProductProfile = () => {
 
   useEffect(() => { fetchProduct(); }, [id]);
 
-  // Preload all images
+  // Preload images for smoother first paint
   useEffect(() => {
+    const mini = new Image();
+    mini.src = miniCartImage;
+
     if (product?.images) {
       product.images.forEach(src => {
         const img = new Image();
