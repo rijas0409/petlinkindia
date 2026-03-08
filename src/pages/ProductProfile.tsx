@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
 import miniCartImage from "@/assets/mini-cart.png";
+import useBuyerActivityTracker from "@/hooks/useBuyerActivityTracker";
 
 interface Product {
   id: string; name: string; brand: string; description: string | null;
