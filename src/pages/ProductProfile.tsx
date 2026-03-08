@@ -535,6 +535,7 @@ const ProductProfile = () => {
             ) : (
               <img
                 key={currentImageIndex}
+                ref={productImageRef}
                 src={currentMedia?.url}
                 alt={product.name}
                 className="max-w-full max-h-full object-contain"
