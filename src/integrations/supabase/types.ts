@@ -124,6 +124,53 @@ export type Database = {
         }
         Relationships: []
       }
+      buyer_activity: {
+        Row: {
+          activity_type: string
+          created_at: string
+          duration_seconds: number | null
+          entity_id: string
+          entity_image: string | null
+          entity_name: string | null
+          entity_type: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          entity_id: string
+          entity_image?: string | null
+          entity_name?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          entity_id?: string
+          entity_image?: string | null
+          entity_name?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_activity_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chats: {
         Row: {
           buyer_id: string | null
