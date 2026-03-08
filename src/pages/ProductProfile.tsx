@@ -1048,9 +1048,17 @@ const ProductProfile = () => {
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                <div ref={cartTargetRef} className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden border border-white/30">
+                <div
+                  key={thumbnailPop}
+                  ref={cartTargetRef}
+                  className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border-2 border-white/40"
+                  style={{
+                    boxShadow: "0 2px 10px rgba(0,0,0,0.2), 0 0 12px rgba(255,255,255,0.25)",
+                    animation: thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
+                  }}
+                >
                   {cartItems[cartItems.length - 1]?.image ? (
-                    <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-xl" />
+                    <img src={cartItems[cartItems.length - 1].image} alt="" className="w-full h-full object-cover rounded-full" />
                   ) : (
                     <ShoppingCart className="w-5 h-5 text-white" />
                   )}
