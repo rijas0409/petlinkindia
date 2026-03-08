@@ -294,7 +294,7 @@ const VetDoctorProfile = () => {
                 <div key={animal.label} className="flex flex-col items-center gap-1.5">
                   <div
                     className="w-14 h-14 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "#FFF0E8" }}
+                    style={{ backgroundColor: "#F3F0FF" }}
                   >
                     <AnimalIcon type={animal.icon} />
                   </div>
