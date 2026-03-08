@@ -22,7 +22,7 @@ const PaymentFailed = () => {
         </div>
       </header>
 
-      <div className="px-4 py-8 flex flex-col items-center">
+      <div className="flex-1 overflow-y-auto px-4 py-8 flex flex-col items-center">
         {/* Failed Icon */}
         <div className="relative mb-6">
           <div className="w-28 h-28 rounded-full bg-pink-100 flex items-center justify-center">
