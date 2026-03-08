@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Search, SlidersHorizontal, MapPin, ChevronDown, Star, 
   MessageCircle, Stethoscope, Syringe, Sparkles, Heart, ShoppingCart,
