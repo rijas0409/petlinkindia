@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopBar from "@/components/admin/AdminTopBar";
@@ -35,7 +33,6 @@ export interface AdminData {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("overview");
@@ -107,7 +104,7 @@ const AdminDashboard = () => {
 
   const handleSectionChange = (s: string) => {
     setActiveSection(s);
-    if (isMobile) setSidebarOpen(false);
+    setSidebarOpen(false);
   };
 
   if (loading) {
@@ -134,24 +131,17 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[hsl(220,20%,97%)] flex">
-      {/* Desktop sidebar */}
-      {!isMobile && (
-        <AdminSidebar activeSection={activeSection} setActiveSection={setActiveSection} />
-      )}
+      {/* Sidebar - always via Sheet for both mobile and desktop */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-[260px]">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <AdminSidebar activeSection={activeSection} setActiveSection={handleSectionChange} isMobile />
+        </SheetContent>
+      </Sheet>
 
-      {/* Mobile sidebar sheet */}
-      {isMobile && (
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-[260px]">
-            <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <AdminSidebar activeSection={activeSection} setActiveSection={handleSectionChange} isMobile />
-          </SheetContent>
-        </Sheet>
-      )}
-
-      <div className={`flex-1 flex flex-col min-h-screen ${!isMobile ? "ml-[260px]" : ""}`}>
-        <AdminTopBar user={user} onLogout={handleLogout} isMobile={isMobile} onMenuToggle={() => setSidebarOpen(true)} />
-        <main className={`flex-1 overflow-y-auto ${isMobile ? "p-4" : "p-8"}`}>
+      <div className="flex-1 flex flex-col min-h-screen">
+        <AdminTopBar user={user} onLogout={handleLogout} onMenuToggle={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {renderSection()}
         </main>
       </div>
