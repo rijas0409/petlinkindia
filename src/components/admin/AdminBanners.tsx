@@ -415,8 +415,8 @@ const AdminBanners = () => {
                     <div className="flex items-center h-full relative">
                       {form.image_url && <img src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />}
                       {form.image_url && <div className="absolute inset-0" style={{ background: `${form.gradient.split(')')[0]}, 0.5)` }} />}
-                      <div className="relative z-10 flex items-center w-full h-full p-4">
-                        <div className="flex-1">
+                      <div className={`relative z-10 flex items-center w-full h-full p-4 ${form.cta_alignment === "center" ? "justify-center text-center" : form.cta_alignment === "right" ? "justify-end text-right" : "justify-start text-left"}`}>
+                        <div className={form.cta_alignment === "center" ? "" : "flex-1"}>
                           {form.title && <h3 className="text-white text-base font-bold leading-tight whitespace-pre-line">{form.title}</h3>}
                           {form.subtitle && <p className="text-white/80 text-xs mt-1 whitespace-pre-line">{form.subtitle}</p>}
                           {form.cta_text && <button className="mt-2 bg-white text-black text-xs font-semibold px-3 py-1 rounded-full">{form.cta_text}</button>}
