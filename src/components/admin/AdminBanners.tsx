@@ -378,6 +378,19 @@ const AdminBanners = () => {
                 </div>
               </div>
 
+              {/* CTA Alignment */}
+              <div>
+                <label className="text-sm font-semibold text-[hsl(220,20%,25%)] mb-2 block">🔘 CTA Button Alignment</label>
+                <div className="flex gap-2">
+                  {CTA_ALIGNMENTS.map(a => (
+                    <button key={a.id} onClick={() => setForm(f => ({ ...f, cta_alignment: a.id }))}
+                      className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all border flex items-center justify-center gap-2 ${form.cta_alignment === a.id ? "border-[hsl(220,80%,50%)] bg-[hsl(220,80%,97%)] text-[hsl(220,80%,50%)]" : "border-[hsl(220,20%,90%)] text-[hsl(220,20%,30%)] hover:bg-[hsl(220,20%,97%)]"}`}>
+                      <span className="text-xs">{a.icon}</span> {a.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Active Toggle */}
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))}
