@@ -313,18 +313,20 @@ const AdminUserManagement = ({ data, actions }: Props) => {
                       </td>
                       <td className="py-3 text-[hsl(220,15%,60%)]">{new Date(u.created_at).toLocaleDateString()}</td>
                       <td className="py-3">
-                        <div className="flex items-center gap-2">
-                          {(u.role === "seller" || u.role === "product_seller") && u.is_onboarding_complete && (
-                            <button onClick={() => setSelectedSeller(u)} className="text-[12px] text-[hsl(220,80%,50%)] font-medium hover:underline flex items-center gap-1">
-                              <Eye className="w-3.5 h-3.5" /> View
-                            </button>
-                          )}
-                          {u.role !== "admin" && (
-                            <button onClick={() => setDeleteTarget(u)} className="text-[12px] text-[hsl(0,65%,50%)] font-medium hover:underline flex items-center gap-1">
-                              <Trash2 className="w-3.5 h-3.5" /> Delete
-                            </button>
-                          )}
-                        </div>
+                        {(u.role === "seller" || u.role === "product_seller") && u.is_onboarding_complete ? (
+                          <button onClick={() => setSelectedSeller(u)} className="text-[12px] text-[hsl(220,80%,50%)] font-medium hover:underline flex items-center gap-1">
+                            <Eye className="w-3.5 h-3.5" /> View
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-[hsl(220,15%,70%)]">—</span>
+                        )}
+                      </td>
+                      <td className="py-3">
+                        {u.role !== "admin" && (
+                          <button onClick={() => setDeleteTarget(u)} className="text-[12px] text-[hsl(0,65%,50%)] font-medium hover:underline flex items-center gap-1">
+                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          </button>
+                        )}
                       </td>
                     </tr>
                   );
