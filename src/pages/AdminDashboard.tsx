@@ -107,7 +107,7 @@ const AdminDashboard = () => {
 
   const handleSectionChange = (s: string) => {
     setActiveSection(s);
-    if (isMobile) setSidebarOpen(false);
+    setSidebarOpen(false);
   };
 
   if (loading) {
