@@ -9,6 +9,8 @@ interface AIInsightsCardProps {
   category: string;
   ageMonths: number;
   gender?: string;
+  petId?: string;
+  petImage?: string;
 }
 
 interface InsightsData {
