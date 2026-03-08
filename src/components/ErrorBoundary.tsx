@@ -16,9 +16,29 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
+  componentDidMount() {
+    window.addEventListener("error", this.handleWindowError);
+    window.addEventListener("unhandledrejection", this.handleUnhandledRejection);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("error", this.handleWindowError);
+    window.removeEventListener("unhandledrejection", this.handleUnhandledRejection);
+  }
+
   componentDidCatch(error: Error) {
     console.error("App crash captured:", error);
   }
+
+  handleWindowError = (event: ErrorEvent) => {
+    console.error("Global runtime error:", event.error || event.message);
+    this.setState({ hasError: true });
+  };
+
+  handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+    console.error("Unhandled promise rejection:", event.reason);
+    this.setState({ hasError: true });
+  };
 
   handleReload = () => {
     window.location.reload();
