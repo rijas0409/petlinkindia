@@ -1012,7 +1012,7 @@ const ProductProfile = () => {
                 animation: "fadeIn 0.2s ease-out",
               }}
             >
-              <div className="flex flex-col flex-1 mr-3">
+              <div className="flex flex-col flex-1 mr-2">
                 <p className="text-white text-[12px] font-bold leading-tight">
                   {deliveryUnlocked ? (
                     <span className="text-[#A5F3AB]">🎉 FREE DELIVERY UNLOCKED</span>
@@ -1020,7 +1020,7 @@ const ProductProfile = () => {
                     <>Add ₹{Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal)} more to unlock <span className="uppercase">FREE DELIVERY</span></>
                   )}
                 </p>
-                <div className="w-full h-[7px] rounded-full mt-1.5 overflow-hidden relative" style={{ background: "rgba(255,255,255,0.25)" }}>
+                <div className="h-[7px] rounded-full mt-1.5 overflow-hidden relative" style={{ background: "rgba(255,255,255,0.25)", width: "100%" }}>
                   <div
                     className="h-full rounded-full relative overflow-hidden"
                     style={{
@@ -1043,8 +1043,8 @@ const ProductProfile = () => {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="flex flex-col items-center mr-1">
+              <div className="flex items-center gap-1.5 flex-shrink-0 pl-1">
+                <div className="flex flex-col items-end mr-0.5">
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
