@@ -29,6 +29,7 @@ const doctorsData: Record<string, {
   "1": {
     name: "Dr. Ananya Iyer",
     title: "Senior Veterinary Surgeon",
+    clinic: "City Pet Hospital, Mumbai",
     rating: 4.9,
     reviews: 120,
     yearsExp: 12,
