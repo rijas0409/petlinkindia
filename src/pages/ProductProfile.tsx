@@ -11,7 +11,6 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
-import miniCartImage from "@/assets/mini-cart.png";
 
 interface Product {
   id: string; name: string; brand: string; description: string | null;
@@ -29,10 +28,6 @@ interface Product {
 }
 
 const FREE_DELIVERY_THRESHOLD = 499;
-const CART_STEPPER_MORPH_MS = 200;
-const MINI_CART_POP_MS = 250;
-const MINI_CART_BOUNCE_MS = 140;
-const CART_EXPAND_MS = 300;
 
 const ProductProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -62,7 +57,6 @@ const ProductProfile = () => {
   // Cart animation state
   const [cartPhase, setCartPhase] = useState<'hidden' | 'mini' | 'expanding' | 'full' | 'collapsing'>('hidden');
   const prevCartCount = useRef(0);
-  const cartTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Swipe refs
   const touchStartX = useRef(0);
@@ -70,11 +64,6 @@ const ProductProfile = () => {
   const swiping = useRef(false);
 
   const isWishlisted = isProductInWishlist(id || "");
-
-  const clearCartTimers = useCallback(() => {
-    cartTimersRef.current.forEach((timer) => clearTimeout(timer));
-    cartTimersRef.current = [];
-  }, []);
 
   useEffect(() => { fetchProduct(); }, [id]);
 
@@ -88,52 +77,28 @@ const ProductProfile = () => {
     }
   }, [product?.images]);
 
-  // Auto-pause and reset video when slide changes
+  // Auto-pause video when swiping to another slide
   useEffect(() => {
-    setVideoError(false);
-    setVideoDuration("");
-    setVideoProgress(0);
-    setShowVideoControls(true);
-
     if (videoRef.current) {
       videoRef.current.pause();
-      videoRef.current.currentTime = 0;
       setIsPlaying(false);
     }
-  }, [currentImageIndex, id]);
+  }, [currentImageIndex]);
 
-  // Cart animation timeline: 0ms click → 200ms stepper morph done → 250ms pop + 140ms bounce → expand
+  // Cart animation logic
   useEffect(() => {
-    clearCartTimers();
-
     if (cartCount > 0 && prevCartCount.current === 0) {
-      const miniStart = setTimeout(() => setCartPhase('mini'), CART_STEPPER_MORPH_MS);
-      const expandStart = setTimeout(
-        () => setCartPhase('expanding'),
-        CART_STEPPER_MORPH_MS + MINI_CART_POP_MS + MINI_CART_BOUNCE_MS,
-      );
-      const fullStart = setTimeout(
-        () => setCartPhase('full'),
-        CART_STEPPER_MORPH_MS + MINI_CART_POP_MS + MINI_CART_BOUNCE_MS + CART_EXPAND_MS,
-      );
-
-      cartTimersRef.current = [miniStart, expandStart, fullStart];
+      // Items added from 0
+      setCartPhase('mini');
+      setTimeout(() => setCartPhase('expanding'), 400);
+      setTimeout(() => setCartPhase('full'), 700);
     } else if (cartCount === 0 && prevCartCount.current > 0) {
+      // Cart emptied
       setCartPhase('collapsing');
-      const hideTimer = setTimeout(() => setCartPhase('hidden'), 450);
-      cartTimersRef.current = [hideTimer];
+      setTimeout(() => setCartPhase('hidden'), 500);
     }
-
     prevCartCount.current = cartCount;
-    return clearCartTimers;
-  }, [cartCount, clearCartTimers]);
-
-  useEffect(() => {
-    return () => {
-      clearCartTimers();
-      if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
-    };
-  }, [clearCartTimers]);
+  }, [cartCount]);
 
   const resetControlsTimer = useCallback(() => {
     setShowVideoControls(true);
@@ -240,23 +205,16 @@ const ProductProfile = () => {
   };
 
   // Video controls
-  const togglePlay = async () => {
+  const togglePlay = () => {
     if (!videoRef.current) return;
-
     if (isPlaying) {
       videoRef.current.pause();
       setIsPlaying(false);
       setShowVideoControls(true);
-      return;
-    }
-
-    try {
-      await videoRef.current.play();
+    } else {
+      videoRef.current.play();
       setIsPlaying(true);
       resetControlsTimer();
-    } catch {
-      setIsPlaying(false);
-      toast.error("Unable to play this video");
     }
   };
 
@@ -316,18 +274,15 @@ const ProductProfile = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
 
-  const images = (product.images || []).filter((url): url is string => Boolean(url));
-  const videos = (product.videos || []).filter((url): url is string => Boolean(url));
-
-  // Ordered media: first image (hero) → videos → remaining images
+  const images = product.images || [];
+  const videos = product.videos || [];
+  // Ordered: first image → videos → remaining images
   const allMedia: { type: 'image' | 'video'; url: string }[] = [];
   if (images.length > 0) allMedia.push({ type: 'image', url: images[0] });
-  videos.forEach((videoUrl) => allMedia.push({ type: 'video', url: videoUrl }));
-  images.slice(1).forEach((imgUrl) => allMedia.push({ type: 'image', url: imgUrl }));
-
-  // If no image is available, keep videos as the only media slides
+  videos.forEach(v => allMedia.push({ type: 'video', url: v }));
+  images.slice(1).forEach(img => allMedia.push({ type: 'image', url: img }));
   if (allMedia.length === 0 && videos.length > 0) {
-    videos.forEach((videoUrl) => allMedia.push({ type: 'video', url: videoUrl }));
+    videos.forEach(v => allMedia.push({ type: 'video', url: v }));
   }
 
   const productUnit = product.unit || "";
@@ -376,12 +331,10 @@ const ProductProfile = () => {
             isCurrentVideo && !videoError ? (
               <div className="w-full h-full relative flex items-center justify-center" onClick={resetControlsTimer}>
                 <video
-                  key={currentMedia.url}
                   ref={videoRef}
                   src={currentMedia.url}
                   className="max-w-full max-h-full object-contain rounded-lg"
                   playsInline
-                  preload="metadata"
                   muted={isMuted}
                   onTimeUpdate={handleTimeUpdate}
                   onLoadedMetadata={handleLoadedMetadata}
@@ -398,7 +351,7 @@ const ProductProfile = () => {
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none rounded-b-lg" />
                 {/* Play button */}
                 {!isPlaying && (
-                  <button onClick={(e) => { e.stopPropagation(); void togglePlay(); }} className="absolute inset-0 flex items-center justify-center z-10">
+                  <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center z-10">
                     <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg" style={{ boxShadow: "0 0 20px rgba(244,114,182,0.3)" }}>
                       <Play className="w-7 h-7 text-[#333] ml-1" fill="#333" />
                     </div>
@@ -407,7 +360,7 @@ const ProductProfile = () => {
                 {/* Controls */}
                 {isPlaying && showVideoControls && (
                   <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 z-10" style={{ animation: "fadeIn 0.15s ease-out" }}>
-                    <button onClick={() => void togglePlay()} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={togglePlay} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       <Pause className="w-4 h-4 text-white" />
                     </button>
                     <div className="flex-1 h-[3px] bg-white/30 rounded-full cursor-pointer" onClick={handleSeek}>
@@ -854,15 +807,14 @@ const ProductProfile = () => {
         >
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
-            <div
-              className="pointer-events-none"
-              style={{
-                width: 56,
-                height: 56,
-                animation: `miniCartPop ${MINI_CART_POP_MS + MINI_CART_BOUNCE_MS}ms cubic-bezier(0.22, 1, 0.36, 1) forwards`,
-              }}
-            >
-              <img src={miniCartImage} alt="Mini cart" className="w-full h-full object-contain" style={{ imageRendering: "crisp-edges" }} />
+            <div className="pointer-events-auto" style={{
+              width: 56, height: 56, borderRadius: 28,
+              background: "linear-gradient(135deg, #1565C0, #2196F3)",
+              boxShadow: "0 6px 24px rgba(21,101,192,0.5)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              animation: "miniCartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            }}>
+              <ShoppingCart className="w-6 h-6 text-white" />
             </div>
           )}
 
@@ -870,9 +822,9 @@ const ProductProfile = () => {
           {cartPhase === 'expanding' && (
             <div className="pointer-events-auto mx-3" style={{
               width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
-              background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)",
-              boxShadow: "0 6px 24px rgba(139, 92, 246, 0.35)",
-              animation: `expandCart ${CART_EXPAND_MS}ms cubic-bezier(0.16, 1, 0.3, 1) forwards`,
+              background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
+              boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
+              animation: "expandCart 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
               opacity: 0,
             }} />
           )}
@@ -884,8 +836,8 @@ const ProductProfile = () => {
               onClick={() => navigate("/cart")}
               style={{
                 width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
-                background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)",
-                boxShadow: "0 6px 24px rgba(139, 92, 246, 0.35)",
+                background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
+                boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "0 16px",
                 animation: "fadeIn 0.2s ease-out",
@@ -927,11 +879,14 @@ const ProductProfile = () => {
 
           {/* Collapsing phase */}
           {cartPhase === 'collapsing' && (
-            <div className="pointer-events-none" style={{
-              width: 56, height: 56,
-              animation: "collapseMini 0.42s ease-in forwards",
+            <div className="pointer-events-auto" style={{
+              width: 56, height: 56, borderRadius: 28,
+              background: "linear-gradient(135deg, #1565C0, #2196F3)",
+              boxShadow: "0 6px 24px rgba(21,101,192,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              animation: "collapseCart 0.4s ease-in forwards",
             }}>
-              <img src={miniCartImage} alt="Mini cart" className="w-full h-full object-contain" style={{ imageRendering: "crisp-edges" }} />
+              <ShoppingCart className="w-6 h-6 text-white" />
             </div>
           )}
         </div>
@@ -980,17 +935,18 @@ const ProductProfile = () => {
         }
         @keyframes miniCartPop {
           0% { transform: scale(0.5) translateY(25px); opacity: 0; }
-          64% { transform: scale(1) translateY(0); opacity: 1; }
-          82% { transform: scale(1) translateY(-5px); opacity: 1; }
-          100% { transform: scale(1) translateY(0); opacity: 1; }
+          60% { transform: scale(1.05) translateY(-5px); opacity: 1; }
+          80% { transform: scale(0.98) translateY(2px); }
+          100% { transform: scale(1) translateY(0); }
         }
         @keyframes expandCart {
           from { opacity: 0; transform: scaleX(0.15) scaleY(0.85); border-radius: 28px; }
           to { opacity: 1; transform: scaleX(1) scaleY(1); border-radius: 22px; }
         }
-        @keyframes collapseMini {
-          0% { transform: translateY(0) scale(1); opacity: 1; }
-          100% { transform: translateY(16px) scale(0.8); opacity: 0; }
+        @keyframes collapseCart {
+          0% { width: 92%; border-radius: 22px; opacity: 1; transform: translateY(0); }
+          50% { width: 56px; border-radius: 28px; opacity: 0.8; transform: translateY(0); }
+          100% { width: 56px; border-radius: 28px; opacity: 0; transform: translateY(16px); }
         }
         @keyframes morphButton {
           from { transform: scale(0.95); }

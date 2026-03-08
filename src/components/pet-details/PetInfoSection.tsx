@@ -80,7 +80,7 @@ const PetInfoSection = ({ breed, name, price, originalPrice, ageMonths, gender, 
         </div>
         <div className="text-right">
           <p className="text-[24px] font-bold text-[#F472D0]">{formatPrice(price)}</p>
-          {typeof originalPrice === "number" && originalPrice > 0 && (
+          {originalPrice && originalPrice > price && (
             <p className="text-xs text-[#999] line-through">{formatPrice(originalPrice)}</p>
           )}
         </div>
