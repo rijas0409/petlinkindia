@@ -29,6 +29,7 @@ interface Product {
 }
 
 const FREE_DELIVERY_THRESHOLD = 499;
+const BUY_NOW_GRADIENT = "linear-gradient(90deg, #FF4D6D, #8B5CF6)";
 const STEPPER_MORPH_MS = 200;
 const MINI_APPEAR_DELAY_MS = 200;
 const MINI_POP_MS = 250;
