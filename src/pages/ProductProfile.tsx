@@ -86,6 +86,13 @@ const ProductProfile = () => {
 
   const isWishlisted = isProductInWishlist(id || "");
 
+  useBuyerActivityTracker({
+    entityType: "product",
+    entityId: id,
+    entityName: product ? `${product.name} (${product.brand})` : undefined,
+    entityImage: product?.images?.[0] || undefined,
+  });
+
   useEffect(() => { fetchProduct(); }, [id]);
 
   // Preload images for smoother first paint

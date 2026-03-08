@@ -94,6 +94,12 @@ const VetDoctorProfile = () => {
   const [doctor, setDoctor] = useState<VetData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useBuyerActivityTracker({
+    entityType: "vet",
+    entityId: id,
+    entityName: doctor?.name || undefined,
+    entityImage: doctor?.profileImage || undefined,
+  });
   useEffect(() => {
     const fetchVetProfile = async () => {
       if (!id) return;

@@ -67,6 +67,12 @@ const PetDetails = () => {
 
   const isInWishlist = isPetInWishlist(id || "");
 
+  useBuyerActivityTracker({
+    entityType: "pet",
+    entityId: id,
+    entityName: pet ? `${pet.name} (${pet.breed})` : undefined,
+    entityImage: pet?.images?.[0] || undefined,
+  });
   useEffect(() => {
     fetchPet();
     checkUser();
