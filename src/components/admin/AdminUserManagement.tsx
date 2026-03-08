@@ -92,6 +92,41 @@ const AdminUserManagement = ({ data, actions }: Props) => {
 
   return (
     <div>
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50" onClick={() => !deleting && setDeleteTarget(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-md m-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-[hsl(0,70%,95%)] flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-[hsl(0,70%,50%)]" />
+              </div>
+              <h3 className="text-lg font-bold text-[hsl(220,20%,15%)] mb-2">Permanently Delete User?</h3>
+              <p className="text-sm text-[hsl(220,15%,50%)] mb-1">
+                <span className="font-semibold text-[hsl(220,20%,25%)]">{deleteTarget.full_name || deleteTarget.name}</span>
+              </p>
+              <p className="text-[12px] text-[hsl(220,15%,60%)] mb-1">{deleteTarget.email} • {deleteTarget.role?.replace("_", " ")}</p>
+              <div className="mt-4 p-3 bg-[hsl(0,60%,97%)] rounded-xl border border-[hsl(0,40%,90%)] text-left">
+                <p className="text-[12px] text-[hsl(0,60%,45%)] font-medium">⚠ This action is irreversible:</p>
+                <ul className="text-[11px] text-[hsl(0,50%,50%)] mt-1 space-y-0.5 list-disc list-inside">
+                  <li>Account will be permanently deleted</li>
+                  <li>User cannot login with this email again</li>
+                  <li>All associated data (listings, orders, chats) will be removed</li>
+                </ul>
+              </div>
+            </div>
+            <div className="border-t border-[hsl(220,20%,92%)] px-6 py-4 flex justify-end gap-3">
+              <button disabled={deleting} onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 border border-[hsl(220,20%,85%)] text-[hsl(220,15%,40%)] text-sm font-medium rounded-xl hover:bg-[hsl(220,20%,96%)]">
+                Cancel
+              </button>
+              <button disabled={deleting} onClick={() => handleDeleteUser(deleteTarget.id, deleteTarget.name)} className="px-5 py-2.5 bg-[hsl(0,70%,50%)] text-white text-sm font-medium rounded-xl hover:bg-[hsl(0,70%,45%)] flex items-center gap-2 disabled:opacity-50">
+                <Trash2 className="w-4 h-4" />
+                {deleting ? "Deleting..." : "Delete Permanently"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-[28px] font-bold text-[hsl(220,20%,15%)]">User Management</h1>
