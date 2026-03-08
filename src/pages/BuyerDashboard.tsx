@@ -8,6 +8,7 @@ import CategoryFilter from "@/components/CategoryFilter";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { useWishlist } from "@/hooks/useWishlist";
+import { InlineBanners } from "@/components/DynamicBannerRenderer";
 
 const BuyerDashboard = () => {
   const navigate = useNavigate();
