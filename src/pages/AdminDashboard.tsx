@@ -143,8 +143,8 @@ const AdminDashboard = () => {
       </Sheet>
 
       <div className="flex-1 flex flex-col min-h-screen">
-        <AdminTopBar user={user} onLogout={handleLogout} isMobile={isMobile} onMenuToggle={() => setSidebarOpen(true)} />
-        <main className={`flex-1 overflow-y-auto ${isMobile ? "p-4" : "p-8"}`}>
+        <AdminTopBar user={user} onLogout={handleLogout} onMenuToggle={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {renderSection()}
         </main>
       </div>
