@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useCart } from "@/contexts/CartContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -64,6 +65,7 @@ const PetDetails = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const { togglePetWishlist, isPetInWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
   const isInWishlist = isPetInWishlist(id || "");
 
@@ -213,7 +215,14 @@ const PetDetails = () => {
         <SellerInfoCard seller={pet.profiles || null} />
       </div>
 
-      <BottomCTA price={pet.price} onBuyNow={handleBuyNow} />
+      <BottomCTA price={pet.price} onBuyNow={handleBuyNow} onAddToCart={() => {
+        addToCart({
+          id: pet.id,
+          name: `${pet.name} (${pet.breed})`,
+          price: pet.price,
+          image: pet.images?.[0] || '/placeholder.svg',
+        });
+      }} />
       <BottomNavigation variant="buyer" />
     </div>
   );
