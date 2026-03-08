@@ -140,15 +140,23 @@ const PetDetails = () => {
     );
   }
 
-  const images = pet.images || [];
-  const videos = pet.videos || [];
-  // Build ordered media: first image, then videos, then remaining images
-  const orderedMedia: { type: 'image' | 'video'; url: string }[] = [];
-  if (images.length > 0) orderedMedia.push({ type: 'image', url: images[0] });
-  videos.forEach(v => orderedMedia.push({ type: 'video', url: v }));
-  images.slice(1).forEach(img => orderedMedia.push({ type: 'image', url: img }));
-  if (orderedMedia.length === 0 && videos.length > 0) {
-    videos.forEach(v => orderedMedia.push({ type: 'video', url: v }));
+  const images = (pet.images || []).filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+  const videos = (pet.videos || []).filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+
+  // Ordered media: first image, first video, remaining videos, remaining images.
+  const orderedMedia: { type: "image" | "video"; url: string }[] = [];
+
+  if (images.length === 0) {
+    videos.forEach((videoUrl) => orderedMedia.push({ type: "video", url: videoUrl }));
+  } else {
+    orderedMedia.push({ type: "image", url: images[0] });
+
+    if (videos.length > 0) {
+      orderedMedia.push({ type: "video", url: videos[0] });
+      videos.slice(1).forEach((videoUrl) => orderedMedia.push({ type: "video", url: videoUrl }));
+    }
+
+    images.slice(1).forEach((imageUrl) => orderedMedia.push({ type: "image", url: imageUrl }));
   }
 
   return (

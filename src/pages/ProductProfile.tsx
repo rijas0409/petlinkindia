@@ -11,6 +11,7 @@ import {
   Play, Pause, Volume2, VolumeX, Maximize
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
+import miniCartImage from "@/assets/mini-cart.png";
 
 interface Product {
   id: string; name: string; brand: string; description: string | null;
@@ -28,6 +29,13 @@ interface Product {
 }
 
 const FREE_DELIVERY_THRESHOLD = 499;
+const BUY_NOW_GRADIENT = "linear-gradient(90deg, #FF4D6D, #8B5CF6)";
+const STEPPER_MORPH_MS = 200;
+const MINI_APPEAR_DELAY_MS = 200;
+const MINI_POP_MS = 250;
+const MINI_BOUNCE_MS = 140;
+const CART_EXPAND_MS = 300;
+const CART_COLLAPSE_MS = 500;
 
 const ProductProfile = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,6 +65,12 @@ const ProductProfile = () => {
   // Cart animation state
   const [cartPhase, setCartPhase] = useState<'hidden' | 'mini' | 'expanding' | 'full' | 'collapsing'>('hidden');
   const prevCartCount = useRef(0);
+  const cartAnimationTimersRef = useRef<number[]>([]);
+
+  const clearCartAnimationTimers = useCallback(() => {
+    cartAnimationTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+    cartAnimationTimersRef.current = [];
+  }, []);
 
   // Swipe refs
   const touchStartX = useRef(0);
@@ -79,6 +93,10 @@ const ProductProfile = () => {
 
   // Auto-pause video when swiping to another slide
   useEffect(() => {
+    setVideoError(false);
+    setVideoProgress(0);
+    setShowVideoControls(true);
+
     if (videoRef.current) {
       videoRef.current.pause();
       setIsPlaying(false);
@@ -88,17 +106,38 @@ const ProductProfile = () => {
   // Cart animation logic
   useEffect(() => {
     if (cartCount > 0 && prevCartCount.current === 0) {
-      // Items added from 0
-      setCartPhase('mini');
-      setTimeout(() => setCartPhase('expanding'), 400);
-      setTimeout(() => setCartPhase('full'), 700);
+      clearCartAnimationTimers();
+      setCartPhase("hidden");
+
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("mini"), MINI_APPEAR_DELAY_MS),
+      );
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("expanding"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS),
+      );
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("full"), MINI_APPEAR_DELAY_MS + MINI_POP_MS + MINI_BOUNCE_MS + CART_EXPAND_MS),
+      );
     } else if (cartCount === 0 && prevCartCount.current > 0) {
-      // Cart emptied
-      setCartPhase('collapsing');
-      setTimeout(() => setCartPhase('hidden'), 500);
+      clearCartAnimationTimers();
+      setCartPhase("collapsing");
+
+      cartAnimationTimersRef.current.push(
+        window.setTimeout(() => setCartPhase("hidden"), CART_COLLAPSE_MS),
+      );
     }
+
     prevCartCount.current = cartCount;
-  }, [cartCount]);
+  }, [cartCount, clearCartAnimationTimers]);
+
+  useEffect(() => {
+    return () => {
+      clearCartAnimationTimers();
+      if (controlsTimeout.current) {
+        clearTimeout(controlsTimeout.current);
+      }
+    };
+  }, [clearCartAnimationTimers]);
 
   const resetControlsTimer = useCallback(() => {
     setShowVideoControls(true);
@@ -205,45 +244,72 @@ const ProductProfile = () => {
   };
 
   // Video controls
-  const togglePlay = () => {
-    if (!videoRef.current) return;
+  const togglePlay = async (event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    if (!videoRef.current || videoError) return;
+
     if (isPlaying) {
       videoRef.current.pause();
       setIsPlaying(false);
       setShowVideoControls(true);
-    } else {
-      videoRef.current.play();
+      return;
+    }
+
+    try {
+      await videoRef.current.play();
       setIsPlaying(true);
       resetControlsTimer();
+    } catch {
+      setIsPlaying(false);
+      setShowVideoControls(true);
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = (event?: React.MouseEvent) => {
+    event?.stopPropagation();
     if (!videoRef.current) return;
     videoRef.current.muted = !isMuted;
     setIsMuted(!isMuted);
   };
 
-  const handleFullscreen = () => {
+  const handleFullscreen = async (event?: React.MouseEvent) => {
+    event?.stopPropagation();
     if (!videoRef.current) return;
-    if (videoRef.current.requestFullscreen) videoRef.current.requestFullscreen();
+
+    try {
+      if (videoRef.current.requestFullscreen) {
+        await videoRef.current.requestFullscreen();
+      }
+    } catch {
+      // silent fallback
+    }
   };
 
   const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !Number.isFinite(videoRef.current.duration) || videoRef.current.duration <= 0) return;
     setVideoProgress((videoRef.current.currentTime / videoRef.current.duration) * 100);
   };
 
   const handleLoadedMetadata = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !Number.isFinite(videoRef.current.duration)) return;
     const dur = videoRef.current.duration;
-    setVideoDuration(`${Math.floor(dur / 60)}:${Math.floor(dur % 60).toString().padStart(2, '0')}`);
+    setVideoDuration(`${Math.floor(dur / 60)}:${Math.floor(dur % 60).toString().padStart(2, "0")}`);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!videoRef.current) return;
+    e.stopPropagation();
+    if (!videoRef.current || !Number.isFinite(videoRef.current.duration) || videoRef.current.duration <= 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
     videoRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * videoRef.current.duration;
+  };
+
+  const getVideoMimeType = (videoUrl: string) => {
+    const lowerUrl = videoUrl.toLowerCase();
+    if (lowerUrl.endsWith(".webm")) return "video/webm";
+    if (lowerUrl.endsWith(".ogg")) return "video/ogg";
+    if (lowerUrl.endsWith(".m3u8")) return "application/x-mpegURL";
+    if (lowerUrl.endsWith(".ts")) return "video/mp2t";
+    return "video/mp4";
   };
 
   // Touch swipe handlers
@@ -274,15 +340,23 @@ const ProductProfile = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
 
-  const images = product.images || [];
-  const videos = product.videos || [];
-  // Ordered: first image → videos → remaining images
-  const allMedia: { type: 'image' | 'video'; url: string }[] = [];
-  if (images.length > 0) allMedia.push({ type: 'image', url: images[0] });
-  videos.forEach(v => allMedia.push({ type: 'video', url: v }));
-  images.slice(1).forEach(img => allMedia.push({ type: 'image', url: img }));
-  if (allMedia.length === 0 && videos.length > 0) {
-    videos.forEach(v => allMedia.push({ type: 'video', url: v }));
+  const images = (product.images || []).filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+  const videos = (product.videos || []).filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+
+  // Ordered media: first image, first video, remaining videos, remaining images.
+  const allMedia: { type: "image" | "video"; url: string }[] = [];
+
+  if (images.length === 0) {
+    videos.forEach((videoUrl) => allMedia.push({ type: "video", url: videoUrl }));
+  } else {
+    allMedia.push({ type: "image", url: images[0] });
+
+    if (videos.length > 0) {
+      allMedia.push({ type: "video", url: videos[0] });
+      videos.slice(1).forEach((videoUrl) => allMedia.push({ type: "video", url: videoUrl }));
+    }
+
+    images.slice(1).forEach((imageUrl) => allMedia.push({ type: "image", url: imageUrl }));
   }
 
   const productUnit = product.unit || "";
@@ -332,15 +406,17 @@ const ProductProfile = () => {
               <div className="w-full h-full relative flex items-center justify-center" onClick={resetControlsTimer}>
                 <video
                   ref={videoRef}
-                  src={currentMedia.url}
                   className="max-w-full max-h-full object-contain rounded-lg"
                   playsInline
+                  preload="metadata"
                   muted={isMuted}
                   onTimeUpdate={handleTimeUpdate}
                   onLoadedMetadata={handleLoadedMetadata}
                   onEnded={() => { setIsPlaying(false); setShowVideoControls(true); }}
                   onError={() => setVideoError(true)}
-                />
+                >
+                  <source src={currentMedia.url} type={getVideoMimeType(currentMedia.url)} />
+                </video>
                 {/* Duration badge */}
                 {videoDuration && !isPlaying && (
                   <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-[11px] font-medium z-10">
@@ -351,7 +427,7 @@ const ProductProfile = () => {
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none rounded-b-lg" />
                 {/* Play button */}
                 {!isPlaying && (
-                  <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center z-10">
+                  <button onClick={(event) => { void togglePlay(event); }} className="absolute inset-0 flex items-center justify-center z-10">
                     <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg" style={{ boxShadow: "0 0 20px rgba(244,114,182,0.3)" }}>
                       <Play className="w-7 h-7 text-[#333] ml-1" fill="#333" />
                     </div>
@@ -360,16 +436,16 @@ const ProductProfile = () => {
                 {/* Controls */}
                 {isPlaying && showVideoControls && (
                   <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 z-10" style={{ animation: "fadeIn 0.15s ease-out" }}>
-                    <button onClick={togglePlay} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={(event) => { void togglePlay(event); }} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       <Pause className="w-4 h-4 text-white" />
                     </button>
                     <div className="flex-1 h-[3px] bg-white/30 rounded-full cursor-pointer" onClick={handleSeek}>
                       <div className="h-full bg-white rounded-full transition-all" style={{ width: `${videoProgress}%` }} />
                     </div>
-                    <button onClick={toggleMute} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={(event) => toggleMute(event)} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       {isMuted ? <VolumeX className="w-4 h-4 text-white" /> : <Volume2 className="w-4 h-4 text-white" />}
                     </button>
-                    <button onClick={handleFullscreen} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                    <button onClick={(event) => { void handleFullscreen(event); }} className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
                       <Maximize className="w-4 h-4 text-white" />
                     </button>
                   </div>
@@ -807,14 +883,24 @@ const ProductProfile = () => {
         >
           {/* Mini cart phase */}
           {cartPhase === 'mini' && (
-            <div className="pointer-events-auto" style={{
-              width: 56, height: 56, borderRadius: 28,
-              background: "linear-gradient(135deg, #1565C0, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.5)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              animation: "miniCartPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            }}>
-              <ShoppingCart className="w-6 h-6 text-white" />
+            <div
+              className="pointer-events-auto"
+              style={{
+                width: 64,
+                height: 64,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                animation: `miniCartPopBounce ${MINI_POP_MS + MINI_BOUNCE_MS}ms ease-out forwards`,
+                transformOrigin: "center",
+              }}
+            >
+              <img
+                src={miniCartImage}
+                alt="Mini cart"
+                className="w-full h-full object-contain select-none pointer-events-none"
+                draggable={false}
+              />
             </div>
           )}
 
@@ -822,8 +908,8 @@ const ProductProfile = () => {
           {cartPhase === 'expanding' && (
             <div className="pointer-events-auto mx-3" style={{
               width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
-              background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
+              background: BUY_NOW_GRADIENT,
+              boxShadow: "0 6px 24px rgba(139,92,246,0.35)",
               animation: "expandCart 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards",
               opacity: 0,
             }} />
@@ -836,8 +922,8 @@ const ProductProfile = () => {
               onClick={() => navigate("/cart")}
               style={{
                 width: "92%", maxWidth: 500, height: 64, borderRadius: 22,
-                background: "linear-gradient(135deg, #1565C0, #1E88E5, #2196F3)",
-                boxShadow: "0 6px 24px rgba(21,101,192,0.4)",
+                background: BUY_NOW_GRADIENT,
+                boxShadow: "0 6px 24px rgba(139,92,246,0.35)",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "0 16px",
                 animation: "fadeIn 0.2s ease-out",
@@ -880,13 +966,16 @@ const ProductProfile = () => {
           {/* Collapsing phase */}
           {cartPhase === 'collapsing' && (
             <div className="pointer-events-auto" style={{
-              width: 56, height: 56, borderRadius: 28,
-              background: "linear-gradient(135deg, #1565C0, #2196F3)",
-              boxShadow: "0 6px 24px rgba(21,101,192,0.3)",
+              width: 64, height: 64,
               display: "flex", alignItems: "center", justifyContent: "center",
               animation: "collapseCart 0.4s ease-in forwards",
             }}>
-              <ShoppingCart className="w-6 h-6 text-white" />
+              <img
+                src={miniCartImage}
+                alt="Mini cart"
+                className="w-full h-full object-contain select-none pointer-events-none"
+                draggable={false}
+              />
             </div>
           )}
         </div>
@@ -899,14 +988,14 @@ const ProductProfile = () => {
           {productQty === 0 ? (
             <button onClick={handleAddToCart}
               className="flex-1 h-[48px] rounded-2xl border-2 border-[#A855F7] text-[#A855F7] font-bold text-[14px] flex items-center justify-center"
-              style={{ transition: "all 0.2s ease" }}>
+              style={{ transition: `all ${STEPPER_MORPH_MS}ms ease` }}>
               Add to Cart
             </button>
           ) : (
             <div className="flex-1 h-[48px] rounded-2xl flex items-center justify-between overflow-hidden"
               style={{
                 background: "linear-gradient(90deg, #A855F7, #7C3AED)",
-                animation: "morphButton 0.2s ease-out",
+                animation: `morphButton ${STEPPER_MORPH_MS}ms ease-out`,
                 transform: "scale(1)",
               }}>
               <button onClick={handleRemoveFromCart}
@@ -922,7 +1011,7 @@ const ProductProfile = () => {
           )}
           <button onClick={handleBuyNow}
             className="flex-1 h-[48px] rounded-2xl text-white font-bold text-[14px] flex items-center justify-center"
-            style={{ background: "linear-gradient(90deg, #FF4D6D, #8B5CF6)" }}>
+            style={{ background: BUY_NOW_GRADIENT }}>
             Buy Now
           </button>
         </div>
@@ -933,11 +1022,11 @@ const ProductProfile = () => {
           from { opacity: 0; transform: translateY(4px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes miniCartPop {
+        @keyframes miniCartPopBounce {
           0% { transform: scale(0.5) translateY(25px); opacity: 0; }
-          60% { transform: scale(1.05) translateY(-5px); opacity: 1; }
-          80% { transform: scale(0.98) translateY(2px); }
-          100% { transform: scale(1) translateY(0); }
+          64.1% { transform: scale(1) translateY(0); opacity: 1; }
+          82% { transform: scale(1) translateY(-5px); opacity: 1; }
+          100% { transform: scale(1) translateY(0); opacity: 1; }
         }
         @keyframes expandCart {
           from { opacity: 0; transform: scaleX(0.15) scaleY(0.85); border-radius: 28px; }
