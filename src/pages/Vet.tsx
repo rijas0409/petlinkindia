@@ -51,62 +51,17 @@ const specialties = [
   { id: "checkup", name: "Checkup", icon: "🩺", bgColor: "bg-teal-100", iconColor: "text-teal-500" },
 ];
 
-const vetsNearYou = [
-  {
-    id: "1",
-    name: "Dr. Ananya Iyer",
-    specialty: "Senior Surgeon",
-    experience: "8 yrs exp.",
-    rating: 4.9,
-    price: 500,
-    availability: "AVAILABLE NOW",
-    availabilityColor: "text-green-500",
-    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop"
-  },
-  {
-    id: "2",
-    name: "Dr. Rohan Sharma",
-    specialty: "Paws & Claws",
-    experience: "5 yrs exp.",
-    rating: 4.8,
-    price: 450,
-    availability: "NEXT: 2 PM",
-    availabilityColor: "text-muted-foreground",
-    image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop"
-  },
-];
-
-const clinicsNearby = [
-  {
-    id: "1",
-    name: "Pawprints Clinic",
-    location: "Bandra West, Mumbai",
-    doctors: 3,
-    verified: true,
-    image: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=100&h=100&fit=crop"
-  },
-  {
-    id: "2",
-    name: "Happy Paws Clinic",
-    location: "Juhu, Mumbai",
-    doctors: 1,
-    verified: true,
-    image: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=100&h=100&fit=crop"
-  },
-];
-
-const eliteDoctors = [
-  {
-    id: "1",
-    name: "Dr. Amara S.",
-    specialty: "Senior Orthopedic Specialist",
-    experience: "12+ Years Exp.",
-    rating: 4.9,
-    price: 800,
-    verified: true,
-    image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop"
-  },
-];
+interface RealVet {
+  id: string;
+  name: string;
+  specialty: string;
+  experience: string;
+  rating: number;
+  price: number;
+  image: string;
+  verified: boolean;
+  isActive: boolean;
+}
 
 const Vet = () => {
   const navigate = useNavigate();
