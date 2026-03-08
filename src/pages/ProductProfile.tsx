@@ -1008,79 +1008,76 @@ const ProductProfile = () => {
                 background: BUY_NOW_GRADIENT,
                 boxShadow: "0 6px 24px rgba(139,92,246,0.35)",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "8px 14px 10px 14px",
-                flexDirection: "column" as const,
+                padding: "0 16px",
                 animation: "fadeIn 0.2s ease-out",
               }}
             >
-              {/* Top row: delivery text + CART label + cards */}
-              <div className="flex items-start justify-between w-full" style={{ marginBottom: 2 }}>
-                <p className="text-white text-[11.5px] font-bold leading-tight flex-1 mr-2 mt-0">
+              <div className="flex flex-col flex-1 mr-2">
+                <p className="text-white text-[12px] font-bold leading-tight">
                   {deliveryUnlocked ? (
                     <span className="text-[#A5F3AB]">🎉 FREE DELIVERY UNLOCKED</span>
                   ) : (
                     <>Add ₹{Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal)} more to unlock <span className="uppercase">FREE DELIVERY</span></>
                   )}
                 </p>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <div className="flex flex-col items-end" style={{ marginTop: -1 }}>
-                    <span className="text-white text-[11px] font-extrabold leading-none">CART</span>
-                    <span className="text-white/90 text-[8.5px] font-semibold leading-none mt-0.5">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
-                  </div>
-                  {/* Stacked vertical rectangle cards — right to left stack, max 3 */}
-                  <div className="relative" ref={cartTargetRef} style={{ width: 36, height: 26 }}>
-                    {(() => {
-                      const stackedItems = cartItems
-                        .flatMap((item) => Array.from({ length: item.quantity }, () => item))
-                        .slice(-3);
-                      const total = stackedItems.length;
-                      return stackedItems.map((item, idx) => (
-                        <div
-                          key={`${item.id}-${idx}-${thumbnailPop}`}
-                          className="absolute top-0 overflow-hidden flex items-center justify-center"
-                          style={{
-                            width: 19,
-                            height: 26,
-                            borderRadius: 4,
-                            right: idx * 5,
-                            zIndex: idx + 1,
-                            border: "1.5px solid rgba(255,255,255,0.5)",
-                            boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
-                            animation: idx === total - 1 && thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
-                          }}
-                        >
-                          {item.image ? (
-                            <img src={item.image} alt="" className="w-full h-full object-cover" style={{ borderRadius: 3 }} />
-                          ) : (
-                            <ShoppingCart className="w-2.5 h-2.5 text-white" />
-                          )}
-                        </div>
-                      ));
-                    })()}
+                <div className="h-[7px] rounded-full mt-1.5 overflow-hidden relative" style={{ background: "rgba(255,255,255,0.25)", width: "100%" }}>
+                  <div
+                    className="h-full rounded-full relative overflow-hidden"
+                    style={{
+                      width: `${deliveryProgress}%`,
+                      background: "rgba(255,255,255,0.95)",
+                      transition: "width 700ms ease-out",
+                      boxShadow: deliveryProgress > 0 ? "0 0 8px rgba(255,255,255,0.8), 0 0 16px rgba(255,255,255,0.4)" : "none",
+                    }}
+                  >
+                    {deliveryProgress > 0 && (
+                      <span
+                        className="absolute inset-0"
+                        style={{
+                          background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,1) 50%, transparent 100%)",
+                          backgroundSize: "200% 100%",
+                          animation: "cart-shimmer 2s ease-in-out infinite",
+                        }}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
-              {/* Progress bar — under cards, slightly reduced width */}
-              <div className="h-[5px] rounded-full overflow-hidden relative w-[85%]" style={{ background: "rgba(255,255,255,0.25)" }}>
-                <div
-                  className="h-full rounded-full relative overflow-hidden"
-                  style={{
-                    width: `${deliveryProgress}%`,
-                    background: "rgba(255,255,255,0.95)",
-                    transition: "width 700ms ease-out",
-                    boxShadow: deliveryProgress > 0 ? "0 0 8px rgba(255,255,255,0.8), 0 0 16px rgba(255,255,255,0.4)" : "none",
-                  }}
-                >
-                  {deliveryProgress > 0 && (
-                    <span
-                      className="absolute inset-0"
-                      style={{
-                        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,1) 50%, transparent 100%)",
-                        backgroundSize: "200% 100%",
-                        animation: "cart-shimmer 2s ease-in-out infinite",
-                      }}
-                    />
-                  )}
+              <div className="flex items-center gap-1.5 flex-shrink-0 pl-1">
+                <div className="flex flex-col items-end mr-0.5">
+                  <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
+                  <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
+                </div>
+                {/* Stacked vertical rectangle cards — right to left stack, max 3 */}
+                <div className="relative" ref={cartTargetRef} style={{ width: 50, height: 44 }}>
+                  {(() => {
+                    const stackedItems = cartItems
+                      .flatMap((item) => Array.from({ length: item.quantity }, () => item))
+                      .slice(-3);
+                    const total = stackedItems.length;
+                    return stackedItems.map((item, idx) => (
+                      <div
+                        key={`${item.id}-${idx}-${thumbnailPop}`}
+                        className="absolute top-0 overflow-hidden flex items-center justify-center"
+                        style={{
+                          width: 28,
+                          height: 38,
+                          borderRadius: 6,
+                          right: idx * 7,
+                          zIndex: idx + 1,
+                          border: "1.5px solid rgba(255,255,255,0.5)",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+                          animation: idx === total - 1 && thumbnailPop ? "thumbnailPop 500ms ease-out" : "none",
+                        }}
+                      >
+                        {item.image ? (
+                          <img src={item.image} alt="" className="w-full h-full object-cover" style={{ borderRadius: 5 }} />
+                        ) : (
+                          <ShoppingCart className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                    ));
+                  })()}
                 </div>
               </div>
             </div>
