@@ -45,7 +45,7 @@ const Index = () => {
       <section className="relative overflow-hidden">
         <div className="container mx-auto px-4 py-20 md:py-32">
           <div className="text-center space-y-8 animate-fade-in">
-            <img src={sruvoLogo} alt="Sruvo" className="w-20 h-20 object-contain mb-6 animate-bounce-subtle" />
+            <img src={sruvoLogo} alt="Sruvo" className="w-28 h-28 object-contain mb-6 mx-auto animate-bounce-subtle" />
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
               Find Your Perfect
