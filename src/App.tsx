@@ -46,6 +46,7 @@ import InstantAnalyzing from "./pages/vet/InstantAnalyzing";
 import ConsultationSummary from "./pages/vet/ConsultationSummary";
 import InstantVideoCall from "./pages/vet/InstantVideoCall";
 import PreparingPrescription from "./pages/vet/PreparingPrescription";
+import VetDoctorProfile from "./pages/vet/VetDoctorProfile";
 import NotFound from "./pages/NotFound";
 import AuthProducts from "./pages/AuthProducts";
 import ProductsOnboarding from "./pages/ProductsOnboarding";
