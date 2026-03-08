@@ -34,7 +34,7 @@ const ConsultationSummary = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg">
         <div className="flex items-center justify-between px-4 py-4">
@@ -51,7 +51,7 @@ const ConsultationSummary = () => {
         </div>
       </header>
 
-      <div className="px-4 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
         {/* Doctor Card - Moved to top */}
         <div className="bg-card rounded-3xl p-6 border border-border shadow-lg">
           {/* Doctor Avatar */}
@@ -156,8 +156,8 @@ const ConsultationSummary = () => {
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border p-4 space-y-4">
+      {/* Fixed Bottom CTA */}
+      <div className="flex-shrink-0 px-4 pb-4 pt-3 bg-gradient-to-t from-background via-background to-transparent">
         <button 
           onClick={handlePayment}
           disabled={isProcessing}
@@ -174,24 +174,6 @@ const ConsultationSummary = () => {
             </>
           )}
         </button>
-        
-        <div className="text-center space-y-2">
-          <p className="text-xs text-muted-foreground">
-            By continuing, you agree to the <span className="text-teal-600 font-medium">Terms of Service</span>.
-          </p>
-          <p className="text-xs text-muted-foreground">Please enable camera permissions on the next screen.</p>
-        </div>
-
-        <div className="flex items-center justify-center gap-4">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Shield className="w-3 h-3" />
-            SECURE SSL
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <BadgeCheckIcon className="w-3 h-3" />
-            CERTIFIED VETS
-          </div>
-        </div>
       </div>
     </div>
   );

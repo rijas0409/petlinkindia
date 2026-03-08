@@ -403,9 +403,18 @@ function Step4({ photoUploaded, setPhotoUploaded }: any) {
           <div className="w-14 h-14 rounded-full bg-pink-50 flex items-center justify-center">
             <Camera className="w-7 h-7 text-pink-500" />
           </div>
-          <p className="font-semibold text-foreground">{photoUploaded ? "Photo Uploaded!" : "Tap to Upload"}</p>
-          <p className="text-xs text-muted-foreground">Max 5 MB • JPG, PNG</p>
+          <p className="text-sm font-semibold text-foreground">{photoUploaded ? "Photo Added ✓" : "Tap to upload photo"}</p>
+          <p className="text-xs text-muted-foreground">JPG, PNG up to 10MB</p>
         </button>
+      </section>
+
+      <section className="bg-purple-50 rounded-2xl p-4">
+        <p className="font-bold text-foreground text-sm mb-1">📸 Photo Tips</p>
+        <ul className="text-xs text-muted-foreground space-y-1">
+          <li>• Take photos in good lighting</li>
+          <li>• Focus on the affected area</li>
+          <li>• Include a size reference if possible</li>
+        </ul>
       </section>
     </div>
   );
