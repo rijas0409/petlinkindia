@@ -339,15 +339,23 @@ const ProductProfile = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
 
-  const images = product.images || [];
-  const videos = product.videos || [];
-  // Ordered: first image → videos → remaining images
-  const allMedia: { type: 'image' | 'video'; url: string }[] = [];
-  if (images.length > 0) allMedia.push({ type: 'image', url: images[0] });
-  videos.forEach(v => allMedia.push({ type: 'video', url: v }));
-  images.slice(1).forEach(img => allMedia.push({ type: 'image', url: img }));
-  if (allMedia.length === 0 && videos.length > 0) {
-    videos.forEach(v => allMedia.push({ type: 'video', url: v }));
+  const images = (product.images || []).filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+  const videos = (product.videos || []).filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+
+  // Ordered media: first image, first video, remaining videos, remaining images.
+  const allMedia: { type: "image" | "video"; url: string }[] = [];
+
+  if (images.length === 0) {
+    videos.forEach((videoUrl) => allMedia.push({ type: "video", url: videoUrl }));
+  } else {
+    allMedia.push({ type: "image", url: images[0] });
+
+    if (videos.length > 0) {
+      allMedia.push({ type: "video", url: videos[0] });
+      videos.slice(1).forEach((videoUrl) => allMedia.push({ type: "video", url: videoUrl }));
+    }
+
+    images.slice(1).forEach((imageUrl) => allMedia.push({ type: "image", url: imageUrl }));
   }
 
   const productUnit = product.unit || "";
