@@ -276,7 +276,7 @@ const VetDoctorProfile = () => {
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#FFF0E8" }}
+                    style={{ backgroundColor: "#FDE7EC" }}
                   >
                     <ServiceIcon type={service.icon} />
                   </div>
