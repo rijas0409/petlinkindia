@@ -284,7 +284,7 @@ const AdminUserManagement = ({ data, actions }: Props) => {
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={5} className="py-8 text-center text-[hsl(220,15%,60%)]">No users found</td></tr>
+                <tr><td colSpan={6} className="py-8 text-center text-[hsl(220,15%,60%)]">No users found</td></tr>
               ) : (
                 filtered.slice(0, 50).map((u: any) => {
                   const rl = roleLabels[u.role] || roleLabels.buyer;
