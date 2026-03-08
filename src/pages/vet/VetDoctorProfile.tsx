@@ -121,7 +121,7 @@ const doctorsData: Record<string, {
 
 const ServiceIcon = ({ type }: { type: string }) => {
   const iconClass = "w-5 h-5";
-  const color = "#FF8C5A";
+  const color = "#E8599C";
   switch (type) {
     case "checkup": return <Stethoscope className={iconClass} style={{ color }} />;
     case "vaccination": return <Syringe className={iconClass} style={{ color }} />;
@@ -133,7 +133,7 @@ const ServiceIcon = ({ type }: { type: string }) => {
 
 const AnimalIcon = ({ type }: { type: string }) => {
   const iconClass = "w-5 h-5";
-  const color = "#FF8C5A";
+  const color = "#9B6FE8";
   switch (type) {
     case "dog": return <Dog className={iconClass} style={{ color }} />;
     case "cat": return <Cat className={iconClass} style={{ color }} />;
@@ -257,7 +257,7 @@ const VetDoctorProfile = () => {
                 <span
                   key={spec}
                   className="px-3.5 py-1.5 rounded-full text-xs font-medium"
-                  style={{ backgroundColor: "#FFF0E8", color: "#E8734A" }}
+                  style={{ backgroundColor: "#FDE7EC", color: "#E8599C" }}
                 >
                   {spec}
                 </span>
@@ -276,7 +276,7 @@ const VetDoctorProfile = () => {
                 >
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#FFF0E8" }}
+                    style={{ backgroundColor: "#FDE7EC" }}
                   >
                     <ServiceIcon type={service.icon} />
                   </div>
@@ -294,7 +294,7 @@ const VetDoctorProfile = () => {
                 <div key={animal.label} className="flex flex-col items-center gap-1.5">
                   <div
                     className="w-14 h-14 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: "#FFF0E8" }}
+                    style={{ backgroundColor: "#F3F0FF" }}
                   >
                     <AnimalIcon type={animal.icon} />
                   </div>
