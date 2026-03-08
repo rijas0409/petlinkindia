@@ -240,8 +240,8 @@ const ProductProfile = () => {
 
     const imgRect = imgEl.getBoundingClientRect();
 
-    // Target: cart target ref if visible, else bottom-right area
-    let targetX = window.innerWidth - 60;
+    // Target: mini cart / floating bar cart icon, else center-bottom
+    let targetX = window.innerWidth / 2;
     let targetY = window.innerHeight - 160;
     if (cartTargetRef.current) {
       const targetRect = cartTargetRef.current.getBoundingClientRect();
@@ -249,39 +249,43 @@ const ProductProfile = () => {
       targetY = targetRect.top + targetRect.height / 2;
     }
 
-    // Create flying clone
+    // Clone starts as a small thumbnail (64px) from center of product image
+    const CLONE_SIZE = 64;
+    const startX = imgRect.left + imgRect.width / 2 - CLONE_SIZE / 2;
+    const startY = imgRect.top + imgRect.height / 2 - CLONE_SIZE / 2;
+
     const clone = document.createElement("img");
     clone.src = imgEl.src;
     clone.style.cssText = `
       position: fixed;
       z-index: 9999;
-      top: ${imgRect.top}px;
-      left: ${imgRect.left}px;
-      width: ${imgRect.width}px;
-      height: ${imgRect.height}px;
-      object-fit: contain;
+      top: ${startY}px;
+      left: ${startX}px;
+      width: ${CLONE_SIZE}px;
+      height: ${CLONE_SIZE}px;
+      object-fit: cover;
       pointer-events: none;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
       will-change: transform, opacity;
     `;
     document.body.appendChild(clone);
 
-    const dx = targetX - (imgRect.left + imgRect.width / 2);
-    const dy = targetY - (imgRect.top + imgRect.height / 2);
+    const dx = targetX - (startX + CLONE_SIZE / 2);
+    const dy = targetY - (startY + CLONE_SIZE / 2);
 
-    // Bezier curve control point (arc upward)
-    const cpX = dx * 0.5;
-    const cpY = dy - Math.abs(dy) * 0.4 - 80;
+    // Curve control point — arc slightly upward
+    const cpX = dx * 0.4;
+    const cpY = Math.min(dy * 0.3, -60);
 
     clone.animate(
       [
         { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1, offset: 0 },
-        { transform: `translate(${cpX}px, ${cpY}px) scale(0.7) rotate(8deg)`, opacity: 1, offset: 0.5 },
-        { transform: `translate(${dx}px, ${dy}px) scale(0.35) rotate(5deg)`, opacity: 1, offset: 0.9 },
-        { transform: `translate(${dx}px, ${dy}px) scale(0.25) rotate(0deg)`, opacity: 0, offset: 1 },
+        { transform: `translate(${cpX}px, ${cpY}px) scale(0.75) rotate(8deg)`, opacity: 1, offset: 0.45 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.45) rotate(3deg)`, opacity: 1, offset: 0.85 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.3) rotate(0deg)`, opacity: 0, offset: 1 },
       ],
-      { duration: 700, easing: "ease-in-out", fill: "forwards" }
+      { duration: 650, easing: "ease-in-out", fill: "forwards" }
     ).onfinish = () => {
       clone.remove();
       // Bounce the cart target
@@ -289,8 +293,8 @@ const ProductProfile = () => {
         cartTargetRef.current.animate(
           [
             { transform: "scale(1)" },
-            { transform: "scale(1.18)" },
-            { transform: "scale(0.95)" },
+            { transform: "scale(1.2)" },
+            { transform: "scale(0.92)" },
             { transform: "scale(1)" },
           ],
           { duration: 300, easing: "ease-out" }
