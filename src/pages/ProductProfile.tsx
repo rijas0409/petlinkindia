@@ -1048,8 +1048,8 @@ const ProductProfile = () => {
                   <span className="text-white text-[13px] font-extrabold leading-tight">CART</span>
                   <span className="text-white/90 text-[10px] font-semibold leading-tight">{cartCount} {cartCount === 1 ? "ITEM" : "ITEMS"}</span>
                 </div>
-                {/* Stacked square cards — vertical stack by quantity, max 3 */}
-                <div className="relative" ref={cartTargetRef} style={{ width: 36, height: 44 }}>
+                {/* Stacked vertical rectangle cards — right to left stack, max 3 */}
+                <div className="relative" ref={cartTargetRef} style={{ width: 50, height: 44 }}>
                   {(() => {
                     const stackedItems = cartItems
                       .flatMap((item) => Array.from({ length: item.quantity }, () => item))
@@ -1058,12 +1058,12 @@ const ProductProfile = () => {
                     return stackedItems.map((item, idx) => (
                       <div
                         key={`${item.id}-${idx}-${thumbnailPop}`}
-                        className="absolute left-0 overflow-hidden flex items-center justify-center"
+                        className="absolute top-0 overflow-hidden flex items-center justify-center"
                         style={{
-                          width: 32,
-                          height: 32,
+                          width: 28,
+                          height: 38,
                           borderRadius: 6,
-                          bottom: idx * 6,
+                          right: idx * 7,
                           zIndex: idx + 1,
                           border: "1.5px solid rgba(255,255,255,0.5)",
                           boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
