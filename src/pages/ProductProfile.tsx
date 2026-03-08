@@ -1022,11 +1022,11 @@ const ProductProfile = () => {
           from { opacity: 0; transform: translateY(4px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes miniCartPop {
+        @keyframes miniCartPopBounce {
           0% { transform: scale(0.5) translateY(25px); opacity: 0; }
-          60% { transform: scale(1.05) translateY(-5px); opacity: 1; }
-          80% { transform: scale(0.98) translateY(2px); }
-          100% { transform: scale(1) translateY(0); }
+          64.1% { transform: scale(1) translateY(0); opacity: 1; }
+          82% { transform: scale(1) translateY(-5px); opacity: 1; }
+          100% { transform: scale(1) translateY(0); opacity: 1; }
         }
         @keyframes expandCart {
           from { opacity: 0; transform: scaleX(0.15) scaleY(0.85); border-radius: 28px; }
