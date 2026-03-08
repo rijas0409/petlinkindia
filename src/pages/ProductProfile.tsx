@@ -134,6 +134,9 @@ const ProductProfile = () => {
       cartAnimationTimersRef.current.push(
         window.setTimeout(() => setCartPhase("hidden"), CART_COLLAPSE_MS),
       );
+    } else if (cartCount > 0 && prevCartCount.current > 0 && cartCount !== prevCartCount.current) {
+      // Item added/removed while bar is visible — trigger thumbnail pop
+      setThumbnailPop(Date.now());
     }
 
     prevCartCount.current = cartCount;
