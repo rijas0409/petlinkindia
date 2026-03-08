@@ -1,4 +1,5 @@
-// PetLink Delivery Dashboard for Delivery Partners
+// Sruvo Delivery Dashboard for Delivery Partners
+import sruvoLogo from "@/assets/sruvo-logo.png";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";

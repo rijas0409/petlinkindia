@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import sruvoLogo from "@/assets/sruvo-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import sruvoLogo from "@/assets/sruvo-logo.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";

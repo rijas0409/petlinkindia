@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
+import sruvoLogo from "@/assets/sruvo-logo.png";
 import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus, X, Check, Flame, Clock, Percent, TrendingUp, TrendingDown, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
