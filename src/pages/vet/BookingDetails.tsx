@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, MoreHorizontal, Star, Briefcase, ThumbsUp, Clock, Hospital, Home, MessageSquare, ArrowRight, CheckCircle2 } from "lucide-react";
+import { format, addDays, startOfToday } from "date-fns";
 
 const BookingDetails = () => {
   const navigate = useNavigate();
   const [visitType, setVisitType] = useState<"clinic" | "home">("clinic");
+
+  // Booking schedule state
+  const today = startOfToday();
+  const dates = useMemo(() => Array.from({ length: 4 }, (_, i) => addDays(today, i)), []);
+  const [selectedDate, setSelectedDate] = useState(dates[1]);
+  const [selectedSlot, setSelectedSlot] = useState("10:30 AM");
+
+  const allSlots = ["09:00 AM", "10:30 AM", "01:00 PM", "02:30 PM", "04:00 PM", "05:30 PM"];
+  const disabledSlots = ["05:30 PM"];
 
   const fees = {
     clinic: { visit: 500, service: 50 },
