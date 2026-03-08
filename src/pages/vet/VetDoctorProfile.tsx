@@ -13,6 +13,7 @@ const doctorsData: Record<string, {
   rating: number;
   reviews: number;
   yearsExp: number;
+  clinic: string;
   patients: string;
   support: string;
   about: string;
@@ -28,6 +29,7 @@ const doctorsData: Record<string, {
   "1": {
     name: "Dr. Ananya Iyer",
     title: "Senior Veterinary Surgeon",
+    clinic: "City Pet Hospital, Mumbai",
     rating: 4.9,
     reviews: 120,
     yearsExp: 12,
@@ -59,6 +61,7 @@ const doctorsData: Record<string, {
   "2": {
     name: "Dr. Rohan Sharma",
     title: "Paws & Claws Specialist",
+    clinic: "Happy Paws Clinic, Delhi",
     rating: 4.8,
     reviews: 85,
     yearsExp: 5,
@@ -89,6 +92,7 @@ const doctorsData: Record<string, {
   "elite-1": {
     name: "Dr. Amara S.",
     title: "Senior Orthopedic Specialist",
+    clinic: "Bombay Veterinary Hospital, Indore",
     rating: 4.9,
     reviews: 200,
     yearsExp: 12,
@@ -207,6 +211,7 @@ const VetDoctorProfile = () => {
               <div className="flex-1 min-w-0">
                 <h1 className="text-lg font-bold text-foreground">{doctor.name}</h1>
                 <p className="text-sm font-medium" style={{ color: "#8E7CFF" }}>{doctor.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{doctor.clinic}</p>
               </div>
             </div>
           </div>
