@@ -147,6 +147,7 @@ const AdminDashboard = () => {
       case "settings": return <AdminSettings />;
       case "listings": return <AdminListings data={data} actions={actions} />;
       case "transport": return <AdminTransport data={data} actions={actions} />;
+      case "profile": return <AdminProfileSettings user={user} onBack={() => setActiveSection("overview")} onProfileUpdate={(photo) => setProfilePhoto(photo)} />;
       default: return <AdminOverview data={data} actions={actions} setActiveSection={handleSectionChange} />;
     }
   };
