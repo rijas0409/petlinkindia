@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/hooks/useWishlist";
+import useBuyerActivityTracker from "@/hooks/useBuyerActivityTracker";
 import PetImageHeader from "@/components/pet-details/PetImageHeader";
 import PetInfoSection from "@/components/pet-details/PetInfoSection";
 import AIInsightsCard from "@/components/pet-details/AIInsightsCard";
@@ -66,6 +67,12 @@ const PetDetails = () => {
 
   const isInWishlist = isPetInWishlist(id || "");
 
+  useBuyerActivityTracker({
+    entityType: "pet",
+    entityId: id,
+    entityName: pet ? `${pet.name} (${pet.breed})` : undefined,
+    entityImage: pet?.images?.[0] || undefined,
+  });
   useEffect(() => {
     fetchPet();
     checkUser();

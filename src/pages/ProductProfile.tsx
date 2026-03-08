@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import rjStar from "@/assets/rj-star.png";
 import miniCartImage from "@/assets/mini-cart.png";
+import useBuyerActivityTracker from "@/hooks/useBuyerActivityTracker";
 
 interface Product {
   id: string; name: string; brand: string; description: string | null;
@@ -84,6 +85,13 @@ const ProductProfile = () => {
   const swiping = useRef(false);
 
   const isWishlisted = isProductInWishlist(id || "");
+
+  useBuyerActivityTracker({
+    entityType: "product",
+    entityId: id,
+    entityName: product ? `${product.name} (${product.brand})` : undefined,
+    entityImage: product?.images?.[0] || undefined,
+  });
 
   useEffect(() => { fetchProduct(); }, [id]);
 

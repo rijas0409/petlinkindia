@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Stethoscope, Package, DollarSign, Settings, Radio, PawPrint, Truck, Image, Megaphone, Wallet } from "lucide-react";
+import { LayoutDashboard, Users, Stethoscope, Package, DollarSign, Settings, Radio, PawPrint, Truck, Image, Megaphone, Wallet, ShoppingBag } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AdminSidebarProps {
@@ -10,6 +10,7 @@ interface AdminSidebarProps {
 
 const navItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "buyers", label: "Buyers", icon: ShoppingBag },
   { id: "users", label: "User Management", icon: Users },
   { id: "vets", label: "Vets", icon: Stethoscope },
   { id: "listings", label: "Listings", icon: PawPrint },

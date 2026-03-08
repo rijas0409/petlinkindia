@@ -18,6 +18,7 @@ import AdminTransport from "@/components/admin/AdminTransport";
 import AdminProfileSettings from "@/components/admin/AdminProfileSettings";
 import AdminAdvertisements from "@/components/admin/AdminAdvertisements";
 import AdminWallets from "@/components/admin/AdminWallets";
+import AdminBuyers from "@/components/admin/AdminBuyers";
 
 export interface AdminData {
   pendingSellers: any[];
@@ -146,6 +147,7 @@ const AdminDashboard = () => {
   const renderSection = () => {
     switch (activeSection) {
       case "overview": return <AdminOverview data={data} actions={actions} setActiveSection={handleSectionChange} />;
+      case "buyers": return <AdminBuyers />;
       case "users": return <AdminUserManagement data={data} actions={actions} />;
       case "vets": return <AdminVets data={data} actions={actions} />;
       case "products": return <AdminProducts data={data} actions={actions} />;

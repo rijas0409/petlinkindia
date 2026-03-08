@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import useBuyerActivityTracker from "@/hooks/useBuyerActivityTracker";
 
 // Map specialization strings to service icon types
 const specToServiceIcon = (spec: string): string => {
@@ -93,6 +94,12 @@ const VetDoctorProfile = () => {
   const [doctor, setDoctor] = useState<VetData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  useBuyerActivityTracker({
+    entityType: "vet",
+    entityId: id,
+    entityName: doctor?.name || undefined,
+    entityImage: doctor?.profileImage || undefined,
+  });
   useEffect(() => {
     const fetchVetProfile = async () => {
       if (!id) return;
