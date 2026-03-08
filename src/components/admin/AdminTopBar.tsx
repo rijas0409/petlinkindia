@@ -87,7 +87,7 @@ const AdminTopBar = ({ user, profilePhoto, onLogout, onMenuToggle, onProfileSett
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-[hsl(220,20%,15%)] truncate">{adminName}</p>
-                    <p className="text-[11px] text-[hsl(220,15%,55%)] truncate">{user?.email || "admin@petlink.com"}</p>
+                    <p className="text-[11px] text-[hsl(220,15%,55%)] truncate">{user?.email || "admin@sruvo.com"}</p>
                   </div>
                 </div>
                 <div className="py-1.5">
