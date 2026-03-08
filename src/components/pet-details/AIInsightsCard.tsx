@@ -26,7 +26,8 @@ interface InsightsData {
   };
 }
 
-const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown" }: AIInsightsCardProps) => {
+const AIInsightsCard = ({ breed, category, ageMonths, gender = "unknown", petId, petImage }: AIInsightsCardProps) => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"quick" | "deep">("quick");
   const [insights, setInsights] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
