@@ -41,6 +41,11 @@ import AIVetAssistant from "./pages/vet/AIVetAssistant";
 import AIVetAssessment from "./pages/vet/AIVetAssessment";
 import AIAnalyzingCondition from "./pages/vet/AIAnalyzingCondition";
 import BookingDetails from "./pages/vet/BookingDetails";
+import InstantAssessment from "./pages/vet/InstantAssessment";
+import InstantAnalyzing from "./pages/vet/InstantAnalyzing";
+import ConsultationSummary from "./pages/vet/ConsultationSummary";
+import InstantVideoCall from "./pages/vet/InstantVideoCall";
+import PreparingPrescription from "./pages/vet/PreparingPrescription";
 import NotFound from "./pages/NotFound";
 import AuthProducts from "./pages/AuthProducts";
 import ProductsOnboarding from "./pages/ProductsOnboarding";
@@ -91,23 +96,33 @@ const App = () => (
           <Route path="/chats" element={<Chats />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/vet" element={<Vet />} />
+          {/* Instant Video Call Flow */}
           <Route path="/vet/consultation-plan" element={<ConsultationPlan />} />
-          <Route path="/vet/payment-summary" element={<PaymentSummary />} />
+          <Route path="/vet/instant-assessment" element={<InstantAssessment />} />
+          <Route path="/vet/instant-analyzing" element={<InstantAnalyzing />} />
+          <Route path="/vet/consultation-summary" element={<ConsultationSummary />} />
+          <Route path="/vet/instant-video-call" element={<InstantVideoCall />} />
+          <Route path="/vet/preparing-prescription" element={<PreparingPrescription />} />
           <Route path="/vet/payment-failed" element={<PaymentFailed />} />
+          {/* Legacy routes (kept for compatibility) */}
+          <Route path="/vet/payment-summary" element={<PaymentSummary />} />
           <Route path="/vet/finding-vet" element={<FindingVet />} />
           <Route path="/vet/connection-ready" element={<ConnectionReady />} />
           <Route path="/vet/video-call" element={<VideoCall />} />
           <Route path="/vet/prescription" element={<DigitalPrescription />} />
+          {/* Smart Match Flow (unchanged) */}
           <Route path="/vet/ai-assistant" element={<AIVetAssistant />} />
           <Route path="/vet/ai-assessment" element={<AIVetAssessment />} />
           <Route path="/vet/ai-analyzing" element={<AIAnalyzingCondition />} />
           <Route path="/vet/booking-details" element={<BookingDetails />} />
+          {/* Products */}
           <Route path="/auth-products" element={<AuthProducts />} />
           <Route path="/products-onboarding" element={<ProductsOnboarding />} />
           <Route path="/products-pending-approval" element={<ProductsPendingApproval />} />
           <Route path="/products-dashboard" element={<ProductsDashboard />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/product/:id" element={<ProductProfile />} />
+          {/* Vet Dashboard */}
           <Route path="/auth-vet" element={<AuthVet />} />
           <Route path="/vet-onboarding" element={<VetOnboarding />} />
           <Route path="/vet-pending-approval" element={<VetPendingApproval />} />

@@ -1,32 +1,34 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, HelpCircle, Check, Video, FileText, MessageSquare, Shield, ArrowRight } from "lucide-react";
+import { ArrowLeft, HelpCircle, Check, Video, FileText, MessageSquare, Shield, ArrowRight, X } from "lucide-react";
 import vetConsultationDoctor from "@/assets/vet-consultation-doctor.png";
 
 const ConsultationPlan = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg">
-        <div className="flex items-center justify-between px-4 py-4">
-          <button 
-            onClick={() => navigate("/vet")}
-            className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="text-center">
-            <h1 className="text-lg font-bold">Consultation Plan</h1>
-            <p className="text-xs text-pink-500 font-medium">STEP 1 OF 3</p>
-          </div>
-          <button className="w-10 h-10 rounded-full border border-pink-200 bg-pink-50 flex items-center justify-center">
-            <HelpCircle className="w-5 h-5 text-pink-500" />
-          </button>
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      {/* Header - Fixed */}
+      <header className="flex-shrink-0 flex items-center justify-between px-4 pt-6 pb-2">
+        <button 
+          onClick={() => navigate("/vet")}
+          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </button>
+        <div className="text-center">
+          <p className="text-xs font-bold tracking-widest uppercase" style={{ color: '#FF4D6D' }}>PREMIUM CARE</p>
+          <p className="text-sm font-bold text-foreground">Consultation Plan</p>
         </div>
+        <button 
+          onClick={() => navigate("/vet")}
+          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center"
+        >
+          <X className="w-5 h-5 text-foreground" />
+        </button>
       </header>
 
-      <div className="px-4 space-y-6">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-4 space-y-6">
         {/* Hero Image Card */}
         <div className="relative rounded-3xl overflow-hidden bg-gray-100 p-1">
           <div className="rounded-3xl overflow-hidden bg-gray-50">
@@ -111,18 +113,22 @@ const ConsultationPlan = () => {
         </div>
       </div>
 
-      {/* Bottom CTA */}
-      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border p-4 space-y-3">
+      {/* Footer CTA - Fixed */}
+      <div className="flex-shrink-0 px-4 pb-3 pt-3 bg-gradient-to-t from-white via-white to-transparent">
         <button 
-          onClick={() => navigate("/vet/payment-summary")}
-          className="w-full bg-gradient-to-r from-pink-500 to-pink-400 text-white py-4 rounded-2xl font-bold text-base shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+          onClick={() => navigate("/vet/instant-assessment")}
+          className="w-full py-4 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
+          style={{ background: 'linear-gradient(90deg, #FF4D6D, #8B5CF6)' }}
         >
-          Continue to Payment
+          Start Vet Assessment
           <ArrowRight className="w-5 h-5" />
         </button>
-        <p className="text-center text-xs text-muted-foreground">
-          By proceeding, you agree to our <span className="text-pink-500 font-medium">Terms & Refund Policy</span>
-        </p>
+        <button 
+          onClick={() => navigate("/vet")}
+          className="w-full py-3 text-sm font-bold text-muted-foreground tracking-widest uppercase mt-2"
+        >
+          SKIP TO VET LIST
+        </button>
       </div>
     </div>
   );
