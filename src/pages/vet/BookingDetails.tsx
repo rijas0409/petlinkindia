@@ -207,6 +207,9 @@ const BookingDetails = () => {
               );
             })}
           </div>
+        </div>
+
+        {/* Summary */}
         <div>
           <h3 className="text-base font-bold text-foreground mb-3">Summary</h3>
           <div className="bg-muted/30 rounded-2xl p-4 space-y-2">
