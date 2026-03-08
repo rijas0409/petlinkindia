@@ -14,6 +14,7 @@ import AdminFinancials from "@/components/admin/AdminFinancials";
 import AdminSettings from "@/components/admin/AdminSettings";
 import AdminListings from "@/components/admin/AdminListings";
 import AdminTransport from "@/components/admin/AdminTransport";
+import AdminProfileSettings from "@/components/admin/AdminProfileSettings";
 
 export interface AdminData {
   pendingSellers: any[];
@@ -38,8 +39,9 @@ const AdminDashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("overview");
-  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile sheet
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop collapsed
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [data, setData] = useState<AdminData>({
     pendingSellers: [], pendingPets: [], reVerificationPets: [],
     pendingProducts: [], pendingVets: [], requests: [], partners: [],
@@ -48,7 +50,7 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => { checkUser(); }, []);
-  useEffect(() => { if (user) fetchData(); }, [user]);
+  useEffect(() => { if (user) { fetchData(); fetchProfilePhoto(); } }, [user]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -59,6 +61,11 @@ const AdminDashboard = () => {
       navigate("/"); return;
     }
     setUser(session.user);
+  };
+
+  const fetchProfilePhoto = async () => {
+    const { data } = await supabase.from("profiles").select("profile_photo").eq("id", user.id).maybeSingle();
+    if (data?.profile_photo) setProfilePhoto(data.profile_photo);
   };
 
   const fetchData = async () => {
@@ -140,6 +147,7 @@ const AdminDashboard = () => {
       case "settings": return <AdminSettings />;
       case "listings": return <AdminListings data={data} actions={actions} />;
       case "transport": return <AdminTransport data={data} actions={actions} />;
+      case "profile": return <AdminProfileSettings user={user} onBack={() => setActiveSection("overview")} onProfileUpdate={(photo) => setProfilePhoto(photo)} />;
       default: return <AdminOverview data={data} actions={actions} setActiveSection={handleSectionChange} />;
     }
   };
@@ -171,7 +179,7 @@ const AdminDashboard = () => {
         className="flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out"
         style={!isMobile ? { marginLeft: sidebarWidth } : undefined}
       >
-        <AdminTopBar user={user} onLogout={handleLogout} onMenuToggle={handleMenuToggle} />
+        <AdminTopBar user={user} profilePhoto={profilePhoto} onLogout={handleLogout} onMenuToggle={handleMenuToggle} onProfileSettings={() => handleSectionChange("profile")} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           {renderSection()}
         </main>
