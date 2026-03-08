@@ -370,133 +370,105 @@ const Vet = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-foreground">Vets Near You</h2>
-            <button className="text-sm font-medium text-pink-500">See All</button>
+            {realVets.length > 0 && <button className="text-sm font-medium text-pink-500">See All</button>}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            {vetsNearYou.map((vet) => (
-              <div key={vet.id} onClick={() => navigate(`/vet/doctor/${vet.id}`)} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border cursor-pointer">
-                <div className="relative h-32">
-                  <img 
-                    src={vet.image} 
-                    alt={vet.name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs font-semibold">{vet.rating}</span>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm text-foreground">{vet.name}</h3>
-                  <p className="text-xs text-muted-foreground">{vet.specialty} • {vet.experience}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className={cn("text-xs font-semibold", vet.availabilityColor)}>
-                      {vet.availability}
-                    </span>
-                    <span className="text-sm font-bold text-pink-500">₹{vet.price}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Verified Clinics Nearby */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-foreground">Verified Clinics Nearby</h2>
-              <span className="bg-muted text-xs px-2 py-0.5 rounded-full text-muted-foreground">18 found</span>
+          {realVets.length === 0 ? (
+            <div className="bg-card rounded-2xl p-6 border border-border text-center">
+              <Stethoscope className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No verified vets available yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Check back soon!</p>
             </div>
-            <button className="text-sm font-medium text-pink-500">See All</button>
-          </div>
-          <div className="space-y-3">
-            {clinicsNearby.map((clinic) => (
-              <div key={clinic.id} className="bg-card rounded-2xl p-4 shadow-sm border border-border flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-pink-100 flex items-center justify-center">
-                  <Stethoscope className="w-6 h-6 text-pink-500" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-sm text-foreground">{clinic.name}</h3>
-                    {clinic.verified && (
-                      <span className="bg-green-100 text-green-600 text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <BadgeCheck className="w-3 h-3" />
-                        VERIFIED
-                      </span>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {realVets.slice(0, 4).map((vet) => (
+                <div key={vet.id} onClick={() => navigate(`/vet/doctor/${vet.id}`)} className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border cursor-pointer">
+                  <div className="relative h-32 bg-muted">
+                    {vet.image ? (
+                      <img src={vet.image} alt={vet.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Stethoscope className="w-10 h-10 text-muted-foreground" />
+                      </div>
+                    )}
+                    {vet.rating > 0 && (
+                      <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-semibold">{vet.rating}</span>
+                      </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{clinic.location}</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <div className="flex -space-x-1">
-                      {[...Array(Math.min(clinic.doctors, 3))].map((_, i) => (
-                        <div key={i} className="w-5 h-5 rounded-full bg-pink-200 border-2 border-white" />
-                      ))}
+                  <div className="p-3">
+                    <h3 className="font-semibold text-sm text-foreground">{vet.name}</h3>
+                    <p className="text-xs text-muted-foreground">{vet.specialty} • {vet.experience}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs font-semibold text-green-500">AVAILABLE</span>
+                      <span className="text-sm font-bold text-pink-500">₹{vet.price}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">+{clinic.doctors} Doctors</span>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* All Specialized Doctors */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-bold text-foreground">All Specialized Doctors</h2>
-            <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">ELITE</span>
-          </div>
-          {eliteDoctors.map((doctor) => (
-            <div key={doctor.id} onClick={() => navigate(`/vet/doctor/elite-${doctor.id}`)} className="bg-gradient-to-br from-white to-pink-50 rounded-3xl p-5 shadow-lg border border-pink-100 cursor-pointer">
-              <div className="flex items-start gap-4">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden">
-                    <img 
-                      src={doctor.image} 
-                      alt={doctor.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {doctor.verified && (
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white">
-                      <BadgeCheck className="w-4 h-4 text-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-foreground">{doctor.name}</h3>
-                    <div className="flex items-center gap-1 bg-green-100 px-2 py-0.5 rounded-full">
-                      <Star className="w-3 h-3 fill-green-500 text-green-500" />
-                      <span className="text-xs font-semibold text-green-600">{doctor.rating}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-pink-500 font-medium mt-0.5">{doctor.specialty}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-muted-foreground">{doctor.experience}</span>
-                    <span className="text-lg font-bold text-pink-500">₹{doctor.price}<span className="text-xs font-normal">/session</span></span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 mt-4">
-                <button className="flex-1 bg-gradient-to-r from-pink-500 to-pink-400 text-white py-3 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-shadow">
-                  Book Now
-                </button>
-                <button 
-                  onClick={() => toast.info("Chat with doctor coming soon")}
-                  className="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center border border-pink-100 hover:bg-pink-50 transition-colors"
-                >
-                  <MessageCircle className="w-5 h-5 text-pink-500" />
-                </button>
-              </div>
+        {realVets.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-lg font-bold text-foreground">All Specialized Doctors</h2>
+              <span className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">ELITE</span>
             </div>
-          ))}
-        </section>
+            {realVets.filter(v => v.rating >= 4).map((doctor) => (
+              <div key={doctor.id} onClick={() => navigate(`/vet/doctor/${doctor.id}`)} className="bg-gradient-to-br from-white to-pink-50 rounded-3xl p-5 shadow-lg border border-pink-100 cursor-pointer mb-4">
+                <div className="flex items-start gap-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-muted">
+                      {doctor.image ? (
+                        <img src={doctor.image} alt={doctor.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Stethoscope className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    {doctor.verified && (
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white">
+                        <BadgeCheck className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-foreground">{doctor.name}</h3>
+                      {doctor.rating > 0 && (
+                        <div className="flex items-center gap-1 bg-green-100 px-2 py-0.5 rounded-full">
+                          <Star className="w-3 h-3 fill-green-500 text-green-500" />
+                          <span className="text-xs font-semibold text-green-600">{doctor.rating}</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm text-pink-500 font-medium mt-0.5">{doctor.specialty}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs text-muted-foreground">{doctor.experience}</span>
+                      <span className="text-lg font-bold text-pink-500">₹{doctor.price}<span className="text-xs font-normal">/session</span></span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-4">
+                  <button className="flex-1 bg-gradient-to-r from-pink-500 to-pink-400 text-white py-3 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-shadow">
+                    Book Now
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); toast.info("Chat with doctor coming soon"); }}
+                    className="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center border border-pink-100 hover:bg-pink-50 transition-colors"
+                  >
+                    <MessageCircle className="w-5 h-5 text-pink-500" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
 
         {/* Vet's Daily Tip */}
         <section className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-3xl p-5 border border-pink-100">
