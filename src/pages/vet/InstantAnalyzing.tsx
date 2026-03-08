@@ -56,49 +56,31 @@ const InstantAnalyzing = () => {
 
         if (error) {
           console.error('Error fetching vets:', error);
-          // Keep showing analyzing screen - no redirect
           return;
         }
 
         if (vets && vets.length > 0) {
-          // AI-regulated matching: Score vets based on specialization matching symptoms/pet type
           let bestVet = null;
           let bestScore = -1;
 
           for (const vet of vets) {
             let score = 0;
             const specs = (vet.specializations || []).map((s: string) => s.toLowerCase());
-
-            // Match pet type to specialization
-            if (specs.some((s: string) => s.includes(petType.toLowerCase()))) {
-              score += 10;
-            }
-            if (specs.includes("all") || specs.includes("general")) {
-              score += 3;
-            }
-
-            // Match symptoms to specialization keywords
+            if (specs.some((s: string) => s.includes(petType.toLowerCase()))) score += 10;
+            if (specs.includes("all") || specs.includes("general")) score += 3;
             for (const symptom of symptoms) {
               const symptomLower = (symptom as string).toLowerCase();
-              if (specs.some((s: string) => s.includes(symptomLower))) {
-                score += 5;
-              }
-              // Common symptom-specialization mapping
+              if (specs.some((s: string) => s.includes(symptomLower))) score += 5;
               if (symptomLower.includes("vomiting") && specs.some((s: string) => s.includes("gastro") || s.includes("internal"))) score += 5;
               if (symptomLower.includes("itching") && specs.some((s: string) => s.includes("derma") || s.includes("skin"))) score += 5;
               if (symptomLower.includes("coughing") && specs.some((s: string) => s.includes("respiratory") || s.includes("pulmo"))) score += 5;
               if (symptomLower.includes("lethargy") && specs.some((s: string) => s.includes("general") || s.includes("internal"))) score += 3;
             }
-
-            // Prioritize by urgency - higher rated vets for urgent cases
             if (urgencyLevel === "urgent") {
               score += (vet.average_rating || 0) * 2;
               score += (vet.years_of_experience || 0);
             }
-
-            // Higher experience = higher score
             score += (vet.years_of_experience || 0) * 0.5;
-
             if (score > bestScore) {
               bestScore = score;
               bestVet = vet;
@@ -106,28 +88,35 @@ const InstantAnalyzing = () => {
           }
 
           if (bestVet) {
-            // Wait for steps animation to complete before showing result
+            // Fetch real name from profiles table
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('name, full_name, profile_photo')
+              .eq('id', bestVet.user_id)
+              .single();
+
+            const realName = profileData?.full_name || profileData?.name || "Doctor";
+
             setTimeout(() => {
               setVetFound(true);
               setMatchedVet({
                 id: bestVet.id,
                 userId: bestVet.user_id,
-                name: "Dr. Vikram Malhotra",
+                name: `Dr. ${realName}`,
                 specialization: bestVet.specializations?.[0] || "General Veterinarian",
-                image: bestVet.profile_photo || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
+                image: bestVet.profile_photo || profileData?.profile_photo || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop",
                 rating: bestVet.average_rating || 4.9,
-                experience: bestVet.years_of_experience || 12,
+                experience: bestVet.years_of_experience || 0,
                 fee: bestVet.online_fee || 499,
                 qualification: bestVet.qualification || "BVSc",
+                onlineFee: bestVet.online_fee || 500,
+                offlineFee: bestVet.offline_fee || 800,
               });
             }, 7000);
           }
-          // If no vet matched well enough, screen stays on analyzing
         }
-        // If no vets in DB, screen stays on analyzing (no redirect)
       } catch (err) {
         console.error('Error:', err);
-        // Screen stays on analyzing - no redirect
       }
     };
 
