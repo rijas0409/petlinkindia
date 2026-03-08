@@ -950,10 +950,11 @@ const ProductProfile = () => {
       )}
 
       {/* ── 11) Brand Strip ── */}
-      <div className="px-5 py-4 border-t border-[#F3F4F6]">
+      <div className="px-5 py-4 border-t border-[#F3F4F6] cursor-pointer active:bg-[#F9FAFB] transition-colors"
+        onClick={() => navigate(`/brand/${encodeURIComponent(product.brand)}`)}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-[#F5F3FF] flex items-center justify-center">
-            <span className="text-[#9333EA] font-bold text-[#14px]">{product.brand?.charAt(0)}</span>
+            <span className="text-[#9333EA] font-bold text-[14px]">{product.brand?.charAt(0)}</span>
           </div>
           <div className="flex-1">
             <p className="text-[14px] font-semibold text-[#111827]">{product.brand}</p>

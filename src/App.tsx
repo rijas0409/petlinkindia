@@ -54,6 +54,7 @@ import ProductsPendingApproval from "./pages/ProductsPendingApproval";
 import ProductsDashboard from "./pages/ProductsDashboard";
 import AddProduct from "./pages/AddProduct";
 import ProductProfile from "./pages/ProductProfile";
+import BrandProfile from "./pages/BrandProfile";
 import AuthVet from "./pages/AuthVet";
 import VetOnboarding from "./pages/VetOnboarding";
 import VetPendingApproval from "./pages/VetPendingApproval";
@@ -128,6 +129,7 @@ const App = () => (
           <Route path="/products-dashboard" element={<ProductsDashboard />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/product/:id" element={<ProductProfile />} />
+          <Route path="/brand/:brandName" element={<BrandProfile />} />
           {/* Vet Dashboard */}
           <Route path="/auth-vet" element={<AuthVet />} />
           <Route path="/vet-onboarding" element={<VetOnboarding />} />
