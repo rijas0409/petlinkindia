@@ -27,9 +27,11 @@ const Cart = () => {
 
     setCheckingOut(true);
     try {
-      // For each cart item, try to create an order (only for pets that exist in the pets table)
+      let hasPetOrders = false;
+      let hasProductOrders = false;
+
       const orderPromises = cartItems.map(async (item) => {
-        // Check if this is a pet by querying the pets table
+        // Check if this is a pet
         const { data: pet } = await supabase
           .from("pets")
           .select("id, owner_id, price")
@@ -37,7 +39,7 @@ const Cart = () => {
           .single();
 
         if (pet) {
-          // It's a pet - create an order
+          hasPetOrders = true;
           return supabase.from("orders").insert({
             pet_id: pet.id,
             buyer_id: session.user.id,
@@ -46,14 +48,36 @@ const Cart = () => {
             status: "pending" as const,
           });
         }
-        // For non-pet items (products), we just skip for now
+
+        // Check if this is a product
+        const { data: product } = await supabase
+          .from("shop_products")
+          .select("id, name, images, price")
+          .eq("id", item.id)
+          .single();
+
+        if (product) {
+          hasProductOrders = true;
+          return supabase.from("product_orders").insert({
+            buyer_id: session.user.id,
+            product_id: product.id,
+            product_name: product.name,
+            product_image: product.images?.[0] || null,
+            product_price: product.price,
+            quantity: item.quantity,
+            total_amount: product.price * item.quantity,
+            status: "pending",
+          });
+        }
+
         return null;
       });
 
       await Promise.all(orderPromises);
       clearCart();
       toast.success("Order placed successfully!");
-      navigate("/profile/bookings");
+      // Navigate to product orders if only products, otherwise bookings
+      navigate(hasProductOrders && !hasPetOrders ? "/profile/orders" : "/profile/bookings");
     } catch {
       toast.error("Failed to checkout. Please try again.");
     } finally {
