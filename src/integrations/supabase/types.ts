@@ -1359,29 +1359,40 @@ export type Database = {
         Row: {
           available_days: string[]
           average_rating: number | null
+          awards_certifications: string[] | null
           bank_account_name: string | null
           bank_account_number: string | null
           bank_ifsc: string | null
           bank_name: string | null
+          cancelled_cheque_file: string | null
           clinic_address: string | null
+          clinic_address_proof_file: string | null
+          clinic_photos: string[] | null
           clinic_registration_file: string | null
+          clinic_shop_license_file: string | null
           consultation_type: string
           created_at: string
+          education_details: Json | null
           evening_slots: boolean | null
           govt_id_file: string | null
+          gst_certificate_file: string | null
           id: string
           is_active: boolean | null
           morning_slots: boolean | null
           offline_fee: number
           online_fee: number
+          pan_card_file: string | null
+          passport_photo_file: string | null
           preferred_language: string | null
           profile_photo: string | null
           qualification: string
           registration_number: string | null
           specializations: string[]
+          telemedicine_consent_accepted: boolean | null
           total_consultations: number | null
           updated_at: string
           user_id: string
+          vendor_agreement_accepted: boolean | null
           verification_status: string
           vet_degree_file: string | null
           wallet_balance: number | null
@@ -1390,29 +1401,40 @@ export type Database = {
         Insert: {
           available_days?: string[]
           average_rating?: number | null
+          awards_certifications?: string[] | null
           bank_account_name?: string | null
           bank_account_number?: string | null
           bank_ifsc?: string | null
           bank_name?: string | null
+          cancelled_cheque_file?: string | null
           clinic_address?: string | null
+          clinic_address_proof_file?: string | null
+          clinic_photos?: string[] | null
           clinic_registration_file?: string | null
+          clinic_shop_license_file?: string | null
           consultation_type?: string
           created_at?: string
+          education_details?: Json | null
           evening_slots?: boolean | null
           govt_id_file?: string | null
+          gst_certificate_file?: string | null
           id?: string
           is_active?: boolean | null
           morning_slots?: boolean | null
           offline_fee?: number
           online_fee?: number
+          pan_card_file?: string | null
+          passport_photo_file?: string | null
           preferred_language?: string | null
           profile_photo?: string | null
           qualification?: string
           registration_number?: string | null
           specializations?: string[]
+          telemedicine_consent_accepted?: boolean | null
           total_consultations?: number | null
           updated_at?: string
           user_id: string
+          vendor_agreement_accepted?: boolean | null
           verification_status?: string
           vet_degree_file?: string | null
           wallet_balance?: number | null
@@ -1421,29 +1443,40 @@ export type Database = {
         Update: {
           available_days?: string[]
           average_rating?: number | null
+          awards_certifications?: string[] | null
           bank_account_name?: string | null
           bank_account_number?: string | null
           bank_ifsc?: string | null
           bank_name?: string | null
+          cancelled_cheque_file?: string | null
           clinic_address?: string | null
+          clinic_address_proof_file?: string | null
+          clinic_photos?: string[] | null
           clinic_registration_file?: string | null
+          clinic_shop_license_file?: string | null
           consultation_type?: string
           created_at?: string
+          education_details?: Json | null
           evening_slots?: boolean | null
           govt_id_file?: string | null
+          gst_certificate_file?: string | null
           id?: string
           is_active?: boolean | null
           morning_slots?: boolean | null
           offline_fee?: number
           online_fee?: number
+          pan_card_file?: string | null
+          passport_photo_file?: string | null
           preferred_language?: string | null
           profile_photo?: string | null
           qualification?: string
           registration_number?: string | null
           specializations?: string[]
+          telemedicine_consent_accepted?: boolean | null
           total_consultations?: number | null
           updated_at?: string
           user_id?: string
+          vendor_agreement_accepted?: boolean | null
           verification_status?: string
           vet_degree_file?: string | null
           wallet_balance?: number | null
