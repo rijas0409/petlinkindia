@@ -295,12 +295,11 @@ const BuyerDashboard = () => {
             {trendingPets.map((pet, idx) => (
               <div
                 key={pet.id}
-                className="flex-shrink-0 w-52 rounded-2xl overflow-hidden bg-card border border-border shadow-sm cursor-pointer active:scale-[0.97] transition-transform"
+                className="flex-shrink-0 w-44 rounded-2xl overflow-hidden bg-card border border-border shadow-sm cursor-pointer active:scale-[0.97] transition-transform"
                 onClick={() => navigate(`/pet/${pet.id}`)}
               >
-                <div className="relative aspect-[3/4] bg-muted">
+                <div className="relative aspect-[4/3] bg-muted">
                   <img src={pet.images?.[0] || "/placeholder.svg"} alt={pet.breed} className="w-full h-full object-cover" />
-                  {/* Badge */}
                   <span className={`absolute top-2 left-2 text-[10px] font-bold text-white px-2 py-0.5 rounded-full ${
                     idx % 3 === 0 ? "bg-destructive" : idx % 3 === 1 ? "bg-primary" : "bg-accent text-accent-foreground"
                   }`}>
