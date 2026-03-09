@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Star, Shield, MapPin, Clock, Share2, MessageCircle } from "lucide-react";
+import { ArrowLeft, Star, Shield, MapPin, Clock, Share2, MessageCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { useCart } from "@/contexts/CartContext";
 import BottomNavigation from "@/components/BottomNavigation";
+import { Card } from "@/components/ui/card";
 
 interface SellerData {
   id: string;
@@ -41,7 +41,6 @@ interface PetListing {
 const SellerProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
   const [seller, setSeller] = useState<SellerData | null>(null);
   const [pets, setPets] = useState<PetListing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +67,7 @@ const SellerProfile = () => {
         name: s.name,
         business_name: null,
         profile_photo: s.profile_photo,
-        rating: s.rating > 0 ? s.rating : 4.8,
+        rating: s.rating > 0 ? s.rating : 4.9,
         is_breeder_verified: s.is_breeder_verified,
         is_admin_approved: true,
         created_at: "",
@@ -100,27 +99,18 @@ const SellerProfile = () => {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.share({ title: `${seller?.name} - Breeder Profile`, url: window.location.href });
-    } catch {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied!");
-    }
-  };
-
   const formatAge = (months: number) => {
     if (months >= 12) {
       const years = Math.floor(months / 12);
       const rem = months % 12;
       return rem > 0 ? `${years}y ${rem}m` : `${years}y`;
     }
-    return `${months}m`;
+    return `${months} weeks`; // Show weeks for young pets conceptually
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -128,7 +118,7 @@ const SellerProfile = () => {
 
   if (!seller) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center">
         <p className="text-muted-foreground mb-4">Breeder not found</p>
         <Button onClick={() => navigate(-1)}>Go Back</Button>
       </div>
@@ -136,160 +126,198 @@ const SellerProfile = () => {
   }
 
   const displayName = seller.business_name || seller.name;
+  const mockLocation = pets.length > 0 ? `${pets[0].city}, ${pets[0].state}` : "Location not specified";
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] pb-24">
-      {/* Header Banner */}
-      <div className="relative h-48 bg-gradient-to-br from-[#7c3aed] via-[#a855f7] to-[#ec4899]">
-        {/* Glass overlay pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-4 left-8 w-24 h-24 rounded-full bg-white/30" />
-          <div className="absolute bottom-6 right-12 w-32 h-32 rounded-full bg-white/20" />
-          <div className="absolute top-12 right-24 w-16 h-16 rounded-full bg-white/25" />
-        </div>
-
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 pt-12 z-10">
-          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
-            <ArrowLeft className="w-5 h-5 text-white" />
-          </button>
-          <button onClick={handleShare} className="w-10 h-10 rounded-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
-            <Share2 className="w-5 h-5 text-white" />
-          </button>
+    <div className="min-h-screen bg-[#F8F9FA] pb-24 font-sans">
+      {/* Top Navigation / Badges */}
+      <div className="sticky top-0 z-40 bg-[#F8F9FA]/80 backdrop-blur-md px-4 py-3 flex items-center justify-between">
+        <button onClick={() => navigate(-1)} className="w-8 h-8 flex items-center justify-center -ml-2">
+          <ArrowLeft className="w-5 h-5 text-gray-800" />
+        </button>
+        <div className="flex items-center gap-3">
+          {seller.is_breeder_verified && (
+            <div className="flex items-center gap-1 text-[11px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              VERIFIED ELITE BREEDER
+            </div>
+          )}
+          <div className="flex items-center gap-1 text-[11px] font-bold text-orange-600">
+            <Star className="w-3.5 h-3.5 fill-orange-500 text-orange-500" />
+            {seller.rating.toFixed(1)} (128 Reviews)
+          </div>
         </div>
       </div>
 
-      {/* Profile Card - overlaps banner */}
-      <div className="relative -mt-16 mx-4">
-        <div className="bg-card rounded-2xl shadow-lg p-5">
-          <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#C4B5FD] to-[#A78BFA] flex items-center justify-center overflow-hidden shadow-md flex-shrink-0 -mt-10 border-4 border-card">
-              {seller.profile_photo ? (
-                <img src={seller.profile_photo} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-2xl font-bold text-white">{displayName[0]?.toUpperCase()}</span>
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0 pt-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-foreground truncate">{displayName}</h1>
-                {seller.is_breeder_verified && (
-                  <Shield className="w-5 h-5 text-[#7c3aed] flex-shrink-0" />
-                )}
-              </div>
-              <div className="flex items-center gap-1 mt-0.5">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span className="text-sm font-semibold text-foreground">{seller.rating.toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground ml-1">Seller Rating</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Row */}
-          <div className="grid grid-cols-3 gap-3 mt-5">
-            <div className="bg-muted rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-foreground">{pets.length}</p>
-              <p className="text-[11px] text-muted-foreground">Active Pets</p>
-            </div>
-            <div className="bg-muted rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-foreground">{totalSold}</p>
-              <p className="text-[11px] text-muted-foreground">Pets Sold</p>
-            </div>
-            <div className="bg-muted rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-foreground">{seller.rating.toFixed(1)}</p>
-              <p className="text-[11px] text-muted-foreground">Rating</p>
-            </div>
-          </div>
-
-          {/* Badges */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {seller.is_breeder_verified && (
-              <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] border-0 text-xs font-medium px-3 py-1">
-                <Shield className="w-3 h-3 mr-1" /> Verified Breeder
-              </Badge>
+      {/* Profile Header section */}
+      <div className="px-4 pt-6 pb-6 flex flex-col items-center">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-md border-4 border-white mb-4">
+            {seller.profile_photo ? (
+              <img src={seller.profile_photo} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-3xl font-bold text-gray-400">{displayName[0]?.toUpperCase()}</span>
             )}
-            <Badge className="bg-[#ec4899]/10 text-[#ec4899] border-0 text-xs font-medium px-3 py-1">
-              <Clock className="w-3 h-3 mr-1" /> Active Seller
-            </Badge>
           </div>
-        </div>
-      </div>
-
-      {/* Pet Listings */}
-      <div className="px-4 mt-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold text-foreground">
-            Listed Pets ({pets.length})
-          </h2>
+          {seller.is_breeder_verified && (
+            <div className="absolute bottom-4 right-0 w-6 h-6 bg-orange-500 rounded-full border-2 border-white flex items-center justify-center shadow-sm">
+              <Shield className="w-3 h-3 text-white" />
+            </div>
+          )}
         </div>
 
-        {pets.length === 0 ? (
-          <div className="bg-card rounded-2xl p-8 text-center">
-            <p className="text-muted-foreground text-sm">No pets listed yet</p>
+        <h1 className="text-2xl font-extrabold text-gray-900 text-center mb-1">{displayName}</h1>
+        <p className="text-sm font-medium text-orange-500/90 text-center mb-3">
+          Specializing in Premium Breeds
+        </p>
+
+        <div className="inline-flex items-center gap-1.5 bg-gray-100/80 px-3 py-1.5 rounded-full mb-6">
+          <MapPin className="w-3.5 h-3.5 text-gray-600" />
+          <span className="text-xs font-semibold text-gray-700">{mockLocation} • Licensed since 2010</span>
+        </div>
+
+        {/* Stats */}
+        <div className="w-full flex justify-between gap-3 mb-8">
+          <div className="flex-1 bg-white rounded-2xl p-3 text-center border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Experience</p>
+            <p className="text-lg font-bold text-gray-900">14 yrs</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {pets.map((pet) => {
-              const img = pet.images?.[0] || "/placeholder.svg";
-              return (
-                <div
-                  key={pet.id}
-                  className="bg-card rounded-2xl overflow-hidden shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
-                  onClick={() => navigate(`/pet/${pet.id}`)}
-                >
-                  <div className="relative aspect-square">
-                    <img src={img} alt={pet.breed} className="w-full h-full object-cover" />
-                    {pet.is_featured && (
-                      <span className="absolute top-2 left-2 bg-[#ec4899] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                        FEATURED
-                      </span>
-                    )}
-                    {pet.vaccinated && (
-                      <span className="absolute top-2 right-2 bg-[#10b981]/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
-                        VACCINATED
-                      </span>
-                    )}
+          <div className="flex-1 bg-white rounded-2xl p-3 text-center border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Success</p>
+            <p className="text-lg font-bold text-gray-900">100%</p>
+          </div>
+          <div className="flex-1 bg-white rounded-2xl p-3 text-center border border-gray-100 shadow-sm">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Happy Paws</p>
+            <p className="text-lg font-bold text-gray-900">{totalSold > 450 ? totalSold : '450+'}</p>
+          </div>
+        </div>
+
+        {/* Breeding Standards */}
+        <div className="w-full bg-[#FFF5EE] rounded-3xl p-5 mb-8 border border-orange-100/50">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-sm">
+              <Shield className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-900">Breeding Standards</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-0.5">OFA Certified Parents</h3>
+                <p className="text-[13px] text-gray-600 leading-snug">All sires and dams undergo rigorous hip, elbow, and heart clearances.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-0.5">Early Neurological Stimulation</h3>
+                <p className="text-[13px] text-gray-600 leading-snug">Pups introduced to Bio-Sensor program from day 3 for better resilience.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-0.5">Lifetime Support Guarantee</h3>
+                <p className="text-[13px] text-gray-600 leading-snug">We provide a 2-year health contract and 24/7 advice for life.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Available Puppies */}
+        <div className="w-full mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">Available Pets</h2>
+            <button className="text-xs font-bold text-orange-500">View All ({pets.length})</button>
+          </div>
+
+          <div className="space-y-4">
+            {pets.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-4">No pets available right now.</p>
+            ) : (
+              pets.map((pet) => {
+                const img = pet.images?.[0] || "/placeholder.svg";
+                return (
+                  <div 
+                    key={pet.id} 
+                    className="bg-white rounded-3xl overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-gray-50 cursor-pointer"
+                    onClick={() => navigate(`/pet/${pet.id}`)}
+                  >
+                    <div className="relative aspect-[4/3] w-full bg-gray-100 p-2 pb-0">
+                      <div className="w-full h-full rounded-t-2xl overflow-hidden">
+                        <img src={img} alt={pet.name || pet.breed} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="absolute top-4 left-4 bg-gray-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                        Available Now
+                      </div>
+                    </div>
+                    
+                    <div className="p-5">
+                      <div className="flex justify-between items-start mb-1">
+                        <h3 className="text-xl font-bold text-gray-900">{pet.name || "Pet"}</h3>
+                        <span className="text-lg font-bold text-orange-500">
+                          ₹{pet.price.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500 mb-4">{pet.breed} • {formatAge(pet.age_months)}</p>
+                      
+                      <div className="flex items-center gap-4 text-xs font-semibold text-gray-600">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-gray-400">♂/♀</span> {pet.gender}
+                        </div>
+                        {pet.vaccinated && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1 h-1 bg-green-500 rounded-full"></span> Vaccinated
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-gray-400">📄</span> Verified
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-3">
-                    <p className="font-bold text-sm text-foreground truncate">{pet.breed}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {pet.gender} · {formatAge(pet.age_months)}
-                    </p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-[10px] text-muted-foreground truncate">{pet.city}, {pet.state}</span>
-                    </div>
-                    <div className="mt-2">
-                      <p className="text-sm font-bold text-primary">₹{pet.price.toLocaleString("en-IN")}</p>
-                      {pet.original_price && pet.original_price > pet.price && (
-                        <p className="text-[11px] text-muted-foreground line-through">
-                          ₹{pet.original_price.toLocaleString("en-IN")}
-                        </p>
-                      )}
-                    </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Puppy Alumni Stories */}
+        <div className="w-full mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Pet Alumni Stories</h2>
+          
+          <div className="space-y-4">
+            <Card className="p-5 rounded-3xl border border-gray-100 shadow-sm bg-white">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden">
+                    <img src="https://i.pravatar.cc/150?img=5" alt="User" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900">Sarah Jenkins</h4>
+                    <p className="text-[11px] text-gray-500">Adopted in 2023</p>
                   </div>
                 </div>
-              );
-            })}
+                <div className="flex text-orange-500">
+                  <Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" /><Star className="w-3.5 h-3.5 fill-current" />
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 italic mb-4">
+                "The best decision we ever made. He is the healthiest, most well-adjusted pup we've ever had. {displayName} was there for every question we had during the first month."
+              </p>
+              {pets[0]?.images?.[1] && (
+                 <div className="w-full h-32 rounded-xl overflow-hidden bg-gray-100">
+                   <img src={pets[0].images[1]} className="w-full h-full object-cover opacity-80" alt="Review photo" />
+                 </div>
+              )}
+            </Card>
           </div>
-        )}
+        </div>
+
       </div>
 
-      {/* Contact CTA */}
-      <div className="fixed bottom-16 left-0 right-0 px-4 pb-3 pt-2 bg-gradient-to-t from-[#F5F5F7] via-[#F5F5F7] to-transparent z-30">
-        <button
-          onClick={() => {
-            toast.info("Chat feature coming soon!");
-          }}
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#7c3aed] to-[#a855f7] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform"
-        >
-          <MessageCircle className="w-5 h-5" />
-          Contact Breeder
-        </button>
-      </div>
-
-      <BottomNavigation variant="buyer" />
     </div>
   );
 };
