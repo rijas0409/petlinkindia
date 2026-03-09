@@ -8,49 +8,49 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Pastel color palette for PetLink */
-    --background: 35 40% 98%;
-    --foreground: 220 20% 20%;
+    /* Purple-first color palette matching reference design */
+    --background: 0 0% 99%;
+    --foreground: 220 20% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 20%;
+    --card-foreground: 220 20% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 20%;
+    --popover-foreground: 220 20% 15%;
 
-    --primary: 345 80% 68%;
+    --primary: 265 70% 58%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 40% 88%;
+    --secondary: 260 30% 94%;
     --secondary-foreground: 220 20% 20%;
 
-    --muted: 210 30% 95%;
+    --muted: 240 10% 95%;
     --muted-foreground: 220 15% 50%;
 
-    --accent: 160 50% 75%;
-    --accent-foreground: 220 20% 20%;
+    --accent: 265 50% 92%;
+    --accent-foreground: 265 70% 40%;
 
-    --success: 145 60% 65%;
+    --success: 145 60% 45%;
     --success-foreground: 0 0% 100%;
 
-    --destructive: 0 75% 65%;
+    --destructive: 0 75% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 90%;
-    --input: 220 20% 92%;
-    --ring: 345 80% 68%;
+    --border: 240 10% 90%;
+    --input: 240 10% 92%;
+    --ring: 265 70% 58%;
 
     --radius: 1.5rem;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(345 80% 68%), hsl(270 60% 75%));
-    --gradient-secondary: linear-gradient(135deg, hsl(200 40% 88%), hsl(160 50% 75%));
-    --gradient-soft: linear-gradient(180deg, hsl(35 40% 98%), hsl(200 30% 96%));
+    --gradient-primary: linear-gradient(135deg, hsl(265 70% 58%), hsl(290 60% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(260 30% 94%), hsl(265 50% 92%));
+    --gradient-soft: linear-gradient(180deg, hsl(0 0% 99%), hsl(260 20% 97%));
     
     /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(345 80% 68% / 0.1);
+    --shadow-soft: 0 4px 20px -4px hsl(265 70% 58% / 0.1);
     --shadow-card: 0 8px 32px -8px hsl(220 20% 20% / 0.08);
-    --shadow-float: 0 12px 40px -12px hsl(345 80% 68% / 0.2);
+    --shadow-float: 0 12px 40px -12px hsl(265 70% 58% / 0.2);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
