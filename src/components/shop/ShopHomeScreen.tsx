@@ -223,9 +223,9 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
             <img src={sruvoLogo} alt="Sruvo" className="w-12 h-12 object-contain" />
             <div>
               <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Sruvo</span>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="w-3 h-3" /><span>Gurgaon</span><ChevronDown className="w-3 h-3" />
-              </div>
+              <button onClick={() => setLocationModalOpen(true)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <MapPin className="w-3 h-3" /><span>{city}</span><ChevronDown className="w-3 h-3" />
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-2">
