@@ -1,210 +1,456 @@
-import { useEffect, useState } from "react";
-import sruvoLogo from "@/assets/sruvo-logo.png"; // rebrand
+import { useEffect, useState, useCallback, useMemo } from "react";
+import sruvoLogo from "@/assets/sruvo-logo.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, Search, ShoppingCart } from "lucide-react";
+import { Heart, Search, ShoppingCart, MapPin, ShieldCheck, SlidersHorizontal, Plus, ChevronRight, Star, Flame, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
-import PetCard from "@/components/PetCard";
-import CategoryFilter from "@/components/CategoryFilter";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useCart } from "@/contexts/CartContext";
 import { InlineBanners } from "@/components/DynamicBannerRenderer";
+import { Button } from "@/components/ui/button";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 
+// ─── Banner Carousel ───
+const FALLBACK_BANNERS = [
+  {
+    gradient: "linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)",
+    title: "Verified\nGolden Puppies",
+    subtitle: "KCI Registered & Health Certified",
+    cta: "View Collection",
+    badge: "PREMIUM",
+    image: "https://images.unsplash.com/photo-1601979031925-424e53b6caaa?w=400",
+  },
+  {
+    gradient: "linear-gradient(135deg, #0ea5e9, #6366f1, #8b5cf6)",
+    title: "Exotic\nPersian Cats",
+    subtitle: "Purebred & Vaccinated",
+    cta: "Explore Now",
+    badge: "NEW",
+    image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400",
+  },
+  {
+    gradient: "linear-gradient(135deg, #f59e0b, #ef4444, #ec4899)",
+    title: "Rare Bird\nCollection",
+    subtitle: "Hand-raised & Tamed",
+    cta: "Browse",
+    badge: "HOT",
+    image: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=400",
+  },
+];
+
+const HeroBannerCarousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [slides, setSlides] = useState<any[]>([]);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true },
+    [Autoplay({ delay: 4000, stopOnInteraction: false })]
+  );
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      const { data } = await supabase
+        .from("banners")
+        .select("*")
+        .eq("location", "buyer_home")
+        .eq("is_active", true)
+        .order("position");
+      if (data && data.length > 0) {
+        setSlides(data.map((b: any) => ({
+          gradient: b.gradient || FALLBACK_BANNERS[0].gradient,
+          title: b.title,
+          subtitle: b.subtitle,
+          cta: b.cta_text || "View",
+          badge: "PREMIUM",
+          image: b.image_url,
+        })));
+      } else {
+        setSlides(FALLBACK_BANNERS);
+      }
+    };
+    fetchBanners();
+  }, []);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCurrentIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    onSelect();
+  }, [emblaApi, onSelect]);
+
+  if (slides.length === 0) return null;
+
+  return (
+    <div>
+      <div className="relative overflow-hidden rounded-2xl" ref={emblaRef}>
+        <div className="flex">
+          {slides.map((slide, index) => (
+            <div key={index} className="flex-[0_0_100%] min-w-0">
+              <div className="relative rounded-2xl overflow-hidden h-44" style={{ background: slide.gradient }}>
+                <div className="flex items-center h-full">
+                  <div className="flex-1 p-5 z-10">
+                    {slide.badge && (
+                      <span className="inline-block text-[10px] font-bold text-white bg-white/20 backdrop-blur-sm px-2.5 py-0.5 rounded-full mb-2">
+                        {slide.badge}
+                      </span>
+                    )}
+                    <h3 className="text-white text-xl font-bold leading-tight whitespace-pre-line">{slide.title}</h3>
+                    <p className="text-white/80 text-xs mt-1">{slide.subtitle}</p>
+                    <button className="mt-3 bg-white text-foreground text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-white/90 transition-colors">
+                      {slide.cta}
+                    </button>
+                  </div>
+                  {slide.image && (
+                    <div className="w-40 h-full flex-shrink-0">
+                      <img src={slide.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="flex justify-center gap-1.5 mt-2.5">
+        {slides.map((_, index) => (
+          <button key={index} onClick={() => emblaApi?.scrollTo(index)}
+            className={`h-1.5 rounded-full transition-all ${index === currentIndex ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30"}`} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── Category Chips ───
+const CATEGORIES = [
+  { id: null, name: "All", emoji: "✨" },
+  { id: "dog", name: "Dogs", emoji: "🐕" },
+  { id: "cat", name: "Cats", emoji: "🐱" },
+  { id: "bird", name: "Birds", emoji: "🦜" },
+  { id: "rabbit", name: "Rabbits", emoji: "🐰" },
+  { id: "other", name: "Other", emoji: "🐾" },
+];
+
+// ─── Main Component ───
 const BuyerDashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [pets, setPets] = useState<any[]>([]);
+  const [breeders, setBreeders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { totalWishlistCount } = useWishlist();
+  const { totalWishlistCount, togglePetWishlist, isPetInWishlist } = useWishlist();
+  const { cartCount } = useCart();
 
   useEffect(() => {
     checkUser();
     fetchPets();
+    fetchBreeders();
   }, []);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
-
-    // Check role from authoritative user_roles table
+    if (!session) { navigate("/auth"); return; }
     const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
-
-    if (roleData === "seller") {
-      navigate("/seller-dashboard");
-      return;
-    }
-    if (roleData === "admin") {
-      navigate("/admin");
-      return;
-    }
-    if (roleData === "delivery_partner") {
-      navigate("/delivery");
-      return;
-    }
-    if (roleData === "product_seller") {
-      navigate("/products-dashboard");
-      return;
-    }
-    if (roleData === "vet") {
-      navigate("/vet-dashboard");
-      return;
-    }
-
+    if (roleData === "seller") { navigate("/seller-dashboard"); return; }
+    if (roleData === "admin") { navigate("/admin"); return; }
+    if (roleData === "delivery_partner") { navigate("/delivery"); return; }
+    if (roleData === "product_seller") { navigate("/products-dashboard"); return; }
+    if (roleData === "vet") { navigate("/vet-dashboard"); return; }
     setUser(session.user);
   };
 
   const fetchPets = async () => {
     try {
-      // Only fetch verified and available pets
       const { data, error } = await supabase
         .from("pets")
-        .select(`
-          *,
-          profiles:owner_id (name, rating, profile_photo)
-        `)
+        .select("*, profiles:owner_id (name, rating, profile_photo)")
         .eq("is_available", true)
         .eq("verification_status", "verified")
         .order("created_at", { ascending: false });
-
       if (error) throw error;
       setPets(data || []);
-    } catch (error: any) {
-      toast.error("Failed to load pets");
-    } finally {
-      setLoading(false);
-    }
+    } catch { toast.error("Failed to load pets"); }
+    finally { setLoading(false); }
   };
 
-  const filteredPets = selectedCategory
-    ? pets.filter((pet) => pet.category === selectedCategory)
-    : pets;
+  const fetchBreeders = async () => {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, name, profile_photo, rating, is_breeder_verified, city")
+        .eq("role", "seller")
+        .eq("is_admin_approved", true)
+        .limit(10);
+      setBreeders(data || []);
+    } catch { /* silent */ }
+  };
+
+  const filteredPets = useMemo(() =>
+    selectedCategory ? pets.filter((p) => p.category === selectedCategory) : pets
+  , [pets, selectedCategory]);
+
+  // Trending = featured or most viewed
+  const trendingPets = useMemo(() => {
+    const sorted = [...pets].sort((a, b) => (b.views || 0) - (a.views || 0));
+    return sorted.slice(0, 8);
+  }, [pets]);
+
+  const formatAge = (months: number) => {
+    if (months < 12) return `${months} months`;
+    const y = Math.floor(months / 12);
+    const m = months % 12;
+    return m > 0 ? `${y}y ${m}m` : `${y} years`;
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-1">
             <img src={sruvoLogo} alt="Sruvo" className="w-12 h-12 object-contain" />
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Sruvo
-            </span>
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Sruvo</span>
           </div>
-
           <div className="flex items-center gap-2">
-            {/* Wishlist Button */}
-            <button 
-              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors relative"
-              onClick={() => navigate("/wishlist")}
-            >
+            <button className="w-9 h-9 rounded-full bg-muted flex items-center justify-center relative" onClick={() => navigate("/wishlist")}>
               <Heart className="w-5 h-5" />
-              {totalWishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">
-                  {totalWishlistCount}
-                </span>
-              )}
+              {totalWishlistCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">{totalWishlistCount}</span>}
             </button>
-            {/* Cart Button */}
-            <button 
-              className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
-              onClick={() => navigate("/cart")}
-            >
+            <button className="w-9 h-9 rounded-full bg-muted flex items-center justify-center relative" onClick={() => navigate("/cart")}>
               <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-[10px] rounded-full flex items-center justify-center">{cartCount}</span>}
             </button>
             <HeaderProfileDropdown />
           </div>
         </div>
       </header>
 
-      {/* Dynamic Banners - Top */}
       <InlineBanners placement="top" />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-soft py-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center space-y-4 mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold">
-              Find Your Perfect
-              <span className="bg-gradient-primary bg-clip-text text-transparent"> Companion</span>
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Browse thousands of verified pets from trusted sellers across India
-            </p>
-          </div>
+      {/* Hero */}
+      <section className="px-4 pt-6 pb-4">
+        <h1 className="text-3xl font-bold text-center leading-tight">
+          Find Your Perfect
+          <br />
+          <span className="bg-gradient-primary bg-clip-text text-transparent">Companion</span>
+        </h1>
+        <p className="text-sm text-muted-foreground text-center mt-2">
+          Browse thousands of verified pets from trusted sellers across India
+        </p>
 
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search by breed, location, or category..."
-                className="w-full pl-12 pr-4 py-4 rounded-3xl bg-card border border-border shadow-card focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Category Filter */}
-      <section className="py-6 border-b border-border">
-        <div className="container mx-auto px-4">
-          <CategoryFilter
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
+        {/* Search Bar */}
+        <div className="relative mt-4">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search by breed, location, or category..."
+            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-card border border-border shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
       </section>
 
-      {/* Pet Listings */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">
-              {selectedCategory
-                ? `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}s for You`
-                : "All Pets"}
-            </h2>
-            <div className="text-sm text-muted-foreground">
-              {filteredPets.length} pets available
-            </div>
-          </div>
+      {/* Banner Carousel */}
+      <div className="px-4 pb-4">
+        <HeroBannerCarousel />
+      </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-96 bg-muted rounded-3xl animate-shimmer"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted-foreground) / 0.1) 50%, hsl(var(--muted)) 100%)",
-                    backgroundSize: "1000px 100%",
-                  }}
-                />
-              ))}
-            </div>
-          ) : filteredPets.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No verified pets found in this category</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPets.map((pet) => (
-                <PetCard key={pet.id} pet={pet} />
-              ))}
-            </div>
-          )}
+      {/* Category Chips */}
+      <div className="px-4 pb-4">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <button
+                key={cat.id || "all"}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium flex-shrink-0 transition-all ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "bg-card border border-border text-foreground hover:bg-muted"
+                }`}
+              >
+                <span>{cat.emoji}</span>
+                <span>{cat.name}</span>
+              </button>
+            );
+          })}
         </div>
-      </section>
-      {/* Dynamic Banners - Bottom */}
-      <InlineBanners placement="bottom" />
+      </div>
 
+      {/* Trending Near You */}
+      {trendingPets.length > 0 && (
+        <section className="pb-6">
+          <div className="px-4 flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-foreground">Trending Near You</h2>
+            <span className="text-sm font-medium text-primary">View All</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide">
+            {trendingPets.map((pet, idx) => (
+              <div
+                key={pet.id}
+                className="flex-shrink-0 w-44 rounded-2xl overflow-hidden bg-card border border-border shadow-sm cursor-pointer active:scale-[0.97] transition-transform"
+                onClick={() => navigate(`/pet/${pet.id}`)}
+              >
+                <div className="relative aspect-[4/3] bg-muted">
+                  <img src={pet.images?.[0] || "/placeholder.svg"} alt={pet.breed} className="w-full h-full object-cover" />
+                  {/* Badge */}
+                  <span className={`absolute top-2 left-2 text-[10px] font-bold text-white px-2 py-0.5 rounded-full ${
+                    idx % 3 === 0 ? "bg-destructive" : idx % 3 === 1 ? "bg-primary" : "bg-accent text-accent-foreground"
+                  }`}>
+                    {idx % 3 === 0 ? "HOT DEAL" : idx % 3 === 1 ? "TRENDING" : "NEW"}
+                  </span>
+                </div>
+                <div className="p-2.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-foreground line-clamp-1">{pet.breed}</h3>
+                    <span className="text-sm font-bold text-primary">₹{(pet.price / 1000).toFixed(0)}k</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {pet.city} • {formatAge(pet.age_months)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Verified Breeders Nearby */}
+      {breeders.length > 0 && (
+        <section className="pb-6">
+          <div className="px-4 flex items-center justify-between mb-1">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Verified Breeders Nearby</h2>
+              <p className="text-xs text-muted-foreground">Connect with {breeders.length} top-rated experts in your area</p>
+            </div>
+            <span className="text-xs font-semibold text-primary flex items-center gap-0.5">SEE MAP <ChevronRight className="w-3 h-3" /></span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-4 pt-2 pb-2 scrollbar-hide">
+            {breeders.map((breeder) => (
+              <div
+                key={breeder.id}
+                className="flex-shrink-0 w-56 rounded-2xl overflow-hidden bg-card border border-border shadow-sm"
+              >
+                <div className="relative h-28 bg-muted">
+                  {breeder.profile_photo ? (
+                    <img src={breeder.profile_photo} alt={breeder.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
+                      <span className="text-4xl font-bold text-primary/40">{breeder.name?.[0]?.toUpperCase()}</span>
+                    </div>
+                  )}
+                  {breeder.is_breeder_verified && (
+                    <span className="absolute top-2 right-2 bg-success text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                      <ShieldCheck className="w-3 h-3" /> VERIFIED
+                    </span>
+                  )}
+                </div>
+                <div className="p-3">
+                  <h3 className="text-sm font-bold text-foreground line-clamp-1">{breeder.name}</h3>
+                  <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-0.5"><Star className="w-3 h-3 text-amber-500 fill-amber-500" />{breeder.rating?.toFixed(1) || "4.5"}</span>
+                    <span>•</span>
+                    <span>Pets Sold</span>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/seller/${breeder.id}`)}
+                    className="mt-2.5 w-full py-1.5 text-xs font-semibold text-primary border border-primary/30 rounded-full hover:bg-primary/5 transition-colors"
+                  >
+                    View Profile
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* All Pets Grid */}
+      <section className="px-4 pb-8">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold text-foreground">All Pets</h2>
+          <button className="flex items-center gap-1 text-sm text-muted-foreground border border-border rounded-lg px-3 py-1.5">
+            <SlidersHorizontal className="w-3.5 h-3.5" /> Filter
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl overflow-hidden bg-card border border-border animate-pulse">
+                <div className="aspect-square bg-muted" />
+                <div className="p-3 space-y-2">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredPets.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No verified pets found in this category</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {filteredPets.map((pet) => {
+              const isFav = isPetInWishlist(pet.id);
+              return (
+                <div
+                  key={pet.id}
+                  className="rounded-2xl overflow-hidden bg-card border border-border shadow-sm cursor-pointer active:scale-[0.97] transition-transform"
+                  onClick={() => navigate(`/pet/${pet.id}`)}
+                >
+                  <div className="relative aspect-square bg-muted">
+                    <img src={pet.images?.[0] || "/placeholder.svg"} alt={pet.breed} className="w-full h-full object-cover" />
+                    {/* Verified badge */}
+                    {pet.verification_status === "verified" && (
+                      <span className="absolute top-2 left-2 bg-success text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                        <ShieldCheck className="w-2.5 h-2.5" /> VERIFIED
+                      </span>
+                    )}
+                    {/* Wishlist */}
+                    <button
+                      className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center ${isFav ? "text-destructive" : "text-muted-foreground"}`}
+                      onClick={(e) => { e.stopPropagation(); togglePetWishlist(pet.id); }}
+                    >
+                      <Heart className="w-4 h-4" fill={isFav ? "currentColor" : "none"} />
+                    </button>
+                    {/* Age badge */}
+                    <span className="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-sm">
+                      {formatAge(pet.age_months)}
+                    </span>
+                  </div>
+                  <div className="p-2.5">
+                    <h3 className="text-sm font-semibold text-foreground line-clamp-1">{pet.breed}</h3>
+                    <div className="flex items-center gap-1 mt-0.5 text-[11px] text-muted-foreground">
+                      <MapPin className="w-3 h-3" />
+                      <span className="line-clamp-1">{pet.city}, {pet.state}</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-base font-bold text-foreground">₹{pet.price.toLocaleString()}</span>
+                      <button
+                        className="w-7 h-7 rounded-full bg-primary flex items-center justify-center"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/pet/${pet.id}`); }}
+                      >
+                        <Plus className="w-4 h-4 text-primary-foreground" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <InlineBanners placement="bottom" />
       <BottomNavigation variant="buyer" />
     </div>
   );
