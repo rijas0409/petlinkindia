@@ -22,6 +22,7 @@ interface CartContextType {
   addToCart: (product: AddToCartPayload) => void;
   updateQuantity: (id: string, delta: number) => void;
   removeItem: (id: string) => void;
+  clearCart: () => void;
   cartCount: number;
 }
 
