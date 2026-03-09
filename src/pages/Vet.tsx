@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useLocation } from "@/contexts/LocationContext";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -67,7 +68,7 @@ interface RealVet {
 const Vet = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [location, setLocation] = useState("Greater Noida");
+  const { city: location, setCity: setLocation, cities: locationCities } = useLocation();
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [searchCity, setSearchCity] = useState("");
   const { totalWishlistCount } = useWishlist();
@@ -117,7 +118,7 @@ const Vet = () => {
     fetchVets();
   }, []);
 
-  const filteredCities = cities.filter(city =>
+  const filteredCities = locationCities.filter(city =>
     city.name.toLowerCase().includes(searchCity.toLowerCase()) ||
     city.state.toLowerCase().includes(searchCity.toLowerCase())
   );
