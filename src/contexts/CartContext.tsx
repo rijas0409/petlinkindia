@@ -53,6 +53,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  const removeItem = (id: string) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
   const clearCart = () => {
     setCartItems([]);
   };
