@@ -3,34 +3,111 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Wallet, ArrowUpRight, ArrowDownLeft, Plus } from "lucide-react";
+import { ArrowLeft, Wallet, ArrowUpRight, ArrowDownLeft, Plus, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const WalletPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const [balance, setBalance] = useState<number>(0);
+  const [walletId, setWalletId] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [isAddMoneyOpen, setIsAddMoneyOpen] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const load = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setLoading(false); return; }
+    const uid = session.user.id;
+
+    const { data: wallet } = await supabase.from("wallets").select("*").eq("user_id", uid).maybeSingle();
+    if (wallet) {
+      setBalance(wallet.balance || 0);
+      setWalletId(wallet.id);
+      const { data: txs } = await supabase
+        .from("wallet_transactions")
+        .select("*")
+        .eq("wallet_id", wallet.id)
+        .order("created_at", { ascending: false });
+      setTransactions(txs || []);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setLoading(false); return; }
-      const uid = session.user.id;
-
-      const { data: wallet } = await supabase.from("wallets").select("*").eq("user_id", uid).maybeSingle();
-      if (wallet) {
-        setBalance(wallet.balance || 0);
-        const { data: txs } = await supabase
-          .from("wallet_transactions")
-          .select("*")
-          .eq("wallet_id", wallet.id)
-          .order("created_at", { ascending: false });
-        setTransactions(txs || []);
-      }
-      setLoading(false);
-    };
     load();
   }, []);
+
+  const handleAddMoney = async () => {
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      toast({ title: "Invalid Amount", description: "Please enter a valid amount.", variant: "destructive" });
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    // Simulate payment gateway delay
+    setTimeout(async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Not authenticated");
+        
+        let currentWalletId = walletId;
+        let newBalance = balance + numAmount;
+        
+        if (!currentWalletId) {
+          const { data: newWallet, error: createError } = await supabase
+            .from("wallets")
+            .insert({ user_id: session.user.id, balance: numAmount })
+            .select()
+            .single();
+            
+          if (createError) throw createError;
+          currentWalletId = newWallet.id;
+        } else {
+          const { error: updateError } = await supabase
+            .from("wallets")
+            .update({ balance: newBalance })
+            .eq("id", currentWalletId);
+            
+          if (updateError) throw updateError;
+        }
+        
+        const { error: txError } = await supabase
+          .from("wallet_transactions")
+          .insert({
+            wallet_id: currentWalletId,
+            user_id: session.user.id,
+            amount: numAmount,
+            type: "credit",
+            title: "Added Money to Wallet",
+            description: "Added via simulated payment gateway"
+          });
+          
+        if (txError) throw txError;
+        
+        setBalance(newBalance);
+        setWalletId(currentWalletId);
+        setIsAddMoneyOpen(false);
+        setAmount("");
+        toast({ title: "Payment Successful", description: `₹${numAmount} added to your wallet.` });
+        
+        // Refresh transactions
+        load();
+      } catch (error: any) {
+        toast({ title: "Payment Failed", description: error.message, variant: "destructive" });
+      } finally {
+        setIsProcessing(false);
+      }
+    }, 2500);
+  };
 
   return (
     <div className="min-h-screen bg-background">
