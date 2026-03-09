@@ -66,11 +66,13 @@ import CarePlanForm from "./pages/care-plan/CarePlanForm";
 import CarePlanReport from "./pages/care-plan/CarePlanReport";
 import CarePlanFormStep2 from "./pages/care-plan/CarePlanFormStep2";
 import { CartProvider } from "./contexts/CartContext";
+import { LocationProvider } from "./contexts/LocationContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <LocationProvider>
     <CartProvider>
     <TooltipProvider>
       <Toaster />
