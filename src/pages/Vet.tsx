@@ -118,7 +118,7 @@ const Vet = () => {
     fetchVets();
   }, []);
 
-  const filteredCities = cities.filter(city =>
+  const filteredCities = locationCities.filter(city =>
     city.name.toLowerCase().includes(searchCity.toLowerCase()) ||
     city.state.toLowerCase().includes(searchCity.toLowerCase())
   );
