@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
   User, MapPin, Wallet, Calendar, CreditCard, Bell, 
-  Shield, LogOut, ArrowLeft, ChevronRight, Heart
+  Shield, LogOut, ArrowLeft, ChevronRight, Heart, ShoppingBag
 } from "lucide-react";
 import { toast } from "sonner";
 
