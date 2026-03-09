@@ -56,6 +56,7 @@ import AddProduct from "./pages/AddProduct";
 import ProductProfile from "./pages/ProductProfile";
 import BrandProfile from "./pages/BrandProfile";
 import SellerProfile from "./pages/SellerProfile";
+import ProductOrders from "./pages/ProductOrders";
 import AuthVet from "./pages/AuthVet";
 import VetOnboarding from "./pages/VetOnboarding";
 import VetPendingApproval from "./pages/VetPendingApproval";
@@ -96,6 +97,7 @@ const App = () => (
           <Route path="/profile/addresses" element={<Addresses />} />
           <Route path="/profile/wallet" element={<WalletPage />} />
           <Route path="/profile/bookings" element={<Bookings />} />
+          <Route path="/profile/orders" element={<ProductOrders />} />
           <Route path="/profile/notifications" element={<Notifications />} />
           <Route path="/profile/privacy" element={<PrivacySecurity />} />
           <Route path="/cart" element={<Cart />} />

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
   User, MapPin, Wallet, Calendar, CreditCard, Bell, 
-  Shield, LogOut, ArrowLeft, ChevronRight, Heart
+  Shield, LogOut, ArrowLeft, ChevronRight, Heart, ShoppingBag
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +37,13 @@ const MENU_ITEMS = [
     title: "Bookings",
     description: "View your booking history",
     path: "/profile/bookings",
+  },
+  {
+    id: "orders",
+    icon: ShoppingBag,
+    title: "Orders",
+    description: "Track your product orders",
+    path: "/profile/orders",
   },
   {
     id: "subscriptions",

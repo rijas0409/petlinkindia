@@ -325,9 +325,27 @@ const ProductProfile = () => {
   const productInCart = product ? cartItems.find(item => item.id === product.id) : null;
   const productQty = productInCart?.quantity || 0;
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    navigate("/cart");
+  const handleBuyNow = async () => {
+    if (!product) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) { toast.info("Please login to purchase"); navigate("/auth"); return; }
+    try {
+      const { error } = await supabase.from("product_orders").insert({
+        buyer_id: session.user.id,
+        product_id: product.id,
+        product_name: product.name,
+        product_image: product.images?.[0] || null,
+        product_price: product.price,
+        quantity: Math.max(productQty, 1),
+        total_amount: product.price * Math.max(productQty, 1),
+        status: "pending",
+      });
+      if (error) throw error;
+      toast.success("Order placed successfully!");
+      navigate("/profile/orders");
+    } catch {
+      toast.error("Failed to place order");
+    }
   };
 
   // Video controls
