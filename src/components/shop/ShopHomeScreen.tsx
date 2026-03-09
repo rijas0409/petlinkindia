@@ -363,6 +363,33 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
           </div>
         )}
       </div>
+
+      {/* Location Selector Modal */}
+      <Dialog open={locationModalOpen} onOpenChange={setLocationModalOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl p-0 overflow-hidden">
+          <DialogHeader className="p-4 pb-0">
+            <DialogTitle className="text-lg font-bold">Select Your City</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 pt-2">
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input type="text" placeholder="Search city..." value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-muted text-sm outline-none" />
+            </div>
+            <div className="space-y-1 max-h-64 overflow-y-auto">
+              {cities.filter(c => c.name.toLowerCase().includes(searchCity.toLowerCase())).map((c) => (
+                <button key={c.id}
+                  onClick={() => { setCity(c.name); setLocationModalOpen(false); setSearchCity(""); toast.success(`Location set to ${c.name}`); }}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm flex items-center justify-between ${city === c.name ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"}`}>
+                  <div><p className="font-medium">{c.name}</p><p className="text-[11px] text-muted-foreground">{c.state}</p></div>
+                  {city === c.name && <Check className="w-4 h-4 text-primary" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
