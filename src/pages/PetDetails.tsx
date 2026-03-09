@@ -140,7 +140,7 @@ const PetDetails = () => {
       });
       if (error) throw error;
       toast.success("Order placed successfully!");
-      navigate("/bookings");
+      navigate("/profile/bookings");
     } catch {
       toast.error("Failed to place order. Please try again.");
     }
