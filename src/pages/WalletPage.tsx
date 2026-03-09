@@ -124,7 +124,12 @@ const WalletPage = () => {
         <Card className="p-6 rounded-2xl border-0 bg-gradient-primary text-white">
           <p className="text-sm opacity-80">Available Balance</p>
           <h2 className="text-3xl font-bold mt-1">₹{balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</h2>
-          <Button variant="secondary" size="sm" className="mt-4 rounded-xl gap-2">
+          <Button 
+            variant="secondary" 
+            size="sm" 
+            className="mt-4 rounded-xl gap-2 text-primary"
+            onClick={() => setIsAddMoneyOpen(true)}
+          >
             <Plus className="w-4 h-4" /> Add Money
           </Button>
         </Card>
