@@ -53,12 +53,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
-  const removeItem = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const clearCart = () => {
+    setCartItems([]);
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeItem, cartCount: cartItems.reduce((s, i) => s + i.quantity, 0) }}>
+    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeItem, clearCart, cartCount: cartItems.reduce((s, i) => s + i.quantity, 0) }}>
       {children}
     </CartContext.Provider>
   );
