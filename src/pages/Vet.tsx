@@ -68,7 +68,7 @@ interface RealVet {
 const Vet = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [location, setLocation] = useState("Greater Noida");
+  const { city: location, setCity: setLocation, cities: locationCities } = useLocation();
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [searchCity, setSearchCity] = useState("");
   const { totalWishlistCount } = useWishlist();
