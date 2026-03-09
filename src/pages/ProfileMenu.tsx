@@ -39,6 +39,13 @@ const MENU_ITEMS = [
     path: "/profile/bookings",
   },
   {
+    id: "orders",
+    icon: ShoppingBag,
+    title: "Orders",
+    description: "Track your product orders",
+    path: "/profile/orders",
+  },
+  {
     id: "subscriptions",
     icon: CreditCard,
     title: "Subscriptions",
