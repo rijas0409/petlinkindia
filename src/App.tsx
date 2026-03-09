@@ -152,6 +152,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
     </CartProvider>
+    </LocationProvider>
   </QueryClientProvider>
 );
 
