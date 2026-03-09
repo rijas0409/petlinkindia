@@ -20,6 +20,7 @@ import {
   CheckCircle, XCircle, Clock, Phone, Stethoscope, User, BarChart3,
   Wallet, MessageSquare, Edit, Eye, TrendingUp
 } from "lucide-react";
+import VetDashboardHome from "@/components/vet-dashboard/VetDashboardHome";
 
 const VetDashboard = () => {
   const navigate = useNavigate();
@@ -175,6 +176,46 @@ const VetDashboard = () => {
       </div>
     </div>
   );
+
+  if (activeTab === "overview") {
+    return (
+      <>
+        <VetDashboardHome
+          profile={profile}
+          vetProfile={vetProfile}
+          appointments={appointments}
+          earnings={earnings}
+          onTabChange={setActiveTab}
+        />
+        {/* Consultation Notes Dialog */}
+        <Dialog open={notesDialog} onOpenChange={setNotesDialog}>
+          <DialogContent className="rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Consultation Notes</DialogTitle>
+              <DialogDescription>Add diagnosis and treatment details for {selectedAppointment?.pet_name}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Diagnosis</Label>
+                <Textarea value={consultationNotes.diagnosis} onChange={e => setConsultationNotes({...consultationNotes, diagnosis: e.target.value})} placeholder="Enter diagnosis..." className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Medicines Suggested</Label>
+                <Textarea value={consultationNotes.medicines} onChange={e => setConsultationNotes({...consultationNotes, medicines: e.target.value})} placeholder="List medicines..." className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Care Instructions</Label>
+                <Textarea value={consultationNotes.care_instructions} onChange={e => setConsultationNotes({...consultationNotes, care_instructions: e.target.value})} placeholder="Post-consultation care..." className="rounded-xl" />
+              </div>
+              <Button className="w-full rounded-xl bg-gradient-primary" onClick={saveConsultationNotes}>
+                <CheckCircle className="w-4 h-4 mr-2" />Complete Consultation
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
