@@ -295,12 +295,11 @@ const BuyerDashboard = () => {
             {trendingPets.map((pet, idx) => (
               <div
                 key={pet.id}
-                className="flex-shrink-0 w-52 rounded-2xl overflow-hidden bg-card border border-border shadow-sm cursor-pointer active:scale-[0.97] transition-transform"
+                className="flex-shrink-0 w-44 rounded-2xl overflow-hidden bg-card border border-border shadow-sm cursor-pointer active:scale-[0.97] transition-transform"
                 onClick={() => navigate(`/pet/${pet.id}`)}
               >
-                <div className="relative aspect-[3/4] bg-muted">
+                <div className="relative aspect-[4/3] bg-muted">
                   <img src={pet.images?.[0] || "/placeholder.svg"} alt={pet.breed} className="w-full h-full object-cover" />
-                  {/* Badge */}
                   <span className={`absolute top-2 left-2 text-[10px] font-bold text-white px-2 py-0.5 rounded-full ${
                     idx % 3 === 0 ? "bg-destructive" : idx % 3 === 1 ? "bg-primary" : "bg-accent text-accent-foreground"
                   }`}>
@@ -336,14 +335,14 @@ const BuyerDashboard = () => {
             {breeders.map((breeder) => (
               <div
                 key={breeder.id}
-                className="flex-shrink-0 w-56 rounded-2xl overflow-hidden bg-card border border-border shadow-sm"
+                className="flex-shrink-0 w-52 rounded-2xl overflow-hidden bg-card border border-border shadow-sm"
               >
-                <div className="relative h-28 bg-muted">
+                <div className="relative h-36 bg-muted">
                   {breeder.profile_photo ? (
                     <img src={breeder.profile_photo} alt={breeder.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
-                      <span className="text-4xl font-bold text-primary/40">{breeder.name?.[0]?.toUpperCase()}</span>
+                      <span className="text-5xl font-bold text-primary/30">{breeder.name?.[0]?.toUpperCase()}</span>
                     </div>
                   )}
                   {breeder.is_breeder_verified && (
@@ -351,17 +350,21 @@ const BuyerDashboard = () => {
                       <ShieldCheck className="w-3 h-3" /> VERIFIED
                     </span>
                   )}
+                  {/* Name overlay at bottom of image */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2.5 pt-6">
+                    <h3 className="text-sm font-bold text-white line-clamp-1">{breeder.name}</h3>
+                  </div>
                 </div>
                 <div className="p-3">
-                  <h3 className="text-sm font-bold text-foreground line-clamp-1">{breeder.name}</h3>
-                  <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
-                    <span className="flex items-center gap-0.5"><Star className="w-3 h-3 text-amber-500 fill-amber-500" />{breeder.rating?.toFixed(1) || "4.5"}</span>
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span className="font-semibold text-foreground">{breeder.rating?.toFixed(1) || "4.5"}</span>
                     <span>•</span>
                     <span>Pets Sold</span>
                   </div>
                   <button
                     onClick={() => navigate(`/seller/${breeder.id}`)}
-                    className="mt-2.5 w-full py-1.5 text-xs font-semibold text-primary border border-primary/30 rounded-full hover:bg-primary/5 transition-colors"
+                    className="mt-2.5 w-full py-2 text-xs font-semibold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors"
                   >
                     View Profile
                   </button>
