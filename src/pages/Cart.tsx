@@ -1,17 +1,65 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag, Loader2 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useCart } from "@/contexts/CartContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, updateQuantity, removeItem } = useCart();
+  const { cartItems, updateQuantity, removeItem, clearCart } = useCart();
+  const [checkingOut, setCheckingOut] = useState(false);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = cartItems.length > 0 ? 49 : 0;
   const total = subtotal + deliveryFee;
+
+  const handleCheckout = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      toast.info("Please login to checkout");
+      navigate("/auth");
+      return;
+    }
+
+    setCheckingOut(true);
+    try {
+      // For each cart item, try to create an order (only for pets that exist in the pets table)
+      const orderPromises = cartItems.map(async (item) => {
+        // Check if this is a pet by querying the pets table
+        const { data: pet } = await supabase
+          .from("pets")
+          .select("id, owner_id, price")
+          .eq("id", item.id)
+          .single();
+
+        if (pet) {
+          // It's a pet - create an order
+          return supabase.from("orders").insert({
+            pet_id: pet.id,
+            buyer_id: session.user.id,
+            seller_id: pet.owner_id,
+            amount: pet.price * item.quantity,
+            status: "pending" as const,
+          });
+        }
+        // For non-pet items (products), we just skip for now
+        return null;
+      });
+
+      await Promise.all(orderPromises);
+      clearCart();
+      toast.success("Order placed successfully!");
+      navigate("/bookings");
+    } catch {
+      toast.error("Failed to checkout. Please try again.");
+    } finally {
+      setCheckingOut(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -46,7 +94,7 @@ const Cart = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium truncate">{item.name}</h3>
-                    <p className="text-primary font-bold mt-1">₹{item.price}</p>
+                    <p className="text-primary font-bold mt-1">₹{item.price.toLocaleString("en-IN")}</p>
                     <div className="flex items-center gap-3 mt-2">
                       <button
                         onClick={() => updateQuantity(item.id, -1)}
@@ -73,7 +121,7 @@ const Cart = () => {
             <Card className="p-4 rounded-2xl border-0 shadow-sm space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>₹{subtotal}</span>
+                <span>₹{subtotal.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Delivery Fee</span>
@@ -81,12 +129,20 @@ const Cart = () => {
               </div>
               <div className="border-t border-border pt-3 flex justify-between font-bold">
                 <span>Total</span>
-                <span className="text-primary">₹{total}</span>
+                <span className="text-primary">₹{total.toLocaleString("en-IN")}</span>
               </div>
             </Card>
 
-            <Button className="w-full rounded-2xl h-12 text-base font-semibold">
-              Proceed to Checkout
+            <Button
+              className="w-full rounded-2xl h-12 text-base font-semibold"
+              onClick={handleCheckout}
+              disabled={checkingOut}
+            >
+              {checkingOut ? (
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Placing Order...</>
+              ) : (
+                "Proceed to Checkout"
+              )}
             </Button>
           </div>
         )}
