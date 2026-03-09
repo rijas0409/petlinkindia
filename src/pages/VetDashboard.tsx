@@ -20,6 +20,7 @@ import {
   CheckCircle, XCircle, Clock, Phone, Stethoscope, User, BarChart3,
   Wallet, MessageSquare, Edit, Eye, TrendingUp
 } from "lucide-react";
+import VetDashboardHome from "@/components/vet-dashboard/VetDashboardHome";
 
 const VetDashboard = () => {
   const navigate = useNavigate();
