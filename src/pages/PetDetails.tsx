@@ -127,9 +127,23 @@ const PetDetails = () => {
     if (pet) togglePetWishlist(pet.id);
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!user) { toast.info("Please login to purchase"); navigate("/auth"); return; }
-    toast.info("Purchase flow coming soon!");
+    if (!pet) return;
+    try {
+      const { error } = await supabase.from("orders").insert({
+        pet_id: pet.id,
+        buyer_id: user.id,
+        seller_id: pet.owner_id,
+        amount: pet.price,
+        status: "pending" as const,
+      });
+      if (error) throw error;
+      toast.success("Order placed successfully!");
+      navigate("/bookings");
+    } catch {
+      toast.error("Failed to place order. Please try again.");
+    }
   };
 
   if (loading) {
