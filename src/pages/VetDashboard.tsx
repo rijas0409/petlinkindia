@@ -219,6 +219,22 @@ const VetDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <img src={sruvoLogo} alt="Sruvo" className="w-12 h-12 object-contain" />
+            <div>
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">Sruvo</span>
+              <p className="text-xs text-muted-foreground">Vet Doctor Panel</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <HeaderProfileDropdown />
+            <Button variant="ghost" size="icon" onClick={handleLogout}><LogOut className="w-5 h-5" /></Button>
+          </div>
+        </div>
+      </header>
 
       <main className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
