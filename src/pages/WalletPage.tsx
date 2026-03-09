@@ -174,6 +174,59 @@ const WalletPage = () => {
             </div>
           )}
         </div>
+
+        <Dialog open={isAddMoneyOpen} onOpenChange={setIsAddMoneyOpen}>
+          <DialogContent className="sm:max-w-md rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Add Money to Wallet</DialogTitle>
+              <DialogDescription>
+                Enter the amount you want to add. You will be redirected to a secure payment gateway.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Input
+                  type="number"
+                  placeholder="Enter amount (e.g. 500)"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  disabled={isProcessing}
+                />
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {[100, 500, 1000, 2000].map((quickAmount) => (
+                  <Button
+                    key={quickAmount}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setAmount(quickAmount.toString())}
+                    disabled={isProcessing}
+                  >
+                    +₹{quickAmount}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button 
+                onClick={handleAddMoney} 
+                disabled={!amount || isProcessing}
+                className="w-full"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Redirecting to Gateway...
+                  </>
+                ) : (
+                  'Proceed to Pay'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
