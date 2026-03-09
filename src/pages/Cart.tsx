@@ -53,7 +53,7 @@ const Cart = () => {
       await Promise.all(orderPromises);
       clearCart();
       toast.success("Order placed successfully!");
-      navigate("/bookings");
+      navigate("/profile/bookings");
     } catch {
       toast.error("Failed to checkout. Please try again.");
     } finally {

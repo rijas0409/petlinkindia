@@ -148,7 +148,7 @@ const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
             <span className="text-sm font-medium">Profile Settings</span>
           </button>
           <button
-            onClick={() => { setOpen(false); toast.info("Bookings coming soon"); }}
+            onClick={() => { setOpen(false); navigate("/profile/bookings"); }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted transition-colors text-left"
           >
             <Calendar className="w-4 h-4 text-muted-foreground" />
