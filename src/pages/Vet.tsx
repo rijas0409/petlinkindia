@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useLocation } from "@/contexts/LocationContext";
 import { toast } from "sonner";
 import {
   Dialog,
