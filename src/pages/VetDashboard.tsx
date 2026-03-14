@@ -21,6 +21,10 @@ import {
   Wallet, MessageSquare, Edit, Eye, TrendingUp
 } from "lucide-react";
 import VetDashboardHome from "@/components/vet-dashboard/VetDashboardHome";
+import VetVideoConsultations from "@/components/vet-dashboard/VetVideoConsultations";
+import VetSchedule from "@/components/vet-dashboard/VetSchedule";
+import VetEarnings from "@/components/vet-dashboard/VetEarnings";
+import VetProfile from "@/components/vet-dashboard/VetProfile";
 
 const VetDashboard = () => {
   const navigate = useNavigate();
@@ -179,41 +183,54 @@ const VetDashboard = () => {
 
   if (activeTab === "overview") {
     return (
-      <>
-        <VetDashboardHome
-          profile={profile}
-          vetProfile={vetProfile}
-          appointments={appointments}
-          earnings={earnings}
-          onTabChange={setActiveTab}
-        />
-        {/* Consultation Notes Dialog */}
-        <Dialog open={notesDialog} onOpenChange={setNotesDialog}>
-          <DialogContent className="rounded-2xl">
-            <DialogHeader>
-              <DialogTitle>Consultation Notes</DialogTitle>
-              <DialogDescription>Add diagnosis and treatment details for {selectedAppointment?.pet_name}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Diagnosis</Label>
-                <Textarea value={consultationNotes.diagnosis} onChange={e => setConsultationNotes({...consultationNotes, diagnosis: e.target.value})} placeholder="Enter diagnosis..." className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Medicines Suggested</Label>
-                <Textarea value={consultationNotes.medicines} onChange={e => setConsultationNotes({...consultationNotes, medicines: e.target.value})} placeholder="List medicines..." className="rounded-xl" />
-              </div>
-              <div className="space-y-2">
-                <Label>Care Instructions</Label>
-                <Textarea value={consultationNotes.care_instructions} onChange={e => setConsultationNotes({...consultationNotes, care_instructions: e.target.value})} placeholder="Post-consultation care..." className="rounded-xl" />
-              </div>
-              <Button className="w-full rounded-xl bg-gradient-primary" onClick={saveConsultationNotes}>
-                <CheckCircle className="w-4 h-4 mr-2" />Complete Consultation
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </>
+      <VetDashboardHome
+        profile={profile}
+        vetProfile={vetProfile}
+        appointments={appointments}
+        earnings={earnings}
+        onTabChange={setActiveTab}
+      />
+    );
+  }
+
+  if (activeTab === "video-consultations") {
+    return (
+      <VetVideoConsultations
+        appointments={appointments}
+        onBack={() => setActiveTab("overview")}
+        onTabChange={setActiveTab}
+      />
+    );
+  }
+
+  if (activeTab === "schedule") {
+    return (
+      <VetSchedule
+        appointments={appointments}
+        onTabChange={setActiveTab}
+      />
+    );
+  }
+
+  if (activeTab === "earnings") {
+    return (
+      <VetEarnings
+        earnings={earnings}
+        appointments={appointments}
+        onTabChange={setActiveTab}
+      />
+    );
+  }
+
+  if (activeTab === "profile") {
+    return (
+      <VetProfile
+        profile={profile}
+        vetProfile={vetProfile}
+        earnings={earnings}
+        reviews={reviews}
+        onTabChange={setActiveTab}
+      />
     );
   }
 
