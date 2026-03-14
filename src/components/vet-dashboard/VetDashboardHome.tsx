@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Search, Bell, Video, MoreHorizontal, PawPrint, ClipboardList,
   TrendingUp, FileText, MessageSquare, ChevronRight, Plus,
-  Home, Calendar, Users, DollarSign
+  Home, Calendar, DollarSign, User, MapPin, Building2
 } from "lucide-react";
 
 interface VetDashboardHomeProps {
@@ -27,12 +27,13 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
 
   const todayStr = new Date().toISOString().split("T")[0];
   const todayAppointments = appointments.filter(a => a.appointment_date === todayStr);
+  const pendingConsultations = appointments.filter(a => a.status === "pending" && a.appointment_type === "online");
   const upcomingAppointments = appointments
     .filter(a => ["pending", "confirmed"].includes(a.status) && a.appointment_date >= todayStr)
     .sort((a, b) => `${a.appointment_date}${a.appointment_time}`.localeCompare(`${b.appointment_date}${b.appointment_time}`))
-    .slice(0, 3);
+    .slice(0, 4);
 
-  const nextAppointment = upcomingAppointments[0];
+  const nextAppointment = upcomingAppointments.find(a => a.appointment_type === "online") || upcomingAppointments[0];
 
   const todayEarnings = earnings
     .filter(e => new Date(e.created_at).toISOString().split("T")[0] === todayStr)
@@ -41,12 +42,9 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
   const activePatients = appointments.filter(a => ["pending", "confirmed"].includes(a.status)).length;
   const pendingTasks = appointments.filter(a => a.status === "pending").length;
 
-  // Revenue bars (last 7 days mock relative)
   const barHeights = [35, 45, 55, 60, 70, 85, 100];
-
   const doctorName = profile?.full_name || profile?.name || "Doctor";
 
-  // Time until next appointment
   const getTimeUntil = (apt: any) => {
     if (!apt) return "";
     const now = new Date();
@@ -59,12 +57,32 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
     return `IN ${hrs}H ${mins % 60}M`;
   };
 
+  const getAppointmentIcon = (apt: any) => {
+    if (apt.appointment_type === "online") return <Video className="w-4 h-4 text-purple-500" />;
+    if (apt.appointment_type === "home_visit") return <Home className="w-4 h-4 text-orange-500" />;
+    return <Building2 className="w-4 h-4 text-blue-500" />;
+  };
+
+  const getAppointmentLabel = (apt: any) => {
+    if (apt.appointment_type === "online") return "Video Call";
+    if (apt.appointment_type === "home_visit") return "Home Visit";
+    return "Clinic Visit";
+  };
+
+  const handleUpcomingClick = (apt: any) => {
+    if (apt.appointment_type === "online") {
+      navigate("/vet-dashboard/consultation-summary", { state: { appointment: apt } });
+    } else if (apt.appointment_type === "home_visit") {
+      navigate("/vet-dashboard/home-visit-details", { state: { appointment: apt } });
+    } else {
+      navigate("/vet-dashboard/visit-details", { state: { appointment: apt } });
+    }
+  };
+
   return (
     <div className="min-h-screen pb-24" style={{ background: "#F6F7FB" }}>
       {/* Header */}
-      <div
-        className={`px-5 pt-6 pb-4 flex items-center justify-between transition-all duration-500 ${cardsVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}`}
-      >
+      <div className={`px-5 pt-6 pb-4 flex items-center justify-between transition-all duration-500 ${cardsVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"}`}>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-lg overflow-hidden">
             {vetProfile?.profile_photo ? (
@@ -74,7 +92,7 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
             )}
           </div>
           <div>
-            <p className="text-[11px] font-semibold tracking-widest text-purple-500 uppercase">Dashboard</p>
+            <p className="text-[11px] font-semibold tracking-widest text-purple-500 uppercase">VET PANEL</p>
             <h1 className="text-[18px] font-bold text-gray-900 leading-tight">Welcome, Dr. {doctorName.split(" ")[0]}</h1>
           </div>
         </div>
@@ -102,7 +120,6 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
             boxShadow: "0 8px 32px rgba(138, 63, 252, 0.35)",
           }}
         >
-          {/* Shimmer overlay */}
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -112,20 +129,20 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
             }}
           />
           <h2 className="text-[22px] font-bold text-white leading-tight mb-1.5 relative z-10">
-            Ready for your next<br />patient?
+            Ready for your next<br />consultation?
           </h2>
           <p className="text-[13px] text-white/80 mb-5 relative z-10">
-            You have {todayAppointments.length || 4} patients waiting in the digital lobby.
+            You have {pendingConsultations.length || todayAppointments.length} pending consultation requests.
           </p>
           <div className="flex items-center gap-3 relative z-10">
             <button
               className="flex-1 flex items-center justify-center gap-2 bg-white rounded-full py-3 px-5 shadow-lg active:scale-95 transition-transform"
-              onClick={() => onTabChange("appointments")}
+              onClick={() => navigate("/vet-dashboard/video-consultations")}
             >
               <div className="w-5 h-5 rounded bg-purple-500 flex items-center justify-center">
-                <Plus className="w-3 h-3 text-white" />
+                <Video className="w-3 h-3 text-white" />
               </div>
-              <span className="text-[14px] font-semibold text-gray-800">Quick Start</span>
+              <span className="text-[14px] font-semibold text-gray-800">View Consultations</span>
             </button>
             <button className="w-11 h-11 rounded-full bg-white/20 backdrop-blur flex items-center justify-center">
               <MoreHorizontal className="w-5 h-5 text-white" />
@@ -198,7 +215,7 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
             <h3 className="text-[16px] font-bold text-gray-900">Focus Mode</h3>
           </div>
           <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-200 to-amber-100 flex items-center justify-center overflow-hidden">
                   <PawPrint className="w-7 h-7 text-orange-400" />
@@ -206,8 +223,12 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
                 <div>
                   <h4 className="text-[16px] font-bold text-gray-900">{nextAppointment.pet_name}</h4>
                   <p className="text-[13px] text-gray-400">
-                    {nextAppointment.pet_type} {nextAppointment.pet_breed ? `• ${nextAppointment.pet_breed}` : ""}
+                    {nextAppointment.pet_breed || nextAppointment.pet_type} • {Math.floor((nextAppointment.age_months || 36) / 12)}y
                   </p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <Video className="w-3 h-3 text-purple-500" />
+                    <span className="text-[11px] font-semibold text-purple-500 uppercase">Video Consultation</span>
+                  </div>
                 </div>
               </div>
               <span
@@ -222,7 +243,7 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
               <div className="flex-1 bg-gray-50 rounded-xl px-3.5 py-2.5">
                 <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wide">Reason</p>
                 <p className="text-[13px] font-semibold text-gray-800 mt-0.5">
-                  {nextAppointment.appointment_type === "online" ? "Video Consult" : "In-person Visit"}
+                  {nextAppointment.appointment_type === "online" ? "Video Consult" : "Post-op Checkup"}
                 </p>
               </div>
               <div className="flex-1 bg-gray-50 rounded-xl px-3.5 py-2.5">
@@ -238,7 +259,7 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
                 background: "linear-gradient(135deg, #8A3FFC, #C84BFF)",
                 boxShadow: "0 4px 20px rgba(138, 63, 252, 0.4)",
               }}
-              onClick={() => navigate("/vet/video-call")}
+              onClick={() => navigate("/vet-dashboard/consultation-summary", { state: { appointment: nextAppointment } })}
             >
               <div
                 className="absolute inset-0"
@@ -269,7 +290,7 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
       <div className={`px-5 mb-6 transition-all duration-700 delay-500 ${cardsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[18px] font-bold text-gray-900">Upcoming</h3>
-          <button className="text-[13px] font-semibold text-purple-500" onClick={() => onTabChange("appointments")}>
+          <button className="text-[13px] font-semibold text-purple-500" onClick={() => onTabChange("schedule")}>
             View All
           </button>
         </div>
@@ -283,7 +304,8 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
             {upcomingAppointments.map((apt) => (
               <div
                 key={apt.id}
-                className="bg-white rounded-[16px] p-4 flex items-center gap-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] active:scale-[0.98] transition-transform"
+                className="bg-white rounded-[16px] p-4 flex items-center gap-3.5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] active:scale-[0.98] transition-transform cursor-pointer"
+                onClick={() => handleUpcomingClick(apt)}
               >
                 <div className="text-center min-w-[44px]">
                   <p className="text-[14px] font-bold text-gray-800">{apt.appointment_time?.slice(0, 5)}</p>
@@ -296,9 +318,12 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[14px] font-semibold text-gray-900">{apt.pet_name}</p>
-                  <p className="text-[12px] text-gray-400">
-                    {apt.pet_type} • {apt.appointment_type === "online" ? "Remote" : "In-person"}
-                  </p>
+                  <div className="flex items-center gap-1.5 text-[12px] text-gray-400">
+                    <span>{apt.pet_type || "Pet"}</span>
+                    <span>•</span>
+                    {getAppointmentIcon(apt)}
+                    <span>{getAppointmentLabel(apt)}</span>
+                  </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
               </div>
@@ -331,9 +356,9 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
         <div className="flex justify-around py-2.5 px-2">
           {[
             { id: "overview", icon: Home, label: "HOME" },
-            { id: "appointments", icon: Calendar, label: "SCHEDULE" },
-            { id: "patients", icon: Users, label: "PATIENTS" },
+            { id: "schedule", icon: Calendar, label: "SCHEDULE" },
             { id: "earnings", icon: DollarSign, label: "EARNINGS" },
+            { id: "profile", icon: User, label: "PROFILE" },
           ].map((item) => {
             const Icon = item.icon;
             const isActive = item.id === "overview";
@@ -359,7 +384,6 @@ const VetDashboardHome = ({ profile, vetProfile, appointments, earnings, onTabCh
         </div>
       </nav>
 
-      {/* Keyframe styles */}
       <style>{`
         @keyframes heroShimmer {
           0% { background-position: 200% 0; }
