@@ -21,6 +21,10 @@ import {
   Wallet, MessageSquare, Edit, Eye, TrendingUp
 } from "lucide-react";
 import VetDashboardHome from "@/components/vet-dashboard/VetDashboardHome";
+import VetVideoConsultations from "@/components/vet-dashboard/VetVideoConsultations";
+import VetSchedule from "@/components/vet-dashboard/VetSchedule";
+import VetEarnings from "@/components/vet-dashboard/VetEarnings";
+import VetProfile from "@/components/vet-dashboard/VetProfile";
 
 const VetDashboard = () => {
   const navigate = useNavigate();
