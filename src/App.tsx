@@ -68,6 +68,19 @@ import CarePlanFormStep2 from "./pages/care-plan/CarePlanFormStep2";
 import { CartProvider } from "./contexts/CartContext";
 import { LocationProvider } from "./contexts/LocationContext";
 
+// Vet Dashboard sub-pages (lazy wrappers)
+import VetConsultationSummary from "./components/vet-dashboard/VetConsultationSummary";
+import VetPanelVideoCall from "./components/vet-dashboard/VetPanelVideoCall";
+import VetCreatePrescription from "./components/vet-dashboard/VetCreatePrescription";
+import VetVisitDetails from "./components/vet-dashboard/VetVisitDetails";
+import VetHomeVisitDetails from "./components/vet-dashboard/VetHomeVisitDetails";
+
+const VetConsultationSummaryPage = () => <VetConsultationSummary />;
+const VetPanelVideoCallPage = () => <VetPanelVideoCall />;
+const VetCreatePrescriptionPage = () => <VetCreatePrescription />;
+const VetVisitDetailsPage = () => <VetVisitDetails />;
+const VetHomeVisitDetailsPage = () => <VetHomeVisitDetails />;
+
 const queryClient = new QueryClient();
 
 const App = () => (
