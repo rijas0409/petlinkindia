@@ -174,10 +174,12 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
     { id: "rating", name: "Customer Rating", icon: Star },
   ];
 
-  // Task I: Fetch real products from database
+  // Fetch real products from database - wait for auth to be ready
   useEffect(() => {
     const fetchProducts = async () => {
       setLoadingProducts(true);
+      // Ensure auth session is ready before querying
+      await supabase.auth.getSession();
       const { data } = await supabase
         .from("shop_products")
         .select("id, name, price, original_price, discount, images, pet_type, category")
