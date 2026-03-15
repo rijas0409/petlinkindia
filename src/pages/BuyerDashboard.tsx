@@ -149,22 +149,49 @@ const BuyerDashboard = () => {
   const { cartCount } = useCart();
 
   useEffect(() => {
-    checkUser();
-    fetchPets();
-    fetchBreeders();
+    let cancelled = false;
+    
+    const init = async () => {
+      // Wait for auth session to be fully ready before fetching data
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled) return;
+      
+      if (!session) { navigate("/auth"); return; }
+      
+      const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
+      if (cancelled) return;
+      
+      if (roleData === "seller") { navigate("/seller-dashboard"); return; }
+      if (roleData === "admin") { navigate("/admin"); return; }
+      if (roleData === "delivery_partner") { navigate("/delivery"); return; }
+      if (roleData === "product_seller") { navigate("/products-dashboard"); return; }
+      if (roleData === "vet") { navigate("/vet-dashboard"); return; }
+      
+      setUser(session.user);
+      
+      // Now fetch data AFTER auth is confirmed
+      fetchPets();
+      fetchBreeders();
+    };
+    
+    // Listen for auth changes to refetch
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && !user) {
+        setUser(session.user);
+        fetchPets();
+        fetchBreeders();
+      }
+    });
+    
+    init();
+    
+    return () => { 
+      cancelled = true; 
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
-    const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
-    if (roleData === "seller") { navigate("/seller-dashboard"); return; }
-    if (roleData === "admin") { navigate("/admin"); return; }
-    if (roleData === "delivery_partner") { navigate("/delivery"); return; }
-    if (roleData === "product_seller") { navigate("/products-dashboard"); return; }
-    if (roleData === "vet") { navigate("/vet-dashboard"); return; }
-    setUser(session.user);
-  };
+  // checkUser is now integrated into the useEffect above
 
   const fetchPets = async () => {
     try {
