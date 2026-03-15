@@ -141,6 +141,11 @@ const App = () => (
           <Route path="/vet-onboarding" element={<VetOnboarding />} />
           <Route path="/vet-pending-approval" element={<VetPendingApproval />} />
           <Route path="/vet-dashboard" element={<VetDashboard />} />
+          <Route path="/vet-dashboard/consultation-summary" element={<VetConsultationSummaryPage />} />
+          <Route path="/vet-dashboard/vet-video-call" element={<VetPanelVideoCallPage />} />
+          <Route path="/vet-dashboard/create-prescription" element={<VetCreatePrescriptionPage />} />
+          <Route path="/vet-dashboard/visit-details" element={<VetVisitDetailsPage />} />
+          <Route path="/vet-dashboard/home-visit-details" element={<VetHomeVisitDetailsPage />} />
           {/* Care Plan Flow */}
           <Route path="/care-plan/intro" element={<CarePlanIntro />} />
           <Route path="/care-plan/form" element={<CarePlanForm />} />
