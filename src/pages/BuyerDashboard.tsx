@@ -351,64 +351,53 @@ const BuyerDashboard = () => {
       {/* Verified Breeders Nearby */}
       {breeders.length > 0 && (
         <section className="pb-6">
-          <div className="px-4 flex items-center justify-between mb-3">
+          <div className="px-4 flex items-center justify-between mb-1">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Verified Breeders Nearby</h2>
-              <p className="text-[13px] text-[#8A8A8A]">Connect with {breeders.length} top-rated experts in your area</p>
+              <h2 className="text-lg font-bold text-foreground">Verified Breeders Nearby</h2>
+              <p className="text-xs text-muted-foreground">Connect with {breeders.length} top-rated experts in your area</p>
             </div>
-            <button className="text-[12px] font-medium px-3 py-1.5 rounded-full" style={{ color: '#8B5CF6', background: '#F3E8FF' }}>
-              SEE MAP →
-            </button>
+            <span className="text-xs font-semibold text-primary flex items-center gap-0.5">SEE MAP <ChevronRight className="w-3 h-3" /></span>
           </div>
-          <div className="flex gap-4 overflow-x-auto px-4 pb-2 scrollbar-hide">
-            {breeders.map((breeder) => {
-              // Count pets for this breeder
-              const breederPetCount = pets.filter(p => p.owner_id === breeder.id).length;
-              return (
-                <div
-                  key={breeder.id}
-                  className="flex-shrink-0 rounded-3xl overflow-hidden bg-white active:scale-[0.97] transition-transform"
-                  style={{ width: 260, boxShadow: '0px 10px 30px rgba(0,0,0,0.08)' }}
-                >
-                  {/* Top Image */}
-                  <div className="relative" style={{ height: 160 }}>
-                    {breeder.profile_photo ? (
-                      <img src={breeder.profile_photo} alt={breeder.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #fce4ec, #e8eaf6)' }}>
-                        <span className="text-5xl font-bold" style={{ color: 'rgba(139,92,246,0.3)' }}>{breeder.name?.[0]?.toUpperCase()}</span>
-                      </div>
-                    )}
-                    {/* Dark gradient overlay */}
-                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 50%)' }} />
-                    {/* Verified badge */}
-                    {breeder.is_breeder_verified && (
-                      <span className="absolute top-2.5 right-2.5 text-[11px] font-bold text-white px-2.5 py-1 rounded-full flex items-center gap-1" style={{ background: '#166534' }}>
-                        ✓ VERIFIED
-                      </span>
-                    )}
-                  </div>
-                  {/* Floating Panel */}
-                  <div className="relative -mt-5 mx-2.5 rounded-[20px] p-4" style={{ background: '#F9FAFB', boxShadow: '0 -4px 20px rgba(0,0,0,0.05)' }}>
-                    <h3 className="text-base font-semibold text-foreground line-clamp-1">{breeder.name}</h3>
-                    <div className="flex items-center gap-1.5 mt-1 text-[12px]" style={{ color: '#6B7280' }}>
-                      <Star className="w-3.5 h-3.5 fill-current" style={{ color: '#FBBF24' }} />
-                      <span className="font-semibold text-foreground">{breeder.rating?.toFixed(1) || "4.5"}</span>
-                      <span>•</span>
-                      <span>{breederPetCount > 0 ? `${breederPetCount}+ Pets Sold` : 'Pets Sold'}</span>
+          <div className="flex gap-3 overflow-x-auto px-4 pt-2 pb-2 scrollbar-hide">
+            {breeders.map((breeder) => (
+              <div
+                key={breeder.id}
+                className="flex-shrink-0 w-52 rounded-2xl overflow-hidden bg-card border border-border shadow-sm"
+              >
+                <div className="relative h-36 bg-muted">
+                  {breeder.profile_photo ? (
+                    <img src={breeder.profile_photo} alt={breeder.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
+                      <span className="text-5xl font-bold text-primary/30">{breeder.name?.[0]?.toUpperCase()}</span>
                     </div>
-                    <button
-                      onClick={() => navigate(`/seller/${breeder.id}`)}
-                      className="mt-3 w-full py-2.5 text-[14px] font-medium text-white rounded-xl transition-all active:scale-[0.97]"
-                      style={{ background: 'linear-gradient(135deg, #8B5CF6, #A855F7)', boxShadow: '0 4px 15px rgba(139,92,246,0.3)' }}
-                    >
-                      View Profile
-                    </button>
+                  )}
+                  {breeder.is_breeder_verified && (
+                    <span className="absolute top-2 right-2 bg-success text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                      <ShieldCheck className="w-3 h-3" /> VERIFIED
+                    </span>
+                  )}
+                  {/* Name overlay at bottom of image */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2.5 pt-6">
+                    <h3 className="text-sm font-bold text-white line-clamp-1">{breeder.name}</h3>
                   </div>
-                  <div className="h-2.5" />
                 </div>
-              );
-            })}
+                <div className="p-3">
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    <span className="font-semibold text-foreground">{breeder.rating?.toFixed(1) || "4.5"}</span>
+                    <span>•</span>
+                    <span>Pets Sold</span>
+                  </div>
+                  <button
+                    onClick={() => navigate(`/seller/${breeder.id}`)}
+                    className="mt-2.5 w-full py-2 text-xs font-semibold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors"
+                  >
+                    View Profile
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       )}
