@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import sruvoLogo from "@/assets/sruvo-logo.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Heart, Search, ShoppingCart, MapPin, ShieldCheck, SlidersHorizontal, Plus, ChevronRight, Star, Flame, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -16,7 +17,7 @@ import Autoplay from "embla-carousel-autoplay";
 // ─── Banner Carousel ───
 const FALLBACK_BANNERS = [
   {
-    gradient: "linear-gradient(135deg, #7c3aed, #a855f7, #ec4899)",
+    gradient: "linear-gradient(135deg, #e8a0bf, #b88cc4, #9b7dd4)",
     title: "Verified\nGolden Puppies",
     subtitle: "KCI Registered & Health Certified",
     cta: "View Collection",
@@ -140,7 +141,7 @@ const CATEGORIES = [
 // ─── Main Component ───
 const BuyerDashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const { authReady, session, user } = useAuth();
   const [pets, setPets] = useState<any[]>([]);
   const [breeders, setBreeders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,49 +150,32 @@ const BuyerDashboard = () => {
   const { cartCount } = useCart();
 
   useEffect(() => {
+    if (!authReady) return;
+
+    if (!session) {
+      navigate("/auth");
+      return;
+    }
+
     let cancelled = false;
-    
+
     const init = async () => {
-      // Wait for auth session to be fully ready before fetching data
-      const { data: { session } } = await supabase.auth.getSession();
-      if (cancelled) return;
-      
-      if (!session) { navigate("/auth"); return; }
-      
       const { data: roleData } = await supabase.rpc("get_user_role", { _user_id: session.user.id });
       if (cancelled) return;
-      
+
       if (roleData === "seller") { navigate("/seller-dashboard"); return; }
       if (roleData === "admin") { navigate("/admin"); return; }
       if (roleData === "delivery_partner") { navigate("/delivery"); return; }
       if (roleData === "product_seller") { navigate("/products-dashboard"); return; }
       if (roleData === "vet") { navigate("/vet-dashboard"); return; }
-      
-      setUser(session.user);
-      
-      // Now fetch data AFTER auth is confirmed
+
       fetchPets();
       fetchBreeders();
     };
-    
-    // Listen for auth changes to refetch
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && !user) {
-        setUser(session.user);
-        fetchPets();
-        fetchBreeders();
-      }
-    });
-    
-    init();
-    
-    return () => { 
-      cancelled = true; 
-      subscription.unsubscribe();
-    };
-  }, []);
 
-  // checkUser is now integrated into the useEffect above
+    init();
+    return () => { cancelled = true; };
+  }, [authReady, session]);
 
   const fetchPets = async () => {
     try {
@@ -223,7 +207,6 @@ const BuyerDashboard = () => {
     selectedCategory ? pets.filter((p) => p.category === selectedCategory) : pets
   , [pets, selectedCategory]);
 
-  // Trending = featured or most viewed
   const trendingPets = useMemo(() => {
     const sorted = [...pets].sort((a, b) => (b.views || 0) - (a.views || 0));
     return sorted.slice(0, 8);
@@ -235,6 +218,18 @@ const BuyerDashboard = () => {
     const m = months % 12;
     return m > 0 ? `${y}y ${m}m` : `${y} years`;
   };
+
+  // Show splash while auth is loading
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <img src={sruvoLogo} alt="Sruvo" className="w-16 h-16 animate-pulse" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -348,56 +343,77 @@ const BuyerDashboard = () => {
         </section>
       )}
 
-      {/* Verified Breeders Nearby */}
+      {/* Verified Breeders Nearby - Premium Cards */}
       {breeders.length > 0 && (
         <section className="pb-6">
-          <div className="px-4 flex items-center justify-between mb-1">
+          <div className="px-4 flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold text-foreground">Verified Breeders Nearby</h2>
-              <p className="text-xs text-muted-foreground">Connect with {breeders.length} top-rated experts in your area</p>
+              <h2 className="text-[20px] font-semibold text-foreground" style={{ fontFamily: 'Inter, SF Pro Display, sans-serif' }}>Verified Breeders Nearby</h2>
+              <p className="text-[13px] text-[#8A8A8A] mt-0.5">Connect with {breeders.length} top-rated experts in your area</p>
             </div>
-            <span className="text-xs font-semibold text-primary flex items-center gap-0.5">SEE MAP <ChevronRight className="w-3 h-3" /></span>
+            <button className="text-[12px] font-medium px-3 py-1.5 rounded-full flex items-center gap-0.5" style={{ color: '#8B5CF6', backgroundColor: '#F3E8FF' }}>
+              SEE MAP <ChevronRight className="w-3 h-3" />
+            </button>
           </div>
-          <div className="flex gap-3 overflow-x-auto px-4 pt-2 pb-2 scrollbar-hide">
-            {breeders.map((breeder) => (
-              <div
-                key={breeder.id}
-                className="flex-shrink-0 w-52 rounded-2xl overflow-hidden bg-card border border-border shadow-sm"
-              >
-                <div className="relative h-36 bg-muted">
-                  {breeder.profile_photo ? (
-                    <img src={breeder.profile_photo} alt={breeder.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
-                      <span className="text-5xl font-bold text-primary/30">{breeder.name?.[0]?.toUpperCase()}</span>
+          <div className="flex gap-4 overflow-x-auto px-4 pt-1 pb-3 scrollbar-hide">
+            {breeders.map((breeder) => {
+              // Get the first pet image from this breeder if available
+              const breederPet = pets.find(p => p.owner_id === breeder.id);
+              const displayImage = breederPet?.images?.[0] || breeder.profile_photo;
+              
+              return (
+                <div
+                  key={breeder.id}
+                  className="flex-shrink-0 bg-white overflow-hidden active:scale-[0.97] transition-transform"
+                  style={{ 
+                    width: '260px', 
+                    borderRadius: '24px',
+                    boxShadow: '0px 10px 30px rgba(0,0,0,0.08)',
+                  }}
+                >
+                  {/* Top Image */}
+                  <div className="relative" style={{ height: '160px' }}>
+                    {displayImage ? (
+                      <img src={displayImage} alt={breeder.name} className="w-full h-full object-cover" style={{ borderRadius: '24px 24px 0 0' }} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #e8a0bf20, #b88cc420)', borderRadius: '24px 24px 0 0' }}>
+                        <span className="text-5xl font-bold" style={{ color: '#e8a0bf50' }}>{breeder.name?.[0]?.toUpperCase()}</span>
+                      </div>
+                    )}
+                    {/* Dark gradient overlay */}
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 50%)', borderRadius: '24px 24px 0 0' }} />
+                    
+                    {/* Verified badge */}
+                    {breeder.is_breeder_verified && (
+                      <span className="absolute top-3 right-3 flex items-center gap-1 text-white text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#166534' }}>
+                        <ShieldCheck className="w-3 h-3" /> VERIFIED
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Floating Info Panel */}
+                  <div className="relative -mt-5 mx-3 mb-3 p-4" style={{ backgroundColor: '#F9FAFB', borderRadius: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                    <h3 className="text-[16px] font-semibold text-foreground line-clamp-1">{breeder.name}</h3>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <Star className="w-3.5 h-3.5 fill-[#FBBF24] text-[#FBBF24]" />
+                      <span className="text-[12px] font-semibold text-foreground">{breeder.rating?.toFixed(1) || "4.5"}</span>
+                      <span className="text-[12px] text-[#6B7280]">•</span>
+                      <span className="text-[12px] text-[#6B7280]">120+ Pets Sold</span>
                     </div>
-                  )}
-                  {breeder.is_breeder_verified && (
-                    <span className="absolute top-2 right-2 bg-success text-white text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                      <ShieldCheck className="w-3 h-3" /> VERIFIED
-                    </span>
-                  )}
-                  {/* Name overlay at bottom of image */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2.5 pt-6">
-                    <h3 className="text-sm font-bold text-white line-clamp-1">{breeder.name}</h3>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); navigate(`/seller/${breeder.id}`); }}
+                      className="mt-3 w-full py-2.5 text-[14px] font-medium text-white rounded-xl active:scale-[0.97] transition-all"
+                      style={{ 
+                        background: 'linear-gradient(135deg, #8B5CF6, #A855F7)',
+                        boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)',
+                      }}
+                    >
+                      View Profile
+                    </button>
                   </div>
                 </div>
-                <div className="p-3">
-                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                    <span className="font-semibold text-foreground">{breeder.rating?.toFixed(1) || "4.5"}</span>
-                    <span>•</span>
-                    <span>Pets Sold</span>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/seller/${breeder.id}`)}
-                    className="mt-2.5 w-full py-2 text-xs font-semibold text-primary border border-primary/30 rounded-xl hover:bg-primary/5 transition-colors"
-                  >
-                    View Profile
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -439,20 +455,17 @@ const BuyerDashboard = () => {
                 >
                   <div className="relative aspect-square bg-muted">
                     <img src={pet.images?.[0] || "/placeholder.svg"} alt={pet.breed} className="w-full h-full object-cover" />
-                    {/* Verified badge */}
                     {pet.verification_status === "verified" && (
                       <span className="absolute top-2 left-2 bg-success text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
                         <ShieldCheck className="w-2.5 h-2.5" /> VERIFIED
                       </span>
                     )}
-                    {/* Wishlist */}
                     <button
                       className={`absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center ${isFav ? "text-destructive" : "text-muted-foreground"}`}
                       onClick={(e) => { e.stopPropagation(); togglePetWishlist(pet.id); }}
                     >
                       <Heart className="w-4 h-4" fill={isFav ? "currentColor" : "none"} />
                     </button>
-                    {/* Age badge */}
                     <span className="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-sm">
                       {formatAge(pet.age_months)}
                     </span>
