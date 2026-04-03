@@ -77,6 +77,7 @@ const Vet = () => {
   const [realVets, setRealVets] = useState<RealVet[]>([]);
 
   useEffect(() => {
+    if (!authReady) return;
     const fetchVets = async () => {
       const { data: vetProfiles } = await supabase
         .from("vet_profiles")
