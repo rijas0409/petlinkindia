@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import sruvoLogo from "@/assets/sruvo-logo.png";
 import { Heart, ShoppingCart, Search, MapPin, ChevronDown, ChevronRight, Plus, X, Check, Flame, Clock, Percent, TrendingUp, TrendingDown, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -151,6 +152,7 @@ interface ShopProduct {
 }
 
 const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenProps) => {
+  const { authReady } = useAuth();
   const navigate = useNavigate();
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
   const { cartCount } = useCart();
@@ -176,10 +178,9 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
 
   // Fetch real products from database - wait for auth to be ready
   useEffect(() => {
+    if (!authReady) return;
     const fetchProducts = async () => {
       setLoadingProducts(true);
-      // Ensure auth session is ready before querying
-      await supabase.auth.getSession();
       const { data } = await supabase
         .from("shop_products")
         .select("id, name, price, original_price, discount, images, pet_type, category")
@@ -191,7 +192,7 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
       setLoadingProducts(false);
     };
     fetchProducts();
-  }, []);
+  }, [authReady]);
 
   // Apply sorting
   const sortedBestSellers = useMemo(() => {

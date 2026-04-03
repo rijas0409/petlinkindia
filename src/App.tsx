@@ -67,6 +67,7 @@ import CarePlanReport from "./pages/care-plan/CarePlanReport";
 import CarePlanFormStep2 from "./pages/care-plan/CarePlanFormStep2";
 import { CartProvider } from "./contexts/CartContext";
 import { LocationProvider } from "./contexts/LocationContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Vet Dashboard sub-pages (lazy wrappers)
 import VetConsultationSummary from "./components/vet-dashboard/VetConsultationSummary";
@@ -85,6 +86,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <AuthProvider>
     <LocationProvider>
     <CartProvider>
     <TooltipProvider>
@@ -171,6 +173,7 @@ const App = () => (
     </TooltipProvider>
     </CartProvider>
     </LocationProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

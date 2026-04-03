@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import sruvoLogo from "@/assets/sruvo-logo.png";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -66,6 +67,7 @@ interface RealVet {
 }
 
 const Vet = () => {
+  const { authReady } = useAuth();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { city: location, setCity: setLocation, cities: locationCities } = useLocation();
@@ -75,6 +77,7 @@ const Vet = () => {
   const [realVets, setRealVets] = useState<RealVet[]>([]);
 
   useEffect(() => {
+    if (!authReady) return;
     const fetchVets = async () => {
       const { data: vetProfiles } = await supabase
         .from("vet_profiles")
@@ -116,7 +119,7 @@ const Vet = () => {
     };
 
     fetchVets();
-  }, []);
+  }, [authReady]);
 
   const filteredCities = locationCities.filter(city =>
     city.name.toLowerCase().includes(searchCity.toLowerCase()) ||
