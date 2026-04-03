@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Popover,
   PopoverContent,
@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Settings, Calendar, Wallet, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 interface HeaderProfileDropdownProps {
   trigger?: React.ReactNode;
@@ -16,66 +17,8 @@ interface HeaderProfileDropdownProps {
 
 const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ name: string; email: string; photo: string | null } | null>(null);
+  const { profile } = useAuth();
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    // Immediately try to get cached session for initial render
-    const initUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // Use metadata immediately to avoid "U" flash
-        const metaName = (session.user.user_metadata as any)?.name || "";
-        setUser({
-          name: metaName || "User",
-          email: session.user.email || "",
-          photo: null,
-        });
-        // Then fetch full profile in background
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("name, email, profile_photo")
-          .eq("id", session.user.id)
-          .maybeSingle();
-        if (profile) {
-          setUser({
-            name: profile.name || metaName || "User",
-            email: profile.email || session.user.email || "",
-            photo: profile.profile_photo,
-          });
-        }
-      }
-    };
-    initUser();
-
-    // Listen for auth state changes to keep in sync
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session) {
-        const metaName = (session.user.user_metadata as any)?.name || "";
-        setUser(prev => ({
-          name: prev?.name || metaName || "User",
-          email: session.user.email || "",
-          photo: prev?.photo || null,
-        }));
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("name, email, profile_photo")
-          .eq("id", session.user.id)
-          .maybeSingle();
-        if (profile) {
-          setUser({
-            name: profile.name || metaName || "User",
-            email: profile.email || session.user.email || "",
-            photo: profile.profile_photo,
-          });
-        }
-      } else {
-        setUser(null);
-      }
-    });
-
-    return () => { subscription.unsubscribe(); };
-  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -84,7 +27,7 @@ const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
   };
 
   const getInitial = () => {
-    return user?.name?.[0]?.toUpperCase() || "U";
+    return profile?.name?.[0]?.toUpperCase() || "U";
   };
 
   return (
@@ -96,10 +39,10 @@ const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
             size="icon" 
             className="rounded-full w-9 h-9 p-0 overflow-hidden"
           >
-            {user?.photo ? (
+            {profile?.photo ? (
               <img 
-                src={user.photo} 
-                alt={user.name} 
+                src={profile.photo} 
+                alt={profile.name} 
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -119,10 +62,10 @@ const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-              {user?.photo ? (
+              {profile?.photo ? (
                 <img 
-                  src={user.photo} 
-                  alt={user?.name} 
+                  src={profile.photo} 
+                  alt={profile?.name} 
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -132,8 +75,8 @@ const HeaderProfileDropdown = ({ trigger }: HeaderProfileDropdownProps) => {
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold truncate">{user?.name || "User"}</p>
-              <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+              <p className="font-semibold truncate">{profile?.name || "User"}</p>
+              <p className="text-sm text-muted-foreground truncate">{profile?.email}</p>
             </div>
           </div>
         </div>
