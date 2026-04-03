@@ -67,6 +67,7 @@ interface RealVet {
 }
 
 const Vet = () => {
+  const { authReady } = useAuth();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { city: location, setCity: setLocation, cities: locationCities } = useLocation();
