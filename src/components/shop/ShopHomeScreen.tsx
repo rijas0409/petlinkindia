@@ -152,6 +152,7 @@ interface ShopProduct {
 }
 
 const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenProps) => {
+  const { authReady } = useAuth();
   const navigate = useNavigate();
   const { toggleProductWishlist, isProductInWishlist, totalWishlistCount } = useWishlist();
   const { cartCount } = useCart();
