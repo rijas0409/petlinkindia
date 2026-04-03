@@ -178,10 +178,9 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
 
   // Fetch real products from database - wait for auth to be ready
   useEffect(() => {
+    if (!authReady) return;
     const fetchProducts = async () => {
       setLoadingProducts(true);
-      // Ensure auth session is ready before querying
-      await supabase.auth.getSession();
       const { data } = await supabase
         .from("shop_products")
         .select("id, name, price, original_price, discount, images, pet_type, category")
@@ -193,7 +192,7 @@ const ShopHomeScreen = ({ onSelectPet, onAddToCart, onSearch }: ShopHomeScreenPr
       setLoadingProducts(false);
     };
     fetchProducts();
-  }, []);
+  }, [authReady]);
 
   // Apply sorting
   const sortedBestSellers = useMemo(() => {

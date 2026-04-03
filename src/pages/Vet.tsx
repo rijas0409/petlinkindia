@@ -119,7 +119,7 @@ const Vet = () => {
     };
 
     fetchVets();
-  }, []);
+  }, [authReady]);
 
   const filteredCities = locationCities.filter(city =>
     city.name.toLowerCase().includes(searchCity.toLowerCase()) ||
