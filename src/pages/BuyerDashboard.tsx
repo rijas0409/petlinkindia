@@ -171,7 +171,6 @@ const BuyerDashboard = () => {
       if (roleData === "vet") { navigate("/vet-dashboard"); return; }
 
       fetchPets();
-      fetchBreeders();
     };
 
     init();
@@ -182,7 +181,7 @@ const BuyerDashboard = () => {
     try {
       const { data, error } = await supabase
         .from("pets")
-        .select("*, profiles:owner_id (name, rating, profile_photo)")
+        .select("*, profiles:owner_id (id, name, rating, profile_photo, is_breeder_verified, city)")
         .eq("is_available", true)
         .eq("verification_status", "verified")
         .order("created_at", { ascending: false });
@@ -190,18 +189,6 @@ const BuyerDashboard = () => {
       setPets(data || []);
     } catch { toast.error("Failed to load pets"); }
     finally { setLoading(false); }
-  };
-
-  const fetchBreeders = async () => {
-    try {
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, name, profile_photo, rating, is_breeder_verified, city")
-        .eq("role", "seller")
-        .eq("is_admin_approved", true)
-        .limit(10);
-      setBreeders(data || []);
-    } catch { /* silent */ }
   };
 
   const filteredPets = useMemo(() =>
@@ -212,6 +199,37 @@ const BuyerDashboard = () => {
     const sorted = [...pets].sort((a, b) => (b.views || 0) - (a.views || 0));
     return sorted.slice(0, 8);
   }, [pets]);
+
+  // Verified breeders nearby - derived from real pets in selected city
+  const nearbyBreeders = useMemo(() => {
+    const cityNorm = (selectedCity || "").trim().toLowerCase();
+    const map = new Map<string, any>();
+    pets.forEach((p) => {
+      const owner = p.profiles;
+      if (!owner?.id) return;
+      // Filter by selected city (match either pet city or breeder city)
+      const petCity = (p.city || "").trim().toLowerCase();
+      const ownerCity = (owner.city || "").trim().toLowerCase();
+      if (cityNorm && petCity !== cityNorm && ownerCity !== cityNorm) return;
+      const existing = map.get(owner.id);
+      if (existing) {
+        existing.petCount += 1;
+        if (!existing.coverImage && p.images?.[0]) existing.coverImage = p.images[0];
+      } else {
+        map.set(owner.id, {
+          id: owner.id,
+          name: owner.name,
+          profile_photo: owner.profile_photo,
+          rating: owner.rating,
+          is_breeder_verified: owner.is_breeder_verified,
+          city: owner.city,
+          coverImage: p.images?.[0] || null,
+          petCount: 1,
+        });
+      }
+    });
+    return Array.from(map.values()).slice(0, 10);
+  }, [pets, selectedCity]);
 
   const formatAge = (months: number) => {
     if (months < 12) return `${months} months`;
