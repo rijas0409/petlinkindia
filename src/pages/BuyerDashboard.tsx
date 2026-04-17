@@ -3,6 +3,7 @@ import sruvoLogo from "@/assets/sruvo-logo.png";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "@/contexts/LocationContext";
 import { Heart, Search, ShoppingCart, MapPin, ShieldCheck, SlidersHorizontal, Plus, ChevronRight, Star, Flame, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -142,8 +143,8 @@ const CATEGORIES = [
 const BuyerDashboard = () => {
   const navigate = useNavigate();
   const { authReady, session, user } = useAuth();
+  const { city: selectedCity } = useLocation();
   const [pets, setPets] = useState<any[]>([]);
-  const [breeders, setBreeders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { totalWishlistCount, togglePetWishlist, isPetInWishlist } = useWishlist();
