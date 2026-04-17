@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, ReactNode } from "react";
 
 const CITIES = [
   { id: "greater-noida", name: "Greater Noida", state: "Uttar Pradesh" },
@@ -11,7 +11,10 @@ const CITIES = [
   { id: "chennai", name: "Chennai", state: "Tamil Nadu" },
   { id: "pune", name: "Pune", state: "Maharashtra" },
   { id: "kolkata", name: "Kolkata", state: "West Bengal" },
-];
+] as const;
+
+const DEFAULT_CITY = "Gurgaon";
+const STORAGE_KEY = "petlink:selected-city";
 
 interface LocationContextType {
   city: string;
@@ -19,19 +22,36 @@ interface LocationContextType {
   cities: typeof CITIES;
 }
 
+const readInitialCity = () => {
+  if (typeof window === "undefined") return DEFAULT_CITY;
+
+  const savedCity = window.localStorage.getItem(STORAGE_KEY)?.trim();
+  if (savedCity) return savedCity;
+
+  return DEFAULT_CITY;
+};
+
 const LocationContext = createContext<LocationContextType>({
-  city: "Gurgaon",
+  city: DEFAULT_CITY,
   setCity: () => {},
   cities: CITIES,
 });
 
 export const LocationProvider = ({ children }: { children: ReactNode }) => {
-  const [city, setCity] = useState("Gurgaon");
-  return (
-    <LocationContext.Provider value={{ city, setCity, cities: CITIES }}>
-      {children}
-    </LocationContext.Provider>
-  );
+  const [city, setCityState] = useState(readInitialCity);
+
+  const setCity = (nextCity: string) => {
+    const resolvedCity = nextCity?.trim() || DEFAULT_CITY;
+    setCityState(resolvedCity);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORAGE_KEY, resolvedCity);
+    }
+  };
+
+  const value = useMemo(() => ({ city, setCity, cities: CITIES }), [city]);
+
+  return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;
 };
 
 export const useLocation = () => useContext(LocationContext);
