@@ -363,29 +363,26 @@ const BuyerDashboard = () => {
       )}
 
       {/* Verified Breeders Nearby - Premium Cards */}
-      {breeders.length > 0 && (
+      {nearbyBreeders.length > 0 && (
         <section className="pb-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
               <h2 className="text-[20px] font-semibold text-foreground" style={{ fontFamily: 'Inter, SF Pro Display, sans-serif' }}>Verified Breeders Nearby</h2>
-              <p className="text-[13px] text-[#8A8A8A] mt-0.5">Connect with {breeders.length} top-rated experts in your area</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Connect with {nearbyBreeders.length} top-rated experts in your area</p>
             </div>
-            <button className="text-[12px] font-medium px-3 py-1.5 rounded-full flex items-center gap-0.5" style={{ color: '#8B5CF6', backgroundColor: '#F3E8FF' }}>
+            <button className="text-[12px] font-medium px-3 py-1.5 rounded-full flex items-center gap-0.5 bg-accent text-primary">
               SEE MAP <ChevronRight className="w-3 h-3" />
             </button>
           </div>
           <div className="flex gap-4 overflow-x-auto px-4 pt-1 pb-3 scrollbar-hide">
-            {breeders.map((breeder) => {
-              // Get the first pet image from this breeder if available
-              const breederPet = pets.find(p => p.owner_id === breeder.id);
-              const displayImage = breederPet?.images?.[0] || breeder.profile_photo;
-              
+            {nearbyBreeders.map((breeder) => {
+              const displayImage = breeder.coverImage || breeder.profile_photo;
               return (
                 <div
                   key={breeder.id}
-                  className="flex-shrink-0 bg-white overflow-hidden active:scale-[0.97] transition-transform"
-                  style={{ 
-                    width: '260px', 
+                  className="flex-shrink-0 bg-card overflow-hidden active:scale-[0.97] transition-transform"
+                  style={{
+                    width: '260px',
                     borderRadius: '24px',
                     boxShadow: '0px 10px 30px rgba(0,0,0,0.08)',
                   }}
@@ -395,37 +392,28 @@ const BuyerDashboard = () => {
                     {displayImage ? (
                       <img src={displayImage} alt={breeder.name} className="w-full h-full object-cover" style={{ borderRadius: '24px 24px 0 0' }} />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #e8a0bf20, #b88cc420)', borderRadius: '24px 24px 0 0' }}>
-                        <span className="text-5xl font-bold" style={{ color: '#e8a0bf50' }}>{breeder.name?.[0]?.toUpperCase()}</span>
+                      <div className="w-full h-full flex items-center justify-center bg-secondary" style={{ borderRadius: '24px 24px 0 0' }}>
+                        <span className="text-5xl font-bold text-primary/40">{breeder.name?.[0]?.toUpperCase()}</span>
                       </div>
                     )}
-                    {/* Dark gradient overlay */}
                     <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 50%)', borderRadius: '24px 24px 0 0' }} />
-                    
-                    {/* Verified badge */}
-                    {breeder.is_breeder_verified && (
-                      <span className="absolute top-3 right-3 flex items-center gap-1 text-white text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#166534' }}>
-                        <ShieldCheck className="w-3 h-3" /> VERIFIED
-                      </span>
-                    )}
+                    <span className="absolute top-3 right-3 flex items-center gap-1 text-white text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: '#166534' }}>
+                      <ShieldCheck className="w-3 h-3" /> VERIFIED
+                    </span>
                   </div>
 
                   {/* Floating Info Panel */}
-                  <div className="relative -mt-5 mx-3 mb-3 p-4" style={{ backgroundColor: '#F9FAFB', borderRadius: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                  <div className="relative -mt-5 mx-3 mb-3 p-4 bg-muted/50" style={{ borderRadius: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
                     <h3 className="text-[16px] font-semibold text-foreground line-clamp-1">{breeder.name}</h3>
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <Star className="w-3.5 h-3.5 fill-[#FBBF24] text-[#FBBF24]" />
-                      <span className="text-[12px] font-semibold text-foreground">{breeder.rating?.toFixed(1) || "4.5"}</span>
-                      <span className="text-[12px] text-[#6B7280]">•</span>
-                      <span className="text-[12px] text-[#6B7280]">120+ Pets Sold</span>
+                      <span className="text-[12px] font-semibold text-foreground">{breeder.rating?.toFixed(1) || "4.8"}</span>
+                      <span className="text-[12px] text-muted-foreground">•</span>
+                      <span className="text-[12px] text-muted-foreground">{breeder.petCount}+ Pets Listed</span>
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); navigate(`/seller/${breeder.id}`); }}
-                      className="mt-3 w-full py-2.5 text-[14px] font-medium text-white rounded-xl active:scale-[0.97] transition-all"
-                      style={{ 
-                        background: 'linear-gradient(135deg, #8B5CF6, #A855F7)',
-                        boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)',
-                      }}
+                      className="mt-3 w-full py-2.5 text-[14px] font-medium text-primary-foreground rounded-xl active:scale-[0.97] transition-all bg-gradient-primary shadow-soft"
                     >
                       View Profile
                     </button>
