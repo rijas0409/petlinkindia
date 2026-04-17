@@ -179,16 +179,35 @@ const BuyerDashboard = () => {
 
   const fetchPets = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: petsData, error } = await supabase
         .from("pets")
-        .select("*, profiles:owner_id (id, name, rating, profile_photo, is_breeder_verified, city)")
+        .select("*")
         .eq("is_available", true)
         .eq("verification_status", "verified")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      setPets(data || []);
-    } catch { toast.error("Failed to load pets"); }
-    finally { setLoading(false); }
+
+      const rows = petsData || [];
+
+      // Fetch owner/seller info separately (RLS-safe - role='seller' is publicly readable to authenticated)
+      const ownerIds = Array.from(new Set(rows.map((p: any) => p.owner_id).filter(Boolean)));
+      let ownersMap: Record<string, any> = {};
+      if (ownerIds.length > 0) {
+        const { data: owners } = await supabase
+          .from("profiles")
+          .select("id, name, rating, profile_photo, is_breeder_verified, city")
+          .in("id", ownerIds);
+        (owners || []).forEach((o: any) => { ownersMap[o.id] = o; });
+      }
+
+      const enriched = rows.map((p: any) => ({ ...p, profiles: ownersMap[p.owner_id] || null }));
+      setPets(enriched);
+    } catch (e) {
+      console.error("fetchPets error:", e);
+      toast.error("Failed to load pets");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredPets = useMemo(() =>
