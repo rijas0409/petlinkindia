@@ -4,14 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "@/contexts/LocationContext";
-import { Heart, Search, ShoppingCart, MapPin, ShieldCheck, SlidersHorizontal, Plus, ChevronRight, Star, Flame, TrendingUp } from "lucide-react";
+import { Heart, Search, ShoppingCart, MapPin, ShieldCheck, SlidersHorizontal, Plus, ChevronRight, Star } from "lucide-react";
 import { toast } from "sonner";
 import BottomNavigation from "@/components/BottomNavigation";
 import HeaderProfileDropdown from "@/components/HeaderProfileDropdown";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useCart } from "@/contexts/CartContext";
 import { InlineBanners } from "@/components/DynamicBannerRenderer";
-import { Button } from "@/components/ui/button";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -42,6 +41,25 @@ const FALLBACK_BANNERS = [
     image: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?w=400",
   },
 ];
+
+const normalizeLocationText = (value?: string | null) =>
+  (value || "")
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const matchesSelectedCity = (pet: any, selectedCity: string) => {
+  const selected = normalizeLocationText(selectedCity);
+  if (!selected) return true;
+
+  const haystack = [pet.city, pet.location, pet.state]
+    .map(normalizeLocationText)
+    .filter(Boolean)
+    .join(" ");
+
+  return haystack.includes(selected);
+};
 
 const HeroBannerCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -142,7 +160,7 @@ const CATEGORIES = [
 // ─── Main Component ───
 const BuyerDashboard = () => {
   const navigate = useNavigate();
-  const { authReady, session, user } = useAuth();
+  const { authReady, session } = useAuth();
   const { city: selectedCity } = useLocation();
   const [pets, setPets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,7 +193,7 @@ const BuyerDashboard = () => {
 
     init();
     return () => { cancelled = true; };
-  }, [authReady, session]);
+  }, [authReady, session, navigate]);
 
   const fetchPets = async () => {
     try {
@@ -185,23 +203,34 @@ const BuyerDashboard = () => {
         .eq("is_available", true)
         .eq("verification_status", "verified")
         .order("created_at", { ascending: false });
+
       if (error) throw error;
 
       const rows = petsData || [];
+      const ownerIds = Array.from(new Set(rows.map((pet: any) => pet.owner_id).filter(Boolean)));
+      const ownersMap: Record<string, any> = {};
 
-      // Fetch owner/seller info separately (RLS-safe - role='seller' is publicly readable to authenticated)
-      const ownerIds = Array.from(new Set(rows.map((p: any) => p.owner_id).filter(Boolean)));
-      let ownersMap: Record<string, any> = {};
       if (ownerIds.length > 0) {
-        const { data: owners } = await supabase
+        const { data: owners, error: ownersError } = await supabase
           .from("profiles")
-          .select("id, name, rating, profile_photo, is_breeder_verified, city")
+          .select("id, name, rating, profile_photo, is_breeder_verified")
           .in("id", ownerIds);
-        (owners || []).forEach((o: any) => { ownersMap[o.id] = o; });
+
+        if (ownersError) {
+          console.error("fetchPets owners error:", ownersError);
+        } else {
+          (owners || []).forEach((owner: any) => {
+            ownersMap[owner.id] = owner;
+          });
+        }
       }
 
-      const enriched = rows.map((p: any) => ({ ...p, profiles: ownersMap[p.owner_id] || null }));
-      setPets(enriched);
+      const enrichedPets = rows.map((pet: any) => ({
+        ...pet,
+        profiles: ownersMap[pet.owner_id] || null,
+      }));
+
+      setPets(enrichedPets);
     } catch (e) {
       console.error("fetchPets error:", e);
       toast.error("Failed to load pets");
@@ -219,35 +248,46 @@ const BuyerDashboard = () => {
     return sorted.slice(0, 8);
   }, [pets]);
 
-  // Verified breeders nearby - derived from real pets in selected city
   const nearbyBreeders = useMemo(() => {
-    const cityNorm = (selectedCity || "").trim().toLowerCase();
-    const map = new Map<string, any>();
-    pets.forEach((p) => {
-      const owner = p.profiles;
+    const locationMatches = new Map<string, any>();
+    const allListedBreeders = new Map<string, any>();
+
+    pets.forEach((pet) => {
+      const owner = pet.profiles;
       if (!owner?.id) return;
-      // Filter by selected city (match either pet city or breeder city)
-      const petCity = (p.city || "").trim().toLowerCase();
-      const ownerCity = (owner.city || "").trim().toLowerCase();
-      if (cityNorm && petCity !== cityNorm && ownerCity !== cityNorm) return;
-      const existing = map.get(owner.id);
-      if (existing) {
-        existing.petCount += 1;
-        if (!existing.coverImage && p.images?.[0]) existing.coverImage = p.images[0];
-      } else {
-        map.set(owner.id, {
-          id: owner.id,
-          name: owner.name,
-          profile_photo: owner.profile_photo,
-          rating: owner.rating,
-          is_breeder_verified: owner.is_breeder_verified,
-          city: owner.city,
-          coverImage: p.images?.[0] || null,
-          petCount: 1,
-        });
+
+      const breederCard = {
+        id: owner.id,
+        name: owner.name || "Verified Breeder",
+        profile_photo: owner.profile_photo,
+        rating: Number(owner.rating) || 4.8,
+        is_breeder_verified: owner.is_breeder_verified,
+        city: pet.city,
+        coverImage: pet.images?.[0] || null,
+        petCount: 1,
+      };
+
+      const upsertBreeder = (map: Map<string, any>) => {
+        const existing = map.get(owner.id);
+        if (existing) {
+          existing.petCount += 1;
+          if (!existing.coverImage && breederCard.coverImage) existing.coverImage = breederCard.coverImage;
+          if (!existing.city && breederCard.city) existing.city = breederCard.city;
+          return;
+        }
+        map.set(owner.id, breederCard);
+      };
+
+      upsertBreeder(allListedBreeders);
+      if (matchesSelectedCity(pet, selectedCity)) {
+        upsertBreeder(locationMatches);
       }
     });
-    return Array.from(map.values()).slice(0, 10);
+
+    const preferred = Array.from(locationMatches.values());
+    const fallback = Array.from(allListedBreeders.values());
+
+    return (preferred.length > 0 ? preferred : fallback).slice(0, 10);
   }, [pets, selectedCity]);
 
   const formatAge = (months: number) => {
