@@ -61,6 +61,40 @@ const matchesSelectedCity = (pet: any, selectedCity: string) => {
   return haystack.includes(selected);
 };
 
+const mergeOwnerProfiles = async (ownerIds: string[]) => {
+  const ownersMap: Record<string, any> = {};
+  if (ownerIds.length === 0) return ownersMap;
+
+  const { data: owners, error } = await supabase
+    .from("profiles")
+    .select("id, name, rating, profile_photo, is_breeder_verified")
+    .in("id", ownerIds);
+
+  if (!error) {
+    (owners || []).forEach((owner: any) => {
+      ownersMap[owner.id] = owner;
+    });
+  }
+
+  const missingOwnerIds = ownerIds.filter((ownerId) => !ownersMap[ownerId]);
+  if (missingOwnerIds.length === 0) return ownersMap;
+
+  const sellerResults = await Promise.all(
+    missingOwnerIds.map(async (ownerId) => {
+      const { data } = await supabase.rpc("get_public_seller_info", { _seller_id: ownerId });
+      return data?.[0] || null;
+    })
+  );
+
+  sellerResults.forEach((seller) => {
+    if (seller?.id) {
+      ownersMap[seller.id] = seller;
+    }
+  });
+
+  return ownersMap;
+};
+
 const HeroBannerCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [slides, setSlides] = useState<any[]>([]);
@@ -208,22 +242,7 @@ const BuyerDashboard = () => {
 
       const rows = petsData || [];
       const ownerIds = Array.from(new Set(rows.map((pet: any) => pet.owner_id).filter(Boolean)));
-      const ownersMap: Record<string, any> = {};
-
-      if (ownerIds.length > 0) {
-        const { data: owners, error: ownersError } = await supabase
-          .from("profiles")
-          .select("id, name, rating, profile_photo, is_breeder_verified")
-          .in("id", ownerIds);
-
-        if (ownersError) {
-          console.error("fetchPets owners error:", ownersError);
-        } else {
-          (owners || []).forEach((owner: any) => {
-            ownersMap[owner.id] = owner;
-          });
-        }
-      }
+      const ownersMap = await mergeOwnerProfiles(ownerIds);
 
       const enrichedPets = rows.map((pet: any) => ({
         ...pet,
@@ -244,9 +263,10 @@ const BuyerDashboard = () => {
   , [pets, selectedCategory]);
 
   const trendingPets = useMemo(() => {
-    const sorted = [...pets].sort((a, b) => (b.views || 0) - (a.views || 0));
+    const source = pets.filter((pet) => matchesSelectedCity(pet, selectedCity));
+    const sorted = [...(source.length > 0 ? source : pets)].sort((a, b) => (b.views || 0) - (a.views || 0));
     return sorted.slice(0, 8);
-  }, [pets]);
+  }, [pets, selectedCity]);
 
   const nearbyBreeders = useMemo(() => {
     const locationMatches = new Map<string, any>();
