@@ -184,7 +184,7 @@ const AuthProducts = () => {
             <CardDescription>
               {isLogin
                 ? "Sign in to manage your product listings"
-                : "Join PetLink and start selling pet products"}
+                : "Join Sruvo and start selling pet products"}
             </CardDescription>
           </CardHeader>
           <CardContent>

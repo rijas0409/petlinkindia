@@ -86,7 +86,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Why Choose <span className="text-primary">PetLink</span>?
+              Why Choose <span className="text-primary">Sruvo</span>?
             </h2>
             <p className="text-muted-foreground text-lg">
               Premium features designed for your pet journey
@@ -135,7 +135,7 @@ const Index = () => {
               Ready to Find Your Perfect Pet?
             </h2>
             <p className="text-lg mb-8 opacity-90">
-              Join thousands of happy pet owners and sellers on PetLink
+              Join thousands of happy pet owners and sellers on Sruvo
             </p>
             <Button
               size="lg"
@@ -151,7 +151,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="py-8 border-t border-border">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 PetLink. All rights reserved.</p>
+          <p>&copy; 2025 Sruvo. All rights reserved.</p>
         </div>
       </footer>
     </div>

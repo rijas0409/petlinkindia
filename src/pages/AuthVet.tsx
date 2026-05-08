@@ -148,7 +148,7 @@ const AuthVet = () => {
               {isLogin ? "Vet Doctor Login" : "Register as Vet Doctor"}
             </CardTitle>
             <CardDescription>
-              {isLogin ? "Sign in to manage your consultations" : "Join PetLink as a veterinary professional"}
+              {isLogin ? "Sign in to manage your consultations" : "Join Sruvo as a veterinary professional"}
             </CardDescription>
           </CardHeader>
           <CardContent>
