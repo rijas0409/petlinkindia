@@ -153,7 +153,7 @@ const AdminOverview = ({ data, actions, setActiveSection }: Props) => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-3">
         <div>
           <h1 className="text-xl md:text-[28px] font-bold text-[hsl(220,20%,15%)]">Global Overview</h1>
-          <p className="text-[hsl(220,15%,55%)] text-xs md:text-sm mt-1">Command center for PetLink platform operations.</p>
+          <p className="text-[hsl(220,15%,55%)] text-xs md:text-sm mt-1">Command center for Sruvo platform operations.</p>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
           <button className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 border border-[hsl(220,20%,88%)] rounded-xl text-xs md:text-sm font-medium text-[hsl(220,20%,20%)] bg-white hover:bg-[hsl(220,20%,97%)] transition-colors">

@@ -93,7 +93,7 @@ const Auth = () => {
 
         if (error) throw error;
 
-        toast.success("Account created! Welcome to PetLink");
+        toast.success("Account created! Welcome to Sruvo");
         
         if (formData.role === "seller") {
           navigate("/seller-onboarding");

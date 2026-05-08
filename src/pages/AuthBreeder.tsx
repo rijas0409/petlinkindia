@@ -182,7 +182,7 @@ const AuthBreeder = () => {
             <CardDescription>
               {isLogin
                 ? "Sign in to manage your pet listings"
-                : "Join PetLink and start selling pets"}
+                : "Join Sruvo and start selling pets"}
             </CardDescription>
           </CardHeader>
           <CardContent>

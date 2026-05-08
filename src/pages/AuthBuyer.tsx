@@ -167,7 +167,7 @@ const AuthBuyer = () => {
             <CardDescription>
               {isLogin
                 ? "Sign in to browse and buy pets"
-                : "Join PetLink to find your perfect companion"}
+                : "Join Sruvo to find your perfect companion"}
             </CardDescription>
           </CardHeader>
           <CardContent>
